@@ -25,6 +25,15 @@
     <Filter Include="Engine\Source\Common">
       <UniqueIdentifier>{f7580d0e-a42c-4f71-a0fa-787a235ae02e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Source\Editor">
+      <UniqueIdentifier>{a0e173fc-d2a0-450d-b564-799bac57edc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Source\Runtime\Function">
+      <UniqueIdentifier>{70954dd2-da19-4c95-8a27-cc511a86fbd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Source\Runtime\Core">
+      <UniqueIdentifier>{6fe1e72c-59c0-45be-ad8f-c3ba56886f88}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Source\main.cpp">
@@ -33,6 +42,15 @@
     <ClCompile Include="Engine\Source\Runtime\Engine.cpp">
       <Filter>Engine\Source\Runtime</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Source\Editor\Editor.cpp">
+      <Filter>Engine\Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\GlobalContext.cpp">
+      <Filter>Engine\Source\Runtime\Function</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Core\LogSystem.cpp">
+      <Filter>Engine\Source\Runtime\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Runtime\Engine.h">
@@ -40,6 +58,15 @@
     </ClInclude>
     <ClInclude Include="Engine\Source\Common\Common.h">
       <Filter>Engine\Source\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Editor\Editor.h">
+      <Filter>Engine\Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\GlobalContext.h">
+      <Filter>Engine\Source\Runtime\Function</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Core\LogSystem.h">
+      <Filter>Engine\Source\Runtime\Core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
