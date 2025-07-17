@@ -28,15 +28,31 @@ public:
 		switch (logLevel)
 		{
 		case ELogLevel::Debug:
-			break;
+		{
+			m_logger->debug(std::forward<TARGS>(args)...);
+		}
+		break;
 		case ELogLevel::Info:
-			break;
+		{
+			m_logger->info(std::forward<TARGS>(args)...);
+		}
+		break;
 		case ELogLevel::Warn:
-			break;
+		{
+			m_logger->warn(std::forward<TARGS>(args)...);
+		}
+		break;
 		case ELogLevel::Error:
-			break;
+		{
+			m_logger->error(std::forward<TARGS>(args)...);
+		}
+		break;
 		case ELogLevel::Fatal:
-			break;
+		{
+			m_logger->critical(std::forward<TARGS>(args)...);
+			FatalCallback(std::forward<TARGS>(args)...);
+		}
+		break;
 		default:
 			break;
 		}
@@ -51,6 +67,7 @@ public:
 
 private:
 
+	std::shared_ptr<spdlog::logger> m_logger;
 };
 
 NAMESPACE_XYH_END

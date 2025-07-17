@@ -29,6 +29,7 @@
     <ClInclude Include="Engine\Source\Common\Common.h" />
     <ClInclude Include="Engine\Source\Editor\Editor.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\LogSystem.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Macro.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\GlobalContext.h" />
   </ItemGroup>

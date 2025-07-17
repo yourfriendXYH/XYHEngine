@@ -12,8 +12,8 @@ public:
 	//清理所有系统
 	void ShutdownSystems();
 
-private:
-
+public:
+	std::shared_ptr<class LogSystem> m_pLogSystem;
 
 
 };

@@ -68,5 +68,8 @@
     <ClInclude Include="Engine\Source\Runtime\Core\LogSystem.h">
       <Filter>Engine\Source\Runtime\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Core\Macro.h">
+      <Filter>Engine\Source\Runtime\Core</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

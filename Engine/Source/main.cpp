@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "Runtime/Engine.h"
 #include "Editor/Editor.h"
+#include "Runtime/Core/Macro.h"
 
 
 int main(int argc, char** argv)
@@ -23,6 +24,14 @@ int main(int argc, char** argv)
 	pEditor->Initialize(pEngine);
 	pEditor->Run();
 	pEditor->Clear();
+
+	LOG_DEBUG("XYH");
+	LOG_INFO("XYH");
+	LOG_WARN("XYH");
+	LOG_ERROR("XYH");
+	//LOG_FATAL("XYH");
+
+	THREAD_SLEEP(1000);
 
 	pEngine->Clear();
 	pEngine->ShutdownEngine();
