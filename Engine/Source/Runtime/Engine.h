@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include "..\Common\Common.h"
 
 NAMESPACE_XYH_BEGIN
@@ -6,7 +7,7 @@ NAMESPACE_XYH_BEGIN
 class XYHEngine
 {
 public:
-	void StartEngine();
+	void StartEngine(const std::string& configFilePath);
 
 	void ShutdownEngine();
 

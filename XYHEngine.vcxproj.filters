@@ -34,6 +34,21 @@
     <Filter Include="Engine\Source\Runtime\Core">
       <UniqueIdentifier>{6fe1e72c-59c0-45be-ad8f-c3ba56886f88}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Source\Runtime\Function\Render">
+      <UniqueIdentifier>{e6bd181c-246b-4b52-b9ec-09309a544eb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Source\Runtime\Resource">
+      <UniqueIdentifier>{4d022423-2400-4bec-ba99-71d5f661d3ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Source\Runtime\Platform">
+      <UniqueIdentifier>{f28b3455-cab6-4458-8532-760d7988af82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Source\Runtime\Function\Render\Interface">
+      <UniqueIdentifier>{e9e8c885-d915-4775-aaff-443488a665e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan">
+      <UniqueIdentifier>{c4958b7c-b6f1-4072-8e94-f1151e45cb25}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Source\main.cpp">
@@ -50,6 +65,15 @@
     </ClCompile>
     <ClCompile Include="Engine\Source\Runtime\Core\LogSystem.cpp">
       <Filter>Engine\Source\Runtime\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderSystem.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Resource\ConfigManager.cpp">
+      <Filter>Engine\Source\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +94,24 @@
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Core\Macro.h">
       <Filter>Engine\Source\Runtime\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderSystem.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Resource\ConfigManager.h">
+      <Filter>Engine\Source\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHI.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHIStruct.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderType.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

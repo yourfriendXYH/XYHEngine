@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 
 	XYH::XYHEngine* pEngine = new XYH::XYHEngine();
 
-	pEngine->StartEngine();
+	pEngine->StartEngine(configFilePath.generic_string());
 	pEngine->Inititalize();
 
 	XYH::XYHEditor* pEditor = new XYH::XYHEditor();

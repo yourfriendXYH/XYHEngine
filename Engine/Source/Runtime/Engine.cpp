@@ -1,12 +1,13 @@
 #include "Engine.h"
+#include <string>
 #include "Function/GlobalContext.h"
 
 NAMESPACE_XYH_BEGIN
 
-void XYHEngine::StartEngine()
+void XYHEngine::StartEngine(const std::string& configFilePath)
 {
 	// 初始化所有系统
-	g_runtimeGlobalContext.InitSystems();
+	g_runtimeGlobalContext.InitSystems(configFilePath);
 
 }
 
