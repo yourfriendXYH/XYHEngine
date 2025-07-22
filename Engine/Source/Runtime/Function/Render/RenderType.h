@@ -1065,12 +1065,6 @@ enum ERHIImageAspectFlagBits
     RHI_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
-enum ERHIDefaultSamplerType
-{
-    Default_Sampler_Linear,
-    Default_Sampler_Nearest
-};
-
 typedef uint32_t RHIAccessFlags;
 typedef uint32_t RHIImageAspectFlags;
 typedef uint32_t RHIFormatFeatureFlags;

@@ -75,6 +75,9 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.cpp">
       <Filter>Engine\Source\Runtime\Function\Render\Interface\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\WindowSystem.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Runtime\Engine.h">
@@ -111,6 +114,9 @@
       <Filter>Engine\Source\Runtime\Function\Render\Interface</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderType.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\WindowSystem.h">
       <Filter>Engine\Source\Runtime\Function\Render</Filter>
     </ClInclude>
   </ItemGroup>

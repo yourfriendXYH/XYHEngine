@@ -4,6 +4,8 @@
 
 NAMESPACE_XYH_BEGIN
 
+class RHI;
+
 struct ST_RenderSystemInitInfo
 {
 
@@ -21,6 +23,8 @@ public:
 
 
 private:
+
+	std::shared_ptr<RHI> m_pRHI;
 
 };
 

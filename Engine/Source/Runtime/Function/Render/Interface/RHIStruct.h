@@ -36,86 +36,86 @@ class RHIShader {};	// 着色器
 
 ////////////////////结构体//////////////////////////
 struct ST_RHIMemoryBarrier;	// 内存屏障
-struct RHICopyDescriptorSet;
-struct RHIDescriptorImageInfo;
-struct RHIDescriptorBufferInfo;
+struct ST_RHICopyDescriptorSet;
+struct ST_RHIDescriptorImageInfo;
+struct ST_RHIDescriptorBufferInfo;
 struct ST_RHIOffset2D;
-struct RHISpecializationMapEntry;
-struct RHIBufferMemoryBarrier;
-struct RHIImageSubresourceRange;
-struct RHIImageMemoryBarrier;
+struct ST_RHISpecializationMapEntry;
+struct ST_RHIBufferMemoryBarrier;
+struct ST_RHIImageSubresourceRange;
+struct ST_RHIImageMemoryBarrier;
 struct ST_RHIExtent2D;
-struct RHIExtent3D;
-struct RHIApplicationInfo;
-struct RHIAttachmentDescription;
-struct RHIBufferCopy;
-struct RHIBufferCreateInfo;
-struct RHIBufferImageCopy;
-struct RHICommandBufferAllocateInfo;
-struct RHICommandBufferBeginInfo;
-struct RHICommandBufferInheritanceInfo;
-struct RHICommandPoolCreateInfo;
-struct RHIDescriptorPoolSize;
-struct RHIDescriptorPoolCreateInfo;
-struct RHIDescriptorSetAllocateInfo;
-struct RHIDescriptorSetLayoutBinding;
-struct RHIDescriptorSetLayoutCreateInfo;
-struct RHIDeviceCreateInfo;
-struct RHIDeviceQueueCreateInfo;
-struct RHIExtensionProperties;
-struct RHIFenceCreateInfo;
-struct RHIFormatProperties;
-struct RHIFramebufferCreateInfo;
-struct RHIGraphicsPipelineCreateInfo;
-struct RHIComputePipelineCreateInfo;
-struct RHIImageBlit;
-struct RHIImageCreateInfo;
-struct RHIImageFormatProperties;
-struct RHIImageViewCreateInfo;
-struct RHIInstanceCreateInfo;
-struct RHILayerProperties;
-struct RHIMemoryAllocateInfo;
-struct RHIMemoryHeap;
-struct RHIMemoryRequirements;
-struct RHIMemoryType;
-struct RHIPhysicalDeviceFeatures;
-struct RHIPhysicalDeviceLimits;
-struct RHIPhysicalDeviceMemoryProperties;
-struct RHIPhysicalDeviceProperties;
-struct RHIPhysicalDeviceSparseProperties;
-struct RHIPipelineColorBlendStateCreateInfo;
-struct RHIPipelineDepthStencilStateCreateInfo;
-struct RHIPipelineDynamicStateCreateInfo;
-struct RHIPipelineInputAssemblyStateCreateInfo;
-struct RHIPipelineLayoutCreateInfo;
-struct RHIPipelineMultisampleStateCreateInfo;
-struct RHIPipelineRasterizationStateCreateInfo;
-struct RHIPipelineShaderStageCreateInfo;
-struct RHIPipelineTessellationStateCreateInfo;
-struct RHIPipelineVertexInputStateCreateInfo;
-struct RHIPipelineViewportStateCreateInfo;
-struct RHIPushConstantRange;
-struct RHIQueueFamilyProperties;
-struct RHIRenderPassCreateInfo;
-struct RHISamplerCreateInfo;
-struct RHISemaphoreCreateInfo;
-struct RHIShaderModuleCreateInfo;
-struct RHISubmitInfo;
-struct RHISubpassDependency;
-struct RHISubpassDescription;
-struct RHIWriteDescriptorSet;
-struct RHIOffset3D;
-struct RHIAttachmentReference;
-struct RHIComponentMapping;
-struct RHIImageSubresourceLayers;
-struct RHIPipelineColorBlendAttachmentState;
+struct ST_RHIExtent3D;
+struct ST_RHIApplicationInfo;
+struct ST_RHIAttachmentDescription;
+struct ST_RHIBufferCopy;
+struct ST_RHIBufferCreateInfo;
+struct ST_RHIBufferImageCopy;
+struct ST_RHICommandBufferAllocateInfo;
+struct ST_RHICommandBufferBeginInfo;
+struct ST_RHICommandBufferInheritanceInfo;
+struct ST_RHICommandPoolCreateInfo;
+struct ST_RHIDescriptorPoolSize;
+struct ST_RHIDescriptorPoolCreateInfo;
+struct ST_RHIDescriptorSetAllocateInfo;
+struct ST_RHIDescriptorSetLayoutBinding;
+struct ST_RHIDescriptorSetLayoutCreateInfo;
+struct ST_RHIDeviceCreateInfo;
+struct ST_RHIDeviceQueueCreateInfo;
+struct ST_RHIExtensionProperties;
+struct ST_RHIFenceCreateInfo;
+struct ST_RHIFormatProperties;
+struct ST_RHIFramebufferCreateInfo;
+struct ST_RHIGraphicsPipelineCreateInfo;
+struct ST_RHIComputePipelineCreateInfo;
+struct ST_RHIImageBlit;
+struct ST_RHIImageCreateInfo;
+struct ST_RHIImageFormatProperties;
+struct ST_RHIImageViewCreateInfo;
+struct ST_RHIInstanceCreateInfo;
+struct ST_RHILayerProperties;
+struct ST_RHIMemoryAllocateInfo;
+struct ST_RHIMemoryHeap;
+struct ST_RHIMemoryRequirements;
+struct ST_RHIMemoryType;
+struct ST_RHIPhysicalDeviceFeatures;
+struct ST_RHIPhysicalDeviceLimits;
+struct ST_RHIPhysicalDeviceMemoryProperties;
+struct ST_RHIPhysicalDeviceProperties;
+struct ST_RHIPhysicalDeviceSparseProperties;
+struct ST_RHIPipelineColorBlendStateCreateInfo;
+struct ST_RHIPipelineDepthStencilStateCreateInfo;
+struct ST_RHIPipelineDynamicStateCreateInfo;
+struct ST_RHIPipelineInputAssemblyStateCreateInfo;
+struct ST_RHIPipelineLayoutCreateInfo;
+struct ST_RHIPipelineMultisampleStateCreateInfo;
+struct ST_RHIPipelineRasterizationStateCreateInfo;
+struct ST_RHIPipelineShaderStageCreateInfo;
+struct ST_RHIPipelineTessellationStateCreateInfo;
+struct ST_RHIPipelineVertexInputStateCreateInfo;
+struct ST_RHIPipelineViewportStateCreateInfo;
+struct ST_RHIPushConstantRange;
+struct ST_RHIQueueFamilyProperties;
+struct ST_RHIRenderPassCreateInfo;
+struct ST_RHISamplerCreateInfo;
+struct ST_RHISemaphoreCreateInfo;
+struct ST_RHIShaderModuleCreateInfo;
+struct ST_RHISubmitInfo;
+struct ST_RHISubpassDependency;
+struct ST_RHISubpassDescription;
+struct ST_RHIWriteDescriptorSet;
+struct ST_RHIOffset3D;
+struct ST_RHIAttachmentReference;
+struct ST_RHIComponentMapping;
+struct ST_RHIImageSubresourceLayers;
+struct ST_RHIPipelineColorBlendAttachmentState;
 struct ST_RHIRect2D;
-struct RHISpecializationInfo;
-struct RHIStencilOpState;
-struct RHIVertexInputAttributeDescription;
-struct RHIVertexInputBindingDescription;
+struct ST_RHISpecializationInfo;
+struct ST_RHIStencilOpState;
+struct ST_RHIVertexInputAttributeDescription;
+struct ST_RHIVertexInputBindingDescription;
 struct ST_RHIViewport;
-struct RHIRenderPassBeginInfo;
+struct ST_RHIRenderPassBeginInfo;
 union UN_RHIClearValue;
 union UN_RHIClearColorValue;
 struct ST_RHIClearDepthStencilValue;
@@ -129,11 +129,17 @@ struct ST_RHIMemoryBarrier
     RHIAccessFlags m_dstAccessMask;
 };
 
-struct ST_RHIClearAttachment
+struct ST_RHIClearDepthStencilValue
 {
-    RHIImageAspectFlags aspectMask;
-    uint32_t colorAttachment;
-    UN_RHIClearValue clearValue;
+    float depth;
+    uint32_t stencil;
+};
+
+union UN_RHIClearColorValue
+{
+    float float32[4];
+    int32_t int32[4];
+    uint32_t uint32[4];
 };
 
 union UN_RHIClearValue
@@ -142,24 +148,23 @@ union UN_RHIClearValue
     ST_RHIClearDepthStencilValue depthStencil;
 };
 
-union UN_RHIClearColorValue 
+struct ST_RHIClearAttachment
 {
-    float float32[4];
-    int32_t int32[4];
-    uint32_t uint32[4];
+    RHIImageAspectFlags aspectMask;
+    uint32_t colorAttachment;
+    UN_RHIClearValue clearValue;
 };
 
-struct ST_RHIClearDepthStencilValue 
+struct ST_RHIOffset2D
 {
-    float depth;
-    uint32_t stencil;
+    int32_t x;
+    int32_t y;
 };
 
-struct ST_RHIClearRect 
+struct ST_RHIExtent2D
 {
-    ST_RHIRect2D rect;
-    uint32_t baseArrayLayer;
-    uint32_t layerCount;
+    uint32_t width;
+    uint32_t height;
 };
 
 struct ST_RHIRect2D
@@ -168,16 +173,11 @@ struct ST_RHIRect2D
     ST_RHIExtent2D extent;
 };
 
-struct ST_RHIOffset2D 
+struct ST_RHIClearRect 
 {
-    int32_t x;
-    int32_t y;
-};
-
-struct ST_RHIExtent2D 
-{
-    uint32_t width;
-    uint32_t height;
+    ST_RHIRect2D rect;
+    uint32_t baseArrayLayer;
+    uint32_t layerCount;
 };
 
 struct ST_QueueFamilyIndices

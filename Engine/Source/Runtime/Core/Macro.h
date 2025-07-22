@@ -2,8 +2,8 @@
 
 #include <thread>
 
-#include "Runtime/Core/LogSystem.h"
-#include "Runtime/Function/GlobalContext.h"
+#include "LogSystem.h"
+#include "../Function/GlobalContext.h"
 
 
 // »’÷æ∫Í

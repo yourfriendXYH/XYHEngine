@@ -26,6 +26,7 @@
     <ClCompile Include="Engine\Source\Runtime\Function\GlobalContext.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderSystem.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\WindowSystem.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Resource\ConfigManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -40,6 +41,7 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderSystem.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderType.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\WindowSystem.h" />
     <ClInclude Include="Engine\Source\Runtime\Resource\ConfigManager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -94,6 +96,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LibraryPath>$(ProjectDir)Engine/3rdparty/glfw-3.4.bin.WIN64/lib-vc2022;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -129,11 +134,12 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)Engine/3rdparty/spdlog/include;$(ProjectDir)Engine/Source/Common;$(ProjectDir)Engine/3rdparty/VulkanSDK/include;$(ProjectDir)Engine/3rdparty/vulkanmemoryallocator/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Engine/3rdparty/glfw-3.4.bin.WIN64/include;$(ProjectDir)Engine/3rdparty/spdlog/include;$(ProjectDir)Engine/Source/Common;$(ProjectDir)Engine/3rdparty/VulkanSDK/include;$(ProjectDir)Engine/3rdparty/vulkanmemoryallocator/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
