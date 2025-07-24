@@ -4,6 +4,8 @@
 
 NAMESPACE_XYH_BEGIN
 
+#define RHI_SUCCESS true
+
 enum ERHIStructureType : int
 {
     RHI_STRUCTURE_TYPE_APPLICATION_INFO = 0,

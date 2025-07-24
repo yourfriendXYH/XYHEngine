@@ -10,7 +10,7 @@ NAMESPACE_XYH_BEGIN
 
 class WindowSystem;
 
-struct RHIInitInfo
+struct ST_RHIInitInfo
 {
 	std::shared_ptr<WindowSystem> m_pWindowSystem;
 };
@@ -20,7 +20,7 @@ class RHI
 public:
 	virtual ~RHI() = 0;
 
-	virtual void Initialize() = 0;
+	virtual void Initialize(ST_RHIInitInfo initInfo) = 0;
 	virtual void PrepareContext() = 0;
 
 	virtual bool IsPointLightShadowEnabled() = 0;	// 是否启用点光源阴影
@@ -100,7 +100,7 @@ public:
 
 	virtual bool CreateSampler(const ST_RHISamplerCreateInfo* pCreateInfo, RHISampler*& pSampler) = 0;	// 创建采样器
 
-	virtual bool CreateSemaphore(const ST_RHISemaphoreCreateInfo* pCreateInfo, RHISemaphore*& pSemaphore) = 0;	// 创建信号量
+	virtual bool CreateRHISemaphore(const ST_RHISemaphoreCreateInfo* pCreateInfo, RHISemaphore*& pSemaphore) = 0;	// 创建信号量
 
 
 	// command and command write

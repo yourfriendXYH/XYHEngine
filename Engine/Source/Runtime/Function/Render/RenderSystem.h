@@ -8,7 +8,7 @@ class RHI;
 
 struct ST_RenderSystemInitInfo
 {
-
+	std::shared_ptr<class WindowSystem> m_pWindowSystem; // 窗口系统指针
 };
 
 class RenderSystem

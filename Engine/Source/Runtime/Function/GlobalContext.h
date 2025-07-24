@@ -18,6 +18,8 @@ public:
 
 	std::shared_ptr<class ConfigManager> m_pConfigManager; // 配置管理器
 
+	std::shared_ptr<class WindowSystem> m_pWindowSystem; // 窗口系统
+
 	std::shared_ptr<class RenderSystem> m_pRenderSystem; // 渲染系统
 };
 

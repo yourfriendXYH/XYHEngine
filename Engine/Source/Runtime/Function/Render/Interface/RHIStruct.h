@@ -157,20 +157,20 @@ struct ST_RHIClearAttachment
 
 struct ST_RHIOffset2D
 {
-    int32_t x;
-    int32_t y;
+    int32_t m_x;
+    int32_t m_y;
 };
 
 struct ST_RHIExtent2D
 {
-    uint32_t width;
-    uint32_t height;
+    uint32_t m_width;
+    uint32_t m_height;
 };
 
 struct ST_RHIRect2D
 {
-    ST_RHIOffset2D offset;
-    ST_RHIExtent2D extent;
+	ST_RHIOffset2D m_offset;    // 矩形区域的左上角坐标
+	ST_RHIExtent2D m_extent;    // 矩形区域的大小
 };
 
 struct ST_RHIClearRect 
@@ -200,12 +200,12 @@ struct ST_RHISwapChainDesc
 
 struct ST_RHIViewport
 {
-    float x;
-    float y;
-    float width;
-    float height;
-    float minDepth;
-    float maxDepth;
+    float m_x;
+    float m_y;
+    float m_width;
+    float m_height;
+    float m_minDepth;
+    float m_maxDepth;
 };
 
 struct ST_RHIDepthImageDesc

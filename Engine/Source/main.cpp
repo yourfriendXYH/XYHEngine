@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 	std::cout << "Hello XYH Engine." << std::endl;
 
 	std::filesystem::path executablePath(argv[0]);
-	std::filesystem::path configFilePath = executablePath.parent_path() / "123";
+	std::filesystem::path configFilePath = executablePath.parent_path() / "XYHEngineConfig.ini";
 
 	XYH::XYHEngine* pEngine = new XYH::XYHEngine();
 

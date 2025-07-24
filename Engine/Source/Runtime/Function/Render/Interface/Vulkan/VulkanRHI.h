@@ -1,14 +1,15 @@
 #pragma once
 #include "../RHI.h"
+#include <GLFW/glfw3.h>
 
 NAMESPACE_XYH_BEGIN
 
 class VulkanRHI final : public RHI
 {
 public:
-	virtual void Initialize() override final;
+	virtual void Initialize(ST_RHIInitInfo initInfo) override final;
 
-	virtual void PrepareContext();
+	virtual void PrepareContext() override;
 
 	virtual bool IsPointLightShadowEnabled();	// 是否启用点光源阴影
 
@@ -65,8 +66,6 @@ public:
 	virtual void CreateCubeMap(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, std::array<void*, 6> texture_image_pixels,
 		ERHIFormat texture_image_format, uint32_t miplevels);	// 创建立方体贴图
 
-	virtual void CreateCommandPool();	// 创建命令池
-
 	virtual bool CreateCommandPool(const ST_RHICommandPoolCreateInfo* pCreateInfo, RHICommandPool*& pCommandPool);	// 创建命令池
 
 	virtual bool CreateDescriptorPool(const ST_RHIDescriptorPoolCreateInfo* pCreateInfo, RHIDescriptorPool*& pDescriptorPool);	// 创建描述符池
@@ -87,7 +86,7 @@ public:
 
 	virtual bool CreateSampler(const ST_RHISamplerCreateInfo* pCreateInfo, RHISampler*& pSampler);	// 创建采样器
 
-	virtual bool CreateSemaphore(const ST_RHISemaphoreCreateInfo* pCreateInfo, RHISemaphore*& pSemaphore);	// 创建信号量
+	virtual bool CreateRHISemaphore(const ST_RHISemaphoreCreateInfo* pCreateInfo, RHISemaphore*& pSemaphore);	// 创建信号量
 
 
 	// command and command write
@@ -263,6 +262,71 @@ public:
 	virtual RHISemaphore*& GetTextureCopySemaphore(uint32_t index);	// 
 
 private:
+	void CreateInstance();	// 创建Vulkan实例
+	void InitializeDebugMessenger();	// 初始化调试消息处理器
+
+	// 为 Vulkan 提供一个与平台（Windows / macOS / Linux）兼容的渲染目标，使得 Vulkan 能够将图形渲染到 GLFW 创建的窗口中。
+	void CreateWindowSurface();	// 创建窗口表面
+
+	void InitializePhysicalDevice();	// 初始化物理设备
+
+	void CreateLogicalDevice();	// 创建逻辑设备
+	void CreateCommandPool() override;;	// 创建命令池
+	void CreateCommandBuffers();	// 创建命令缓冲区
+	void CreateDescriptorPool();	// 创建描述符池
+	void CreateSyncPrimitives();	// 创建同步原语
+	void CreateAssetAllocator();	// 创建资源分配器
+
+
+	// Vulkan 的验证层（Validation Layer）是一种调试工具，可以帮助开发者在开发阶段捕捉 API 的误用、潜在的 bug 和性能问题。常用的验证层如 "VK_LAYER_KHRONOS_validation"。
+	bool CheckValidationLayerSupport();	// 检查验证层支持
+
+	std::vector<const char*> GetRequiredExtensions();	// 获取所需的扩展列表
+
+	void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);	// 填充调试消息处理器创建信息
+
+	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);	// 创建调试工具消息处理器
+
+public:
+
+	ST_RHIViewport m_viewport;	// 视口属性
+	ST_RHIRect2D m_scissor;	// 裁剪区域
+	GLFWwindow* m_pGLFWwindow;	// GLFW窗口
+
+	VkInstance m_instance = nullptr;	// Vulkan实例
+	VkSurfaceKHR m_surface = nullptr;	// Vulkan表面
+	VkPhysicalDevice m_physicalDevice;	// Vulkan物理设备
+
+	// Vulkan函数指针
+	PFN_vkCmdBeginDebugUtilsLabelEXT _vkCmdBeginDebugUtilsLabelEXT;	// 开始调试工具标签
+	PFN_vkCmdEndDebugUtilsLabelEXT   _vkCmdEndDebugUtilsLabelEXT;
+	PFN_vkWaitForFences         _vkWaitForFences;
+	PFN_vkResetFences           _vkResetFences;
+	PFN_vkResetCommandPool      _vkResetCommandPool;
+	PFN_vkBeginCommandBuffer    _vkBeginCommandBuffer;
+	PFN_vkEndCommandBuffer      _vkEndCommandBuffer;
+	PFN_vkCmdBeginRenderPass    _vkCmdBeginRenderPass;
+	PFN_vkCmdNextSubpass        _vkCmdNextSubpass;
+	PFN_vkCmdEndRenderPass      _vkCmdEndRenderPass;
+	PFN_vkCmdBindPipeline       _vkCmdBindPipeline;
+	PFN_vkCmdSetViewport        _vkCmdSetViewport;
+	PFN_vkCmdSetScissor         _vkCmdSetScissor;
+	PFN_vkCmdBindVertexBuffers  _vkCmdBindVertexBuffers;
+	PFN_vkCmdBindIndexBuffer    _vkCmdBindIndexBuffer;
+	PFN_vkCmdBindDescriptorSets _vkCmdBindDescriptorSets;
+	PFN_vkCmdDrawIndexed        _vkCmdDrawIndexed;
+	PFN_vkCmdClearAttachments   _vkCmdClearAttachments;
+
+private:
+
+	bool m_enableValidationLayers = true;	// 是否启用验证层
+	bool m_enableDebugUtilsLabel = true;	// 是否启用调试工具标签
+	bool m_enablePointLightShadow = true;	// 是否启用点光源阴影
+
+	uint32_t m_vulkanApiVersion = VK_API_VERSION_1_0;	// Vulkan API版本
+	const std::vector<char const*> m_validationLayers{ "VK_LAYER_KHRONOS_validation" };	// 验证层列表
+
+	VkDebugUtilsMessengerEXT m_debugMessenger = nullptr;	// 调试消息处理器
 
 };
 

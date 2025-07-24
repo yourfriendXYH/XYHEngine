@@ -2,6 +2,7 @@
 #include "../Core/LogSystem.h"
 #include "../Resource/ConfigManager.h"
 #include "Render/RenderSystem.h"
+#include "Render/WindowSystem.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -14,9 +15,13 @@ void RuntimeGlobalContext::InitSystems(const std::string& configFilePath)
 	m_pConfigManager = std::make_shared<ConfigManager>(); // 配置管理器
 	m_pConfigManager->Initialize(configFilePath); // 初始化配置管理器
 
+	m_pWindowSystem = std::make_shared<WindowSystem>(); // 窗口系统
+	ST_WindowCreateInfo windowCreateInfo; // 窗口创建信息
+	m_pWindowSystem->Initialize(windowCreateInfo); // 初始化窗口系统
+
 	m_pRenderSystem = std::make_shared<RenderSystem>(); // 渲染系统
 	ST_RenderSystemInitInfo renderInitInfo; // 渲染系统初始化信息
-	renderInitInfo;
+	renderInitInfo.m_pWindowSystem = m_pWindowSystem;
 	m_pRenderSystem->Initialize(renderInitInfo); // 初始化渲染系统
 }
 
@@ -26,6 +31,8 @@ void RuntimeGlobalContext::ShutdownSystems()
 
 	m_pRenderSystem->Clear(); // 清理渲染系统
 	m_pRenderSystem.reset(); // 清理渲染系统指针
+
+	m_pWindowSystem.reset(); // 清理窗口系统指针
 }
 
 NAMESPACE_XYH_END

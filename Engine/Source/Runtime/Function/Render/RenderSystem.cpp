@@ -14,8 +14,10 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 {
 	std::shared_ptr<ConfigManager> pConfigManager = g_runtimeGlobalContext.m_pConfigManager;
 
+	ST_RHIInitInfo rhiInitInfo;
+	rhiInitInfo.m_pWindowSystem = initInfo.m_pWindowSystem;
 	m_pRHI = std::make_shared<VulkanRHI>();
-	m_pRHI->Initialize();
+	m_pRHI->Initialize(rhiInitInfo);
 }
 
 void RenderSystem::Tick(float deltaTime)
