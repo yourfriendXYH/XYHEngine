@@ -2,6 +2,8 @@
 #include "../../WindowSystem.h"
 #include "../../../../Core/Macro.h"
 #include <array>
+#include <set>
+#include <string>
 #include <windows.h>
 #include <iostream>
 
@@ -146,10 +148,6 @@ void VulkanRHI::CreateGlobalImage(RHIImage*& image, RHIImageView*& image_view, V
 }
 
 void VulkanRHI::CreateCubeMap(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, std::array<void*, 6> texture_image_pixels, ERHIFormat texture_image_format, uint32_t miplevels)
-{
-}
-
-void VulkanRHI::CreateCommandPool()
 {
 }
 
@@ -644,9 +642,10 @@ void VulkanRHI::InitializePhysicalDevice()
 				return p1 > p2;
 			});
 
+		// 遍历排序后的物理设备列表，选择第一个符合要求的设备
 		for (const auto& device : rankedPhysicalDevices)
 		{
-			if (true)
+			if (IsDeviceSuitable(device.second)) 
 			{
 				m_physicalDevice = device.second;
 				break;
@@ -660,6 +659,28 @@ void VulkanRHI::InitializePhysicalDevice()
 }
 
 void VulkanRHI::CreateLogicalDevice()
+{
+	m_queueIndices = FindQueueFamilies(m_physicalDevice);	// 查找物理设备的队列族
+
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;	// 队列创建信息
+	std::set<uint32_t> queueFamilies = { m_queueIndices.m_graphicsFamily.value(), m_queueIndices.m_presentFamily.value(), m_queueIndices.m_computeFamily.value()};
+
+	float queuePriority = 1.0f;	// 队列优先级
+	for (uint32_t queueFamily : queueFamilies)
+	{
+		// 队列创建信息
+		VkDeviceQueueCreateInfo queueCreateInfo = {};
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;	// 设置结构体类型
+		queueCreateInfo.queueFamilyIndex = queueFamily;	// 设置队列族索引
+		queueCreateInfo.queueCount = 1;	// 设置队列数量
+		queueCreateInfo.pQueuePriorities = &queuePriority;	// 设置队列优先级
+		queueCreateInfos.push_back(queueCreateInfo);	// 将队列创建信息添加到向量中
+	}
+
+
+}
+
+void VulkanRHI::CreateCommandPool()
 {
 }
 
@@ -741,6 +762,108 @@ VkResult VulkanRHI::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDe
 	{
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
+}
+
+bool VulkanRHI::IsDeviceSuitable(VkPhysicalDevice physicalDevice)
+{
+	auto queueIndices = FindQueueFamilies(physicalDevice);	// 查找设备的队列族
+	bool isExtensionSupported = CheckDeviceExtensionSupport(physicalDevice);	// 检查设备是否支持所需的扩展
+	bool isSwapChainAdequate = false;	// 初始化交换链是否足够
+	if (isExtensionSupported)
+	{
+		ST_SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(physicalDevice);	// 查询交换链支持情况
+		isSwapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();	// 如果交换链格式和呈现模式都不为空，则认为交换链足够
+	}
+
+	VkPhysicalDeviceFeatures physicalDeviceFeatures;	// 特性
+	vkGetPhysicalDeviceFeatures(physicalDevice, &physicalDeviceFeatures);	// 获取物理设备特性
+
+	if (!queueIndices.isComplete() || !isSwapChainAdequate || !physicalDeviceFeatures.samplerAnisotropy)	// 如果队列族不完整、交换链不够或物理设备不支持各向异性过滤
+	{
+		return false;	// 返回false，表示设备不适合
+	}
+
+	return true;
+}
+
+ST_QueueFamilyIndices VulkanRHI::FindQueueFamilies(VkPhysicalDevice physicalDevice)
+{
+	ST_QueueFamilyIndices indices;
+	uint32_t queueFamilyCount = 0u;
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);	// 获取队列族数量
+	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());	// 获取队列族属性
+
+	int i = 0;
+	for (const auto& queueFamily : queueFamilies)
+	{
+		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) // 如果队列族支持图形操作
+		{
+			indices.m_graphicsFamily = i;	// 设置图形队列族索引
+		}
+
+		if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)	// 如果队列族支持计算操作
+		{
+			indices.m_computeFamily = i;	// 设置计算队列族索引
+		}
+
+		VkBool32 presentSupport = false;	// 呈现支持
+		vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, m_surface, &presentSupport);	// 获取物理设备表面支持情况
+		if (presentSupport)
+		{
+			indices.m_presentFamily = i;	// 设置呈现队列族索引
+		}
+
+		if (indices.isComplete())	// 如果所有队列族索引都已设置
+		{
+			break;	// 退出循环
+		}
+
+		++i;
+	}
+
+	return indices;
+}
+
+bool VulkanRHI::CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
+{
+	uint32_t extensionCount;
+	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);	// 获取设备扩展数量
+	std::vector<VkExtensionProperties> availableExtensions(extensionCount);	// 可用的设备扩展
+	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());	// 获取设备扩展属性
+
+	std::set<std::string> requiredExtensions(m_deviceExtensions.begin(), m_deviceExtensions.end());	// 将所需的设备扩展转换为集合
+	for (const auto& extension : availableExtensions)	// 遍历可用的设备扩展
+	{
+		requiredExtensions.erase(extension.extensionName);	// 从所需的设备扩展中删除已找到的扩展
+	}
+
+	return requiredExtensions.empty();	// 如果所需的设备扩展集合为空，则表示所有所需的设备扩展都已找到
+}
+
+ST_SwapChainSupportDetails VulkanRHI::QuerySwapChainSupport(VkPhysicalDevice physicalDevice)
+{
+	ST_SwapChainSupportDetails detailsResult;
+
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_surface, &detailsResult.capabilities);	// 获取交换链表面能力
+
+	uint32_t formatCount;
+	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &formatCount, nullptr);	// 获取交换链表面格式数量
+	if (formatCount != 0)
+	{
+		detailsResult.formats.resize(formatCount);	// 调整交换链表面格式向量大小
+		vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &formatCount, detailsResult.formats.data());	// 获取交换链表面格式
+	}
+
+	uint32_t presentModeCount;	// 获取交换链表面呈现模式数量
+	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, nullptr);	// 获取交换链表面呈现模式数量
+	if (presentModeCount != 0)
+	{
+		detailsResult.presentModes.resize(presentModeCount);	// 调整交换链表面呈现模式向量大小
+		vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, detailsResult.presentModes.data());	// 获取交换链表面呈现模式
+	}
+
+	return detailsResult;
 }
 
 NAMESPACE_XYH_END

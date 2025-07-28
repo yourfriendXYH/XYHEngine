@@ -180,13 +180,20 @@ struct ST_RHIClearRect
     uint32_t layerCount;
 };
 
-struct ST_QueueFamilyIndices
+struct ST_QueueFamilyIndices    // 队列族索引
 {
-    std::optional<uint32_t> graphics_family;
-    std::optional<uint32_t> present_family;
-    std::optional<uint32_t> m_compute_family;
+	std::optional<uint32_t> m_graphicsFamily;    // 图形队列族索引
+	std::optional<uint32_t> m_presentFamily;     // 呈现队列族索引
+	std::optional<uint32_t> m_computeFamily;   // 计算队列族索引
 
-    bool isComplete() { return graphics_family.has_value() && present_family.has_value() && m_compute_family.has_value();; }
+    bool isComplete() { return m_graphicsFamily.has_value() && m_presentFamily.has_value() && m_computeFamily.has_value();; }
+};
+
+struct ST_SwapChainSupportDetails   // 交换链支持细节
+{
+	VkSurfaceCapabilitiesKHR        capabilities;   // 交换链的能力
+	std::vector<VkSurfaceFormatKHR> formats;    // 交换链支持的表面格式
+	std::vector<VkPresentModeKHR>   presentModes;   // 交换链支持的呈现模式
 };
 
 struct ST_RHISwapChainDesc

@@ -271,10 +271,15 @@ private:
 	void InitializePhysicalDevice();	// 初始化物理设备
 
 	void CreateLogicalDevice();	// 创建逻辑设备
+
 	void CreateCommandPool() override;;	// 创建命令池
+
 	void CreateCommandBuffers();	// 创建命令缓冲区
+
 	void CreateDescriptorPool();	// 创建描述符池
+
 	void CreateSyncPrimitives();	// 创建同步原语
+
 	void CreateAssetAllocator();	// 创建资源分配器
 
 
@@ -287,6 +292,14 @@ private:
 
 	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);	// 创建调试工具消息处理器
 
+	bool IsDeviceSuitable(VkPhysicalDevice physicalDevice);	// 检查物理设备是否适合
+
+	ST_QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice);	// 查找队列族
+
+	bool CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice);	// 检查设备扩展支持
+
+	ST_SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physicalDevice);	// 查询交换链支持
+
 public:
 
 	ST_RHIViewport m_viewport;	// 视口属性
@@ -296,6 +309,8 @@ public:
 	VkInstance m_instance = nullptr;	// Vulkan实例
 	VkSurfaceKHR m_surface = nullptr;	// Vulkan表面
 	VkPhysicalDevice m_physicalDevice;	// Vulkan物理设备
+
+	ST_QueueFamilyIndices m_queueIndices;	// 队列族索引
 
 	// Vulkan函数指针
 	PFN_vkCmdBeginDebugUtilsLabelEXT _vkCmdBeginDebugUtilsLabelEXT;	// 开始调试工具标签
@@ -327,6 +342,8 @@ private:
 	const std::vector<char const*> m_validationLayers{ "VK_LAYER_KHRONOS_validation" };	// 验证层列表
 
 	VkDebugUtilsMessengerEXT m_debugMessenger = nullptr;	// 调试消息处理器
+
+	std::vector<char const*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };	// 设备扩展列表
 
 };
 
