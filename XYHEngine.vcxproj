@@ -39,6 +39,7 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHI.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHIStruct.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHIResource.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderSystem.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderType.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\WindowSystem.h" />

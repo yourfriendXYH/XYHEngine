@@ -1,6 +1,7 @@
 #include "VulkanRHI.h"
 #include "../../WindowSystem.h"
 #include "../../../../Core/Macro.h"
+#include "VulkanRHIResource.h"
 #include <array>
 #include <set>
 #include <string>
@@ -61,6 +62,11 @@ void VulkanRHI::Initialize(ST_RHIInitInfo initInfo)
 
 	InitializePhysicalDevice(); // 初始化物理设备
 
+	CreateLogicalDevice();	// 创建逻辑设备
+
+	CreateCommandPool();	// 创建命令池
+
+	CreateCommandBuffers();	// 创建命令缓冲区
 }
 
 void VulkanRHI::PrepareContext()
@@ -677,10 +683,135 @@ void VulkanRHI::CreateLogicalDevice()
 		queueCreateInfos.push_back(queueCreateInfo);	// 将队列创建信息添加到向量中
 	}
 
+	VkPhysicalDeviceFeatures physicalDeviceFeatures = {};	// 物理设备特性
+	physicalDeviceFeatures.samplerAnisotropy = VK_TRUE;	// 启用各向异性过滤
+	physicalDeviceFeatures.fragmentStoresAndAtomics = VK_TRUE;	// 启用片段着色器存储和原子操作
+	physicalDeviceFeatures.independentBlend = VK_TRUE;	// 启用独立混合
+	if (m_enablePointLightShadow)
+	{
+		physicalDeviceFeatures.geometryShader = VK_TRUE;	// 启用几何着色器
+	}
 
+	VkDeviceCreateInfo deviceCreateInfo = {};	// 创建逻辑设备信息
+	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;	// 设置结构体类型
+	deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());	// 设置队列创建信息数量
+	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();	// 设置队列创建信息
+	deviceCreateInfo.pEnabledFeatures = &physicalDeviceFeatures;	// 设置物理设备特性
+	deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_deviceExtensions.size());	// 设置设备扩展数量
+	deviceCreateInfo.ppEnabledExtensionNames = m_deviceExtensions.data();	// 设置设备扩展名称
+	deviceCreateInfo.enabledLayerCount = 0;	// 启用设备层（Device Layers），用于调试或验证（现代 Vulkan 已弃用，推荐使用实例层）。
+
+	// 创建逻辑设备
+	if (vkCreateDevice(m_physicalDevice, &deviceCreateInfo, nullptr, &m_device) != VK_SUCCESS)
+	{
+		LOG_ERROR("failed to create logical device!");	// 如果创建失败，输出错误信息
+	}
+
+	VkQueue vkGraphicsQueue;	// 图形队列
+	vkGetDeviceQueue(m_device, m_queueIndices.m_graphicsFamily.value(), 0, &vkGraphicsQueue);	// 获取图形队列
+	m_graphicsQueue = new VulkanQueue();	// 创建图形队列对象
+	((VulkanQueue*)m_graphicsQueue)->SetResource(vkGraphicsQueue);	// 设置图形队列资源
+
+	vkGetDeviceQueue(m_device, m_queueIndices.m_presentFamily.value(), 0, &m_presentQueue);	// 获取呈现队列
+
+	VkQueue vkComputeQueue;	// 计算队列
+	vkGetDeviceQueue(m_device, m_queueIndices.m_computeFamily.value(), 0, &vkComputeQueue);	// 获取计算队列
+	m_computeQueue = new VulkanQueue();	// 创建计算队列对象
+	((VulkanQueue*)m_computeQueue)->SetResource(vkComputeQueue);	// 设置计算队列资源
+
+	// 获取设备函数指针
+	_vkResetCommandPool = (PFN_vkResetCommandPool)vkGetDeviceProcAddr(m_device, "vkResetCommandPool");
+	_vkBeginCommandBuffer = (PFN_vkBeginCommandBuffer)vkGetDeviceProcAddr(m_device, "vkBeginCommandBuffer");
+	_vkEndCommandBuffer = (PFN_vkEndCommandBuffer)vkGetDeviceProcAddr(m_device, "vkEndCommandBuffer");
+	_vkCmdBeginRenderPass = (PFN_vkCmdBeginRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdBeginRenderPass");
+	_vkCmdNextSubpass = (PFN_vkCmdNextSubpass)vkGetDeviceProcAddr(m_device, "vkCmdNextSubpass");
+	_vkCmdEndRenderPass = (PFN_vkCmdEndRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdEndRenderPass");
+	_vkCmdBindPipeline = (PFN_vkCmdBindPipeline)vkGetDeviceProcAddr(m_device, "vkCmdBindPipeline");
+	_vkCmdSetViewport = (PFN_vkCmdSetViewport)vkGetDeviceProcAddr(m_device, "vkCmdSetViewport");
+	_vkCmdSetScissor = (PFN_vkCmdSetScissor)vkGetDeviceProcAddr(m_device, "vkCmdSetScissor");
+	_vkWaitForFences = (PFN_vkWaitForFences)vkGetDeviceProcAddr(m_device, "vkWaitForFences");
+	_vkResetFences = (PFN_vkResetFences)vkGetDeviceProcAddr(m_device, "vkResetFences");
+	_vkCmdDrawIndexed = (PFN_vkCmdDrawIndexed)vkGetDeviceProcAddr(m_device, "vkCmdDrawIndexed");
+	_vkCmdBindVertexBuffers = (PFN_vkCmdBindVertexBuffers)vkGetDeviceProcAddr(m_device, "vkCmdBindVertexBuffers");
+	_vkCmdBindIndexBuffer = (PFN_vkCmdBindIndexBuffer)vkGetDeviceProcAddr(m_device, "vkCmdBindIndexBuffer");
+	_vkCmdBindDescriptorSets = (PFN_vkCmdBindDescriptorSets)vkGetDeviceProcAddr(m_device, "vkCmdBindDescriptorSets");
+	_vkCmdClearAttachments = (PFN_vkCmdClearAttachments)vkGetDeviceProcAddr(m_device, "vkCmdClearAttachments");
+
+	m_depthImageFormat = (ERHIFormat)FindDepthFormat();
+
+	if (1)
+	{
+
+	}
 }
 
 void VulkanRHI::CreateCommandPool()
+{
+	// 默认命令池
+	{
+		m_rhiCommandPool = new VulkanCommandPool();
+		VkCommandPool vkCommandPool;
+		VkCommandPoolCreateInfo commandPoolCreateInfo = {};	// 命令池创建信息
+		commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;	// 设置结构体类型
+		commandPoolCreateInfo.pNext = nullptr;	// 不使用扩展
+		commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;	// 设置命令池标志位，允许重置命令缓冲区
+		commandPoolCreateInfo.queueFamilyIndex = m_queueIndices.m_graphicsFamily.value();	// 设置队列族索引
+		if (vkCreateCommandPool(m_device, &commandPoolCreateInfo, nullptr, &vkCommandPool) != VK_SUCCESS)
+		{
+			LOG_ERROR("vk create command pool");
+		}
+		((VulkanCommandPool*)m_rhiCommandPool)->SetResource(vkCommandPool);	// 设置命令池资源
+	}
+
+	// 其他命令池
+	{
+		VkCommandPoolCreateInfo commandPoolCreateInfo;
+		commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		commandPoolCreateInfo.pNext = NULL;
+		commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;	// 设置命令池标志位，允许临时命令缓冲区
+		commandPoolCreateInfo.queueFamilyIndex = m_queueIndices.m_graphicsFamily.value();
+		// 创建多个命令池以支持多帧渲染
+		for (uint32_t i = 0; i < s_maxFramesInFlight; ++i)
+		{
+			if (vkCreateCommandPool(m_device, &commandPoolCreateInfo, nullptr, &m_commandPools[i]) != VK_SUCCESS)
+			{
+				LOG_ERROR("vk create command pool");
+			}
+		}
+	}
+}
+
+void VulkanRHI::CreateCommandBuffers()
+{
+	VkCommandBufferAllocateInfo commandBufferAllocateInfo{};	// 命令缓冲区分配信息
+	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;	// 设置结构体类型
+	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;	// 设置命令缓冲区级别为主级别
+	commandBufferAllocateInfo.commandBufferCount = 1U;	// 设置命令缓冲区数量为1
+
+	// 分配命令缓冲区
+	for (uint32_t i = 0; i < s_maxFramesInFlight; ++i)
+	{
+		commandBufferAllocateInfo.commandPool = m_commandPools[i];
+		VkCommandBuffer vkCommandBuffer;
+		if (vkAllocateCommandBuffers(m_device, &commandBufferAllocateInfo, &vkCommandBuffer) != VK_SUCCESS)
+		{
+			LOG_ERROR("vk allocate command buffers");
+		}
+		m_vkCommandBuffers[i] = vkCommandBuffer;
+		m_commandBuffers[i] = new VulkanCommandBuffer();
+		((VulkanCommandBuffer*)m_commandBuffers[i])->SetResource(vkCommandBuffer);	// 设置命令缓冲区资源
+	}
+}
+
+void VulkanRHI::CreateDescriptorPool()
+{
+}
+
+void VulkanRHI::CreateSyncPrimitives()
+{
+}
+
+void VulkanRHI::CreateAssetAllocator()
 {
 }
 
@@ -864,6 +995,36 @@ ST_SwapChainSupportDetails VulkanRHI::QuerySwapChainSupport(VkPhysicalDevice phy
 	}
 
 	return detailsResult;
+}
+
+VkFormat VulkanRHI::FindDepthFormat()
+{
+	return FindSupportedFormat(
+		{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+	);
+}
+
+VkFormat VulkanRHI::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+{
+	for (VkFormat format : candidates)
+	{
+		VkFormatProperties props;
+		vkGetPhysicalDeviceFormatProperties(m_physicalDevice, format, &props);
+
+		if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
+		{
+			return format;
+		}
+		else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
+		{
+			return format;
+		}
+	}
+
+	LOG_ERROR("findSupportedFormat failed");
+	return VkFormat();
 }
 
 NAMESPACE_XYH_END

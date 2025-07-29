@@ -300,6 +300,9 @@ private:
 
 	ST_SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physicalDevice);	// 查询交换链支持
 
+	VkFormat FindDepthFormat();	// 查找深度格式
+	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);	// 
+
 public:
 
 	ST_RHIViewport m_viewport;	// 视口属性
@@ -312,11 +315,27 @@ public:
 
 	ST_QueueFamilyIndices m_queueIndices;	// 队列族索引
 
+	VkDevice m_device = nullptr;	// Vulkan逻辑设备
+	RHIQueue* m_graphicsQueue = nullptr;	// Vulkan图形队列
+	VkQueue m_presentQueue = nullptr;	// Vulkan呈现队列
+	RHIQueue* m_computeQueue = nullptr;	// Vulkan计算队列
+
+	ERHIFormat m_depthImageFormat = RHI_FORMAT_UNDEFINED;	// 深度图像格式
+
+	// 默认命令池
+	RHICommandPool* m_rhiCommandPool;
+	// 其他命令池
+	static uint8_t const s_maxFramesInFlight{ 3 };	// 最大帧数
+	VkCommandPool m_commandPools[s_maxFramesInFlight];	// 其他命令池
+	// 3个临时命令缓冲区
+	VkCommandBuffer m_vkCommandBuffers[s_maxFramesInFlight];	// 命令缓冲区列表
+	RHICommandBuffer* m_commandBuffers[s_maxFramesInFlight];	// RHI命令缓冲区列表
+
 	// Vulkan函数指针
 	PFN_vkCmdBeginDebugUtilsLabelEXT _vkCmdBeginDebugUtilsLabelEXT;	// 开始调试工具标签
-	PFN_vkCmdEndDebugUtilsLabelEXT   _vkCmdEndDebugUtilsLabelEXT;
-	PFN_vkWaitForFences         _vkWaitForFences;
-	PFN_vkResetFences           _vkResetFences;
+	PFN_vkCmdEndDebugUtilsLabelEXT   _vkCmdEndDebugUtilsLabelEXT;	// 结束调试工具标签
+	PFN_vkWaitForFences         _vkWaitForFences;	// 等待栅栏
+	PFN_vkResetFences           _vkResetFences;		// 重置栅栏
 	PFN_vkResetCommandPool      _vkResetCommandPool;
 	PFN_vkBeginCommandBuffer    _vkBeginCommandBuffer;
 	PFN_vkEndCommandBuffer      _vkEndCommandBuffer;

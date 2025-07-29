@@ -119,5 +119,8 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\WindowSystem.h">
       <Filter>Engine\Source\Runtime\Function\Render</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHIResource.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\Vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
