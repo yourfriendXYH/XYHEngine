@@ -1,6 +1,7 @@
 #include "VulkanRHI.h"
 #include "../../WindowSystem.h"
 #include "../../../../Core/Macro.h"
+#include "VulkanUtil.h"
 #include "VulkanRHIResource.h"
 #include <array>
 #include <set>
@@ -67,6 +68,14 @@ void VulkanRHI::Initialize(ST_RHIInitInfo initInfo)
 	CreateCommandPool();	// 创建命令池
 
 	CreateCommandBuffers();	// 创建命令缓冲区
+
+	CreateDescriptorPool();	// 创建描述符池
+
+	CreateSyncPrimitives();	// 创建同步原语
+
+	CreateSwapChain();	// 创建交换链
+
+	CreateSwapChainImageViews();	// 创建交换链图像视图
 }
 
 void VulkanRHI::PrepareContext()
@@ -90,6 +99,71 @@ bool VulkanRHI::AllocateDescriptorSet()
 
 void VulkanRHI::CreateSwapChain()
 {
+	// 查询该物理设备的所有支持项
+	ST_SwapChainSupportDetails swapchainSupportDetails = QuerySwapChainSupport(m_physicalDevice);
+
+	// choose the best or fitting format
+	VkSurfaceFormatKHR chosenSurfaceFormat = ChooseSwapchainSurfaceFormatFromDetails(swapchainSupportDetails.formats);
+
+	// choose the best or fitting present mode
+	VkPresentModeKHR chosenPresentMode = ChooseSwapchainPresentModeFromDetails(swapchainSupportDetails.presentModes);
+
+	// 选择最合适的屏幕大小
+	VkExtent2D chosenExtent = ChooseSwapchainExtentFromDetails(swapchainSupportDetails.capabilities);
+
+	uint32_t imageCount = swapchainSupportDetails.capabilities.minImageCount + 1;
+	if (swapchainSupportDetails.capabilities.maxImageCount > 0 && imageCount > swapchainSupportDetails.capabilities.maxImageCount)
+	{
+		imageCount = swapchainSupportDetails.capabilities.maxImageCount;
+	}
+
+	// 创建交换链的配置信息
+	// KHR	Khronos 官方批准的扩展，跨厂商支持。
+	VkSwapchainCreateInfoKHR createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+	createInfo.surface = m_surface;	// 交换链关联的表面
+	createInfo.minImageCount = imageCount;
+	createInfo.imageFormat = chosenSurfaceFormat.format;
+	createInfo.imageColorSpace = chosenSurfaceFormat.colorSpace;
+	createInfo.imageExtent = chosenExtent;	// 交换链的宽度和高度
+	createInfo.imageArrayLayers = 1;	// 图像的层数，通常为1
+	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;	// 图像的使用方式，通常为颜色附件
+	// 队列族索引
+	uint32_t queueFamilyIndices[] = { m_queueIndices.m_graphicsFamily.value(), m_queueIndices.m_presentFamily.value() };
+	// 如果图形队列族和呈现队列族不同
+	if (m_queueIndices.m_graphicsFamily != m_queueIndices.m_presentFamily)
+	{
+		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;	// 共享模式为并发
+		createInfo.queueFamilyIndexCount = 2;	// 队列族索引的数量
+		createInfo.pQueueFamilyIndices = queueFamilyIndices;	// 队列族索引数组
+	}
+	else
+	{
+		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;	// 共享模式为独占
+	}
+	createInfo.preTransform = swapchainSupportDetails.capabilities.currentTransform;	// 交换链的当前变换
+	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;	// 合成Alpha通道的方式，通常为不透明
+	createInfo.presentMode = chosenPresentMode;	// 交换链的呈现模式
+	createInfo.clipped = VK_TRUE;	// 是否裁剪交换链图像
+	createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+	// 创建交换链
+	if (vkCreateSwapchainKHR(m_device, &createInfo, nullptr, &m_swapchain) != VK_SUCCESS)
+	{
+		LOG_ERROR("vk create swapchain khr");
+	}
+
+	// 获取交换链图像
+	vkGetSwapchainImagesKHR(m_device, m_swapchain, &imageCount, nullptr);
+	m_swapchainImages.resize(imageCount);
+	vkGetSwapchainImagesKHR(m_device, m_swapchain, &imageCount, m_swapchainImages.data());
+
+	// 设置交换链描述
+	m_swapchainImageFormat = (ERHIFormat)chosenSurfaceFormat.format;
+	m_swapchainExtent.m_height = chosenExtent.height;
+	m_swapchainExtent.m_width = chosenExtent.width;
+
+	m_scissor = { {0, 0}, {m_swapchainExtent.m_width, m_swapchainExtent.m_height} };	// 设置裁剪区域大小
 }
 
 void VulkanRHI::RecreateSwapChain()
@@ -98,6 +172,16 @@ void VulkanRHI::RecreateSwapChain()
 
 void VulkanRHI::CreateSwapChainImageViews()
 {
+	m_swapchainImageViews.resize(m_swapchainImages.size());
+
+	// 遍历交换链图像，创建图像视图
+	for (size_t i = 0; i < m_swapchainImages.size(); i++)
+	{
+		VkImageView vkImageView;
+		vkImageView = VulkanUtil::CreateImageView(m_device, m_swapchainImages[i], (VkFormat)m_swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, 1);
+		m_swapchainImageViews[i] = new VulkanImageView();
+		((VulkanImageView*)m_swapchainImageViews[i])->SetResource(vkImageView);
+	}
 }
 
 void VulkanRHI::CreateFramebufferImageAndViews()
@@ -737,7 +821,7 @@ void VulkanRHI::CreateLogicalDevice()
 	_vkCmdBindDescriptorSets = (PFN_vkCmdBindDescriptorSets)vkGetDeviceProcAddr(m_device, "vkCmdBindDescriptorSets");
 	_vkCmdClearAttachments = (PFN_vkCmdClearAttachments)vkGetDeviceProcAddr(m_device, "vkCmdClearAttachments");
 
-	m_depthImageFormat = (ERHIFormat)FindDepthFormat();
+	m_depthImageFormat = (ERHIFormat)FindDepthFormat();	// 查找深度格式
 
 	if (1)
 	{
@@ -805,10 +889,69 @@ void VulkanRHI::CreateCommandBuffers()
 
 void VulkanRHI::CreateDescriptorPool()
 {
+	// 由于DescriptorSet在Vulkan中应该被视为资产，所以DescriptorPool应该
+	// 足够大，这样我们就可以从DescriptorPool中分配DescriptorSet，就像我
+	// 们从devicemmemory中分配Buffer / Image一样。
+
+	VkDescriptorPoolSize poolSizes[7];	// 创建描述符池大小数组
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;	// 存储缓冲区动态描述符类型
+	poolSizes[0].descriptorCount = 3 + 2 + 2 + 2 + 1 + 1 + 3 + 3;	// 描述符数量
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;	// 存储缓冲区描述符类型
+	poolSizes[1].descriptorCount = 1 + 1 + 1 * m_maxVertexBlendingMeshCount;
+	poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;	// 统一缓冲区描述符类型
+	poolSizes[2].descriptorCount = 1 * m_maxMaterialCount;
+	poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;	// 组合图像采样器描述符类型
+	poolSizes[3].descriptorCount = 3 + 5 * m_maxMaterialCount + 1 + 1; // ImGui_ImplVulkan_CreateDeviceObjects
+	poolSizes[4].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;	// 输入附件描述符类型
+	poolSizes[4].descriptorCount = 4 + 1 + 1 + 2;
+	poolSizes[5].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;	// 统一缓冲区动态描述符类型
+	poolSizes[5].descriptorCount = 3;
+	poolSizes[6].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;	// 存储图像描述符类型
+	poolSizes[6].descriptorCount = 1;
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;	// 设置结构体类型
+	poolInfo.poolSizeCount = sizeof(poolSizes) / sizeof(poolSizes[0]);
+	poolInfo.pPoolSizes = poolSizes;
+	poolInfo.maxSets = 1 + 1 + 1 + m_maxMaterialCount + m_maxVertexBlendingMeshCount + 1 + 1; // 设置最大描述符集数量
+	poolInfo.flags = 0U;	// 描述符池标志位
+
+	// 创建描述符池
+	if (vkCreateDescriptorPool(m_device, &poolInfo, nullptr, &m_vkDescriptorPool) != VK_SUCCESS)
+	{
+		LOG_ERROR("failed to create descriptor pool!");	// 如果创建失败，输出错误信息
+	}
+
+	m_rhiDescriptorPool = new VulkanDescriptorPool();	// 创建Vulkan描述符池对象
+	((VulkanDescriptorPool*)m_rhiDescriptorPool)->SetResource(m_vkDescriptorPool);	// 设置Vulkan描述符池资源
 }
 
+// semaphore : signal an image is ready for rendering // ready for presentation
+// (m_vulkan_context._swapchain_images --> semaphores, fences)
 void VulkanRHI::CreateSyncPrimitives()
 {
+	VkSemaphoreCreateInfo semaphoreCreateInfo{};	// 信号量创建信息
+	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	VkFenceCreateInfo fenceCreateInfo{};	// 围栏创建信息
+	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // 栅栏被初始化为信号
+
+	// 创建信号量和围栏
+	for (uint32_t i = 0; i < s_maxFramesInFlight; i++)
+	{
+		m_imageAvailableForTexturescopySemaphores[i] = new VulkanSemaphore();
+		if (vkCreateSemaphore(m_device, &semaphoreCreateInfo, nullptr, &m_imageAvailableForRenderSemaphores[i]) != VK_SUCCESS ||
+			vkCreateSemaphore(m_device, &semaphoreCreateInfo, nullptr, &m_imageFinishedForPresentationSemaphores[i]) != VK_SUCCESS ||
+			vkCreateSemaphore(m_device, &semaphoreCreateInfo, nullptr, &(((VulkanSemaphore*)m_imageAvailableForTexturescopySemaphores[i])->GetResource())) != VK_SUCCESS ||
+			vkCreateFence(m_device, &fenceCreateInfo, nullptr, &m_isFrameInFlightFences[i]) != VK_SUCCESS)
+		{
+			LOG_ERROR("vk create semaphore & fence");
+		}
+
+		m_rhiIsFrameInFlightFences[i] = new VulkanFence();
+		((VulkanFence*)m_rhiIsFrameInFlightFences[i])->SetResource(m_isFrameInFlightFences[i]);
+	}
 }
 
 void VulkanRHI::CreateAssetAllocator()
@@ -1008,6 +1151,7 @@ VkFormat VulkanRHI::FindDepthFormat()
 
 VkFormat VulkanRHI::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 {
+	// 遍历候选格式
 	for (VkFormat format : candidates)
 	{
 		VkFormatProperties props;
@@ -1025,6 +1169,58 @@ VkFormat VulkanRHI::FindSupportedFormat(const std::vector<VkFormat>& candidates,
 
 	LOG_ERROR("findSupportedFormat failed");
 	return VkFormat();
+}
+
+VkSurfaceFormatKHR VulkanRHI::ChooseSwapchainSurfaceFormatFromDetails(const std::vector<VkSurfaceFormatKHR>& availableSurfaceFormats)
+{
+	// 遍历可用的表面格式
+	for (const auto& surfaceFormat : availableSurfaceFormats)
+	{
+		// TODO：选择VK_FORMAT_B8G8R8A8_SRGB表面格式
+		// 不需要在片段着色器中做伽马校正
+		// 选择VK_FORMAT_B8G8R8A8_UNORM表面格式
+		if (surfaceFormat.format == VK_FORMAT_B8G8R8A8_UNORM && surfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+		{
+			return surfaceFormat;
+		}
+	}
+	return availableSurfaceFormats[0];
+}
+
+VkPresentModeKHR VulkanRHI::ChooseSwapchainPresentModeFromDetails(const std::vector<VkPresentModeKHR>& availablePresentModes)
+{
+	for (VkPresentModeKHR presentMode : availablePresentModes)
+	{
+		// 优先选择VK_PRESENT_MODE_MAILBOX_KHR（邮箱模式），它可以减少延迟
+		if (VK_PRESENT_MODE_MAILBOX_KHR == presentMode)
+		{
+			return VK_PRESENT_MODE_MAILBOX_KHR;
+		}
+	}
+
+	return VK_PRESENT_MODE_FIFO_KHR;	// 默认使用VK_PRESENT_MODE_FIFO_KHR（FIFO模式）
+}
+
+VkExtent2D VulkanRHI::ChooseSwapchainExtentFromDetails(const VkSurfaceCapabilitiesKHR& capabilities)
+{
+	// 如果当前扩展的宽度和高度不是UINT32_MAX，则返回当前扩展
+	if (capabilities.currentExtent.width != UINT32_MAX)
+	{
+		return capabilities.currentExtent;
+	}
+	else
+	{
+		int width, height;
+		glfwGetFramebufferSize(m_pGLFWwindow, &width, &height);	// 获取窗口的帧缓冲区大小
+
+		VkExtent2D actualExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };	// 创建实际扩展
+
+		// 确保实际扩展在最小和最大范围内
+		actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+
+		return actualExtent;
+	}
 }
 
 NAMESPACE_XYH_END

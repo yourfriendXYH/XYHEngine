@@ -301,7 +301,11 @@ private:
 	ST_SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physicalDevice);	// 查询交换链支持
 
 	VkFormat FindDepthFormat();	// 查找深度格式
-	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);	// 
+	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);	// 查找支持的格式
+
+	VkSurfaceFormatKHR ChooseSwapchainSurfaceFormatFromDetails(const std::vector<VkSurfaceFormatKHR>& availableSurfaceFormats);	// 选择交换链表面格式
+	VkPresentModeKHR ChooseSwapchainPresentModeFromDetails(const std::vector<VkPresentModeKHR>& availablePresentModes);	// 选择交换链呈现模式
+	VkExtent2D ChooseSwapchainExtentFromDetails(const VkSurfaceCapabilitiesKHR& capabilities);	// 选择交换链范围
 
 public:
 
@@ -330,6 +334,22 @@ public:
 	// 3个临时命令缓冲区
 	VkCommandBuffer m_vkCommandBuffers[s_maxFramesInFlight];	// 命令缓冲区列表
 	RHICommandBuffer* m_commandBuffers[s_maxFramesInFlight];	// RHI命令缓冲区列表
+
+	VkDescriptorPool m_vkDescriptorPool;	// 全局描述符池
+	RHIDescriptorPool* m_rhiDescriptorPool;	// RHI描述符池
+
+	// VkSemaphore 和 VkFence 是两种同步原语（Synchronization Primitives），用于协调 GPU 和 CPU 之间的执行顺序，防止资源竞争和数据竞争
+	RHISemaphore* m_imageAvailableForTexturescopySemaphores[s_maxFramesInFlight];	// 图像可用信号量
+	VkSemaphore m_imageAvailableForRenderSemaphores[s_maxFramesInFlight];	// 渲染图像可用信号量
+	VkSemaphore m_imageFinishedForPresentationSemaphores[s_maxFramesInFlight];	// 图像完成呈现信号量
+	VkFence m_isFrameInFlightFences[s_maxFramesInFlight];	// 帧在执行中的栅栏
+	RHIFence* m_rhiIsFrameInFlightFences[s_maxFramesInFlight];	// RHI帧在执行中的栅栏
+
+	VkSwapchainKHR m_swapchain = nullptr;	// Vulkan交换链
+	std::vector<VkImage> m_swapchainImages;	// Vulkan交换链图像
+	ERHIFormat m_swapchainImageFormat = RHI_FORMAT_UNDEFINED;	// Vulkan交换链图像格式
+	ST_RHIExtent2D m_swapchainExtent;	// Vulkan交换链宽高
+	std::vector<RHIImageView*> m_swapchainImageViews;	// Vulkan交换链图像视图
 
 	// Vulkan函数指针
 	PFN_vkCmdBeginDebugUtilsLabelEXT _vkCmdBeginDebugUtilsLabelEXT;	// 开始调试工具标签
@@ -364,6 +384,8 @@ private:
 
 	std::vector<char const*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };	// 设备扩展列表
 
+	uint32_t m_maxVertexBlendingMeshCount = 256u;	// 最大顶点混合网格数量
+	uint32_t m_maxMaterialCount = 256u;	// 最大材质数量
 };
 
 NAMESPACE_XYH_END
