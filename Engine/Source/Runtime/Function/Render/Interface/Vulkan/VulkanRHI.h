@@ -1,6 +1,7 @@
 #pragma once
 #include "../RHI.h"
 #include <GLFW/glfw3.h>
+#include <vk_mem_alloc.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -350,6 +351,13 @@ public:
 	ERHIFormat m_swapchainImageFormat = RHI_FORMAT_UNDEFINED;	// Vulkan交换链图像格式
 	ST_RHIExtent2D m_swapchainExtent;	// Vulkan交换链宽高
 	std::vector<RHIImageView*> m_swapchainImageViews;	// Vulkan交换链图像视图
+
+	RHIImage* m_depthImage;	// 深度图像
+	VkDeviceMemory m_depthImageMemory = nullptr;	// 深度图像内存
+	RHIImageView* m_depthImageView;	// 深度图像视图
+
+	// 资源分配器使用 VMA library
+	VmaAllocator m_assetsAllocator;
 
 	// Vulkan函数指针
 	PFN_vkCmdBeginDebugUtilsLabelEXT _vkCmdBeginDebugUtilsLabelEXT;	// 开始调试工具标签

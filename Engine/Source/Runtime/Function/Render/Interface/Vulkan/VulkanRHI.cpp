@@ -76,6 +76,10 @@ void VulkanRHI::Initialize(ST_RHIInitInfo initInfo)
 	CreateSwapChain();	// 创建交换链
 
 	CreateSwapChainImageViews();	// 创建交换链图像视图
+
+	CreateFramebufferImageAndViews();	// 创建帧缓冲图像和视图
+
+	CreateAssetAllocator();	// 创建资源分配器
 }
 
 void VulkanRHI::PrepareContext()
@@ -178,6 +182,7 @@ void VulkanRHI::CreateSwapChainImageViews()
 	for (size_t i = 0; i < m_swapchainImages.size(); i++)
 	{
 		VkImageView vkImageView;
+		// 创建图像视图
 		vkImageView = VulkanUtil::CreateImageView(m_device, m_swapchainImages[i], (VkFormat)m_swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, 1);
 		m_swapchainImageViews[i] = new VulkanImageView();
 		((VulkanImageView*)m_swapchainImageViews[i])->SetResource(vkImageView);
@@ -186,6 +191,32 @@ void VulkanRHI::CreateSwapChainImageViews()
 
 void VulkanRHI::CreateFramebufferImageAndViews()
 {
+	if (nullptr == m_depthImage)
+	{
+		m_depthImage = new VulkanImage();
+	}
+	// 创建深度图像
+	VulkanUtil::CreateImage(m_physicalDevice, 
+		m_device,
+		m_swapchainExtent.m_width,
+		m_swapchainExtent.m_height,
+		(VkFormat)m_depthImageFormat,
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		((VulkanImage*)m_depthImage)->GetResource(),	// 给深度图像赋值
+		m_depthImageMemory,
+		0,
+		1,
+		1);
+
+	if (nullptr == m_depthImageView)
+	{
+		m_depthImageView = new VulkanImageView();
+	}
+	// 创建深度图像视图
+	VkImageView depthImageView = VulkanUtil::CreateImageView(m_device, ((VulkanImage*)m_depthImage)->GetResource(), (VkFormat)m_depthImageFormat, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, 1);
+	((VulkanImageView*)m_depthImageView)->SetResource(depthImageView);
 }
 
 RHISampler* VulkanRHI::GetOrCreateDefaultSampler(ERHIDefaultSamplerType type)
@@ -956,6 +987,20 @@ void VulkanRHI::CreateSyncPrimitives()
 
 void VulkanRHI::CreateAssetAllocator()
 {
+	VmaVulkanFunctions vulkanFunctions = {};	// VMA Vulkan函数指针结构体
+	vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+	vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
+
+	// 设置VMA分配器创建信息
+	VmaAllocatorCreateInfo allocatorCreateInfo = {};
+	allocatorCreateInfo.vulkanApiVersion = m_vulkanApiVersion;	// 设置Vulkan API版本
+	allocatorCreateInfo.physicalDevice = m_physicalDevice;	// 设置物理设备
+	allocatorCreateInfo.device = m_device;	// 设置逻辑设备
+	allocatorCreateInfo.instance = m_instance;	// 设置Vulkan实例
+	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;	// 设置Vulkan函数指针
+
+	// 创建VMA分配器
+	vmaCreateAllocator(&allocatorCreateInfo, &m_assetsAllocator);
 }
 
 bool VulkanRHI::CheckValidationLayerSupport()

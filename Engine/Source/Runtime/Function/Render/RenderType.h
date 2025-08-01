@@ -1131,4 +1131,12 @@ typedef uint64_t RHIDeviceSize;
 typedef uint32_t RHIFlags;
 typedef uint32_t RHISampleMask;
 
+// 渲染管线类型
+enum class ERENDER_PIPELINE_TYPE : uint8_t
+{
+	FORWARD_PIPELINE = 0,   // 正向渲染管线
+	DEFERRED_PIPELINE,  // 延迟渲染管线
+	PIPELINE_TYPE_COUNT // 渲染管线类型数量
+};
+
 NAMESPACE_XYH_END

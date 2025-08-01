@@ -120,4 +120,20 @@ private:
     VkImageView m_resource;
 };
 
+// VulkanImage 类用于封装 Vulkan 图像资源
+class VulkanImage : public RHIImage
+{
+public:
+    void SetResource(VkImage res)
+    {
+        m_resource = res;
+    }
+    VkImage& GetResource()
+    {
+        return m_resource;
+    }
+private:
+    VkImage m_resource;
+};
+
 NAMESPACE_XYH_END

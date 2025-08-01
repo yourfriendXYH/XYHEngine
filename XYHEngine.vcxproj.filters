@@ -78,6 +78,12 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\WindowSystem.cpp">
       <Filter>Engine\Source\Runtime\Function\Render</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanUtil.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanVMA.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Runtime\Engine.h">
@@ -120,6 +126,9 @@
       <Filter>Engine\Source\Runtime\Function\Render</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHIResource.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanUtil.h">
       <Filter>Engine\Source\Runtime\Function\Render\Interface\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
