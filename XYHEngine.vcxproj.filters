@@ -49,6 +49,18 @@
     <Filter Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan">
       <UniqueIdentifier>{c4958b7c-b6f1-4072-8e94-f1151e45cb25}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Source\Runtime\Resource\ResourceType">
+      <UniqueIdentifier>{c4149c66-29a4-41f2-9608-01054a158ef0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Source\Runtime\Resource\ResourceType\Global">
+      <UniqueIdentifier>{542246cb-c5b4-4aec-b933-62cbfeec7c4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Source\Runtime\Core\Math">
+      <UniqueIdentifier>{fd737ca2-52e0-4909-a4af-15be3d880d2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Source\Runtime\Resource\ResourceType\Data">
+      <UniqueIdentifier>{a9fee491-ea44-4caf-b440-29620201c760}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Source\main.cpp">
@@ -83,6 +95,24 @@
     </ClCompile>
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanVMA.cpp">
       <Filter>Engine\Source\Runtime\Function\Render\Interface\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderSwapContext.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderCamera.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderScene.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderResourceBase.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderPipelineBase.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderResource.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -130,6 +160,36 @@
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanUtil.h">
       <Filter>Engine\Source\Runtime\Function\Render\Interface\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderSwapContext.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderCamera.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderScene.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderResourceBase.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderPipelineBase.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Global\GlobalRendering.h">
+      <Filter>Engine\Source\Runtime\Resource\ResourceType\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderResource.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderEntity.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\AxisAligned.h">
+      <Filter>Engine\Source\Runtime\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Data\CameraConfig.h">
+      <Filter>Engine\Source\Runtime\Resource\ResourceType\Data</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

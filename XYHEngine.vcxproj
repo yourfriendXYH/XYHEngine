@@ -27,6 +27,12 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanUtil.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanVMA.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderCamera.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderPipelineBase.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderResource.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderResourceBase.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderScene.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderSwapContext.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderSystem.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\WindowSystem.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Resource\ConfigManager.cpp" />
@@ -36,6 +42,7 @@
     <ClInclude Include="Engine\Source\Editor\Editor.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\LogSystem.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Macro.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\AxisAligned.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\GlobalContext.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHI.h" />
@@ -43,10 +50,19 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHIResource.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanUtil.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderCamera.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderEntity.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderPipelineBase.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderResource.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderResourceBase.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderScene.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderSwapContext.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderSystem.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderType.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\WindowSystem.h" />
     <ClInclude Include="Engine\Source\Runtime\Resource\ConfigManager.h" />
+    <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Data\CameraConfig.h" />
+    <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Global\GlobalRendering.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

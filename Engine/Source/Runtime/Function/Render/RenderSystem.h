@@ -8,6 +8,10 @@
 NAMESPACE_XYH_BEGIN
 
 class RHI;
+class RenderCamera;
+class RenderScene;
+class RenderResourceBase;
+class RenderPipelineBase;
 
 struct ST_RenderSystemInitInfo
 {
@@ -39,13 +43,13 @@ private:
 
 	std::shared_ptr<RHI> m_pRHI;	// 渲染硬件接口
 
-	std::shared_ptr<RenderCamera>       m_render_camera;
+	std::shared_ptr<RenderCamera> m_renderCamera;
 
-	std::shared_ptr<RenderScene>        m_render_scene;
+	std::shared_ptr<RenderScene> m_renderScene;
 
-	std::shared_ptr<RenderResourceBase> m_render_resource;
+	std::shared_ptr<RenderResourceBase> m_renderResource;
 
-	std::shared_ptr<RenderPipelineBase> m_render_pipeline;
+	std::shared_ptr<RenderPipelineBase> m_renderPipeline;
 };
 
 NAMESPACE_XYH_END

@@ -1,6 +1,10 @@
 #pragma once
 #include <Common.h>
 #include <cstdint>
+#include <string>
+#include <memory>
+#include <cstddef>
+#include <functional>
 
 NAMESPACE_XYH_BEGIN
 
@@ -1139,4 +1143,129 @@ enum class ERENDER_PIPELINE_TYPE : uint8_t
 	PIPELINE_TYPE_COUNT // 渲染管线类型数量
 };
 
+// 图像类型
+enum class EXYH_IMAGE_TYPE : uint8_t
+{
+	XYH_IMAGE_TYPE_UNKNOWM = 0, // 未知类型
+	XYH_IMAGE_TYPE_2D   // 2D图像
+};
+
+class BufferData
+{
+public:
+    BufferData() = delete;
+    BufferData(size_t size)
+    {
+        m_size = size;
+        m_data = malloc(size);
+    }
+    ~BufferData()
+    {
+        if (m_data)
+        {
+            free(m_data);
+        }
+    }
+    bool IsValid() const { return m_data != nullptr; }
+
+public:
+    size_t m_size{ 0 };
+    void* m_data{ nullptr };
+};
+
+class TextureData
+{
+public:
+    TextureData() = default;
+    ~TextureData()
+    {
+        if (m_pixels)
+        {
+            free(m_pixels);
+        }
+    }
+    bool IsValid() const { return m_pixels != nullptr; }
+
+public:
+    uint32_t m_width{ 0 };
+    uint32_t m_height{ 0 };
+    uint32_t m_depth{ 0 };
+    uint32_t m_mipLevels{ 0 };
+    uint32_t m_arrayLayers{ 0 };
+    void* m_pixels{ nullptr };
+
+	ERHIFormat m_format = RHI_FORMAT_MAX_ENUM;  // 像素格式
+    EXYH_IMAGE_TYPE m_type{ EXYH_IMAGE_TYPE::XYH_IMAGE_TYPE_UNKNOWM };
+};
+
+struct ST_MeshSourceDesc    // 网格资源描述
+{
+    bool operator==(const ST_MeshSourceDesc& rhs) const { return m_meshFile == rhs.m_meshFile; }
+    size_t GetHashValue() const { return std::hash<std::string> {}(m_meshFile); }
+
+    std::string m_meshFile; // 网格文件路径
+};
+
+struct ST_MaterialSourceDesc
+{
+    bool operator==(const ST_MaterialSourceDesc& rhs) const
+    {
+        return m_baseColorFile == rhs.m_baseColorFile &&
+            m_metallicRoughnessFile == rhs.m_metallicRoughnessFile &&
+            m_normalFile == rhs.m_normalFile &&
+            m_occlusionFile == rhs.m_occlusionFile &&
+            m_emissiveFile == rhs.m_emissiveFile;
+    }
+
+    size_t GetHashValue() const
+    {
+        size_t hash = 0;
+        //hash_combine(hash,
+        //    m_baseColorFile,
+        //    m_metallicRoughnessFile,
+        //    m_normalFile,
+        //    m_occlusionFile,
+        //    m_emissiveFile);
+        return hash;
+    }
+
+	std::string m_baseColorFile;    // 基础颜色贴图文件路径
+	std::string m_metallicRoughnessFile;    // 金属度-粗糙度贴图文件路径
+	std::string m_normalFile;   // 法线贴图文件路径
+	std::string m_occlusionFile;    // 遮挡贴图文件路径
+	std::string m_emissiveFile; // 自发光贴图文件路径
+};
+
+struct ST_StaticMeshData    // 静态网格数据
+{
+	std::shared_ptr<BufferData> m_vertexBuffer; // 顶点缓冲区
+	std::shared_ptr<BufferData> m_indexBuffer;  // 索引缓冲区
+};
+
+struct ST_RenderMeshData    // 渲染网格数据
+{
+	ST_StaticMeshData m_staticMeshData; // 静态网格数据
+	std::shared_ptr<BufferData> m_skeletonBindingBuffer;    // 骨骼绑定缓冲区
+};
+
+struct ST_RenderMaterialData    // 渲染材质数据
+{
+    std::shared_ptr<TextureData> m_base_color_texture;
+    std::shared_ptr<TextureData> m_metallic_roughness_texture;
+    std::shared_ptr<TextureData> m_normal_texture;
+    std::shared_ptr<TextureData> m_occlusion_texture;
+    std::shared_ptr<TextureData> m_emissive_texture;
+};
+
 NAMESPACE_XYH_END
+
+template<>
+struct std::hash<XYH::ST_MeshSourceDesc>
+{
+    size_t operator()(const XYH::ST_MeshSourceDesc& rhs) const noexcept { return rhs.GetHashValue(); }
+};
+template<>
+struct std::hash<XYH::ST_MaterialSourceDesc>
+{
+    size_t operator()(const XYH::ST_MaterialSourceDesc& rhs) const noexcept { return rhs.GetHashValue(); }
+};
