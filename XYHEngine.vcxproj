@@ -22,6 +22,14 @@
     <ClCompile Include="Engine\Source\Editor\Editor.cpp" />
     <ClCompile Include="Engine\Source\main.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\LogSystem.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\AxisAligned.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\Math.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\Matrix3.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\Matrix4.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\Quaternion.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\Vector2.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\Vector3.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\Vector4.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\GlobalContext.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.cpp" />
@@ -43,6 +51,17 @@
     <ClInclude Include="Engine\Source\Runtime\Core\LogSystem.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Macro.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Math\AxisAligned.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\Math.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\MathHeaders.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\MathMacros.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\Matrix3.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\Matrix4.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\Quaternion.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\Random.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\Transform.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\Vector2.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\Vector3.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\Vector4.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\GlobalContext.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHI.h" />
@@ -154,7 +173,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)Engine/3rdparty/glfw-3.4.bin.WIN64/include;$(ProjectDir)Engine/3rdparty/spdlog/include;$(ProjectDir)Engine/Source/Common;$(ProjectDir)Engine/3rdparty/VulkanSDK/include;$(ProjectDir)Engine/3rdparty/vulkanmemoryallocator/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Engine/3rdparty/glfw-3.4.bin.WIN64/include;$(ProjectDir)Engine/3rdparty/spdlog/include;$(ProjectDir)Engine/Source/Common;$(ProjectDir)Engine/3rdparty/VulkanSDK/include;$(ProjectDir)Engine/3rdparty/vulkanmemoryallocator/include;$(ProjectDir)Engine/Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
