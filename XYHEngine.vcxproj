@@ -71,7 +71,9 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanUtil.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Light.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderCamera.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderCommon.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderEntity.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderGuidAllocator.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderPipelineBase.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderResource.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderResourceBase.h" />
