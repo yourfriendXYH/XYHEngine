@@ -15,14 +15,13 @@ enum class ERenderCameraType : int
 class RenderCamera
 {
 public:
-	void SetCurrentCameraType(ERenderCameraType type);
+	void SetCurrentCameraType(ERenderCameraType type);	// 设置当前相机类型
 
 	void SetMainViewMatrix(const Matrix4x4& viewMatrix, ERenderCameraType type = ERenderCameraType::Editor);	// 设置主视图矩阵
 
-	void Move(Vector3 delta);
-
+	// 相机的增量变换
+	void Move(Vector3 delta);	// 移动
 	void Rotate(Vector2 delta);	// 旋转
-
 	void Zoom(float offset);	// 缩放
 
 	void LookAt(const Vector3& position, const Vector3& target, const Vector3& up);	// 观察目标
@@ -67,6 +66,8 @@ public:
 
 protected:
 	float m_aspectRatio = 0.0f;	// 宽高比
+
+	// 指相机能看到的视野范围
 	float m_fovX = Degree(89.f).valueDegrees();	// 水平视场角
 	float m_fovY = 0.0f;	// 垂直视场角
 

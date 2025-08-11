@@ -4,6 +4,7 @@
 #include "Interface/RHI.h"
 #include "Interface/Vulkan/VulkanRHI.h"
 #include "RenderResource.h"
+#include "RenderCamera.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -35,6 +36,14 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 
 	m_renderResource = std::make_shared<RenderResource>();
 	m_renderResource->UploadGlobalRenderResource(m_pRHI, levelResourceDesc);	// 上传全局渲染资源
+
+	// 初始化相机参数
+	m_renderCamera = std::make_shared<RenderCamera>();	// 创建渲染相机
+	m_renderCamera->LookAt(Vector3(-5.0f, 0.0f, 3.0f), Vector3(-4.0f, 0.0f, 3.0f), Vector3(0.0f, 0.0f, 1.0f));	// 设置相机初始位置和方向
+	m_renderCamera->m_zFar = 1000.0f;	// 设置远裁剪面
+	m_renderCamera->m_zNear = 0.1f;		// 设置近裁剪面
+	m_renderCamera->SetAspectRatio(1280.0f / 768.0f);	// 设置宽高比
+
 }
 
 void RenderSystem::Tick(float deltaTime)

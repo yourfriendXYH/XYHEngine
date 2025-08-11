@@ -7,7 +7,7 @@ NAMESPACE_XYH_BEGIN
 class XYHEngine
 {
 public:
-	void StartEngine(const std::string& configFilePath);
+	void StartEngine(const std::string& configFilePath);	// Æô¶¯ÒýÇæ
 
 	void ShutdownEngine();
 

@@ -43,9 +43,9 @@ private:
 
 	std::shared_ptr<RHI> m_pRHI;	// 渲染硬件接口
 
-	std::shared_ptr<RenderCamera> m_renderCamera;
+	std::shared_ptr<RenderCamera> m_renderCamera;	// 渲染相机
 
-	std::shared_ptr<RenderScene> m_renderScene;
+	std::shared_ptr<RenderScene> m_renderScene;	// 渲染场景
 
 	std::shared_ptr<RenderResourceBase> m_renderResource;
 

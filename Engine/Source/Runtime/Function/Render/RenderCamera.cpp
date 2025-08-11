@@ -62,7 +62,7 @@ void RenderCamera::Zoom(float offset)
 void RenderCamera::LookAt(const Vector3& position, const Vector3& target, const Vector3& up)
 {
 	m_position = position;	// 设置相机位置
-	
+
 	// 模型旋转
 	// 将向量映射到相机空间（x, y, z）
 	Vector3 forward = (target - position).normalisedCopy();	// 计算前方向, 相机前方向
@@ -71,7 +71,7 @@ void RenderCamera::LookAt(const Vector3& position, const Vector3& target, const 
 	Vector3 right = forward.crossProduct(up.normalisedCopy()).normalisedCopy();	// 计算右方向
 	Vector3 orthogonalUp = right.crossProduct(forward);	// 计算正交上方向
 
-	Quaternion upRotation = (m_rotation * orthogonalUp).getRotationTo(s_Z);	// 计算上方向旋转
+	Quaternion upRotation = (m_rotation * orthogonalUp).getRotationTo(s_Z);	// 计算Yaw旋转
 
 	m_rotation = Quaternion(upRotation) * m_rotation;
 
