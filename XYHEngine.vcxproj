@@ -36,6 +36,8 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanUtil.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanVMA.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderCamera.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderPass.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderPassBase.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderPipelineBase.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderResource.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderResourceBase.cpp" />
@@ -43,6 +45,7 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderSwapContext.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderSystem.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\WindowSystem.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Resource\AssetManager.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Resource\ConfigManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -76,6 +79,8 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderEntity.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderGuidAllocator.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderObject.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderPass.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderPassBase.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderPipelineBase.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderResource.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderResourceBase.h" />
@@ -84,6 +89,7 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderSystem.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderType.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\WindowSystem.h" />
+    <ClInclude Include="Engine\Source\Runtime\Resource\AssetManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Resource\ConfigManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Data\CameraConfig.h" />
     <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Global\GlobalRendering.h" />

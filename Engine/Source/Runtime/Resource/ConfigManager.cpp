@@ -7,7 +7,7 @@ void ConfigManager::Initialize(const std::filesystem::path& configFilePath)
 {
     // 读取配置文件的路径
     std::ifstream configFile(configFilePath);
-    std::string   configLine;
+    std::string configLine;
     while (std::getline(configFile, configLine))
     {
         size_t seperate_pos = configLine.find_first_of('=');

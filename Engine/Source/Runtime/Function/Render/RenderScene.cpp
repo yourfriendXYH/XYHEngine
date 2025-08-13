@@ -70,11 +70,11 @@ void RenderScene::DeleteEntityByGObjectID(GObjectID goId)
 	{
 		for (auto it = m_renderEntities.begin(); it != m_renderEntities.end(); it++)
 		{
-			//if (it->m_instanceId == findGUID)
-			//{
-			//	m_renderEntities.erase(it);
-			//	break;
-			//}
+			if (it->m_instanceId == findGUID)
+			{
+				m_renderEntities.erase(it);
+				break;
+			}
 		}
 	}
 }

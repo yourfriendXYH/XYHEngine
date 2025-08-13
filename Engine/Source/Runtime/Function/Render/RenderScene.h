@@ -13,7 +13,7 @@ NAMESPACE_XYH_BEGIN
 class RenderResource;
 class RenderCamera;
 
-class RenderScene
+class RenderScene	// 渲染场景
 {
 public:
 	void Clear();	// 清除场景数据
@@ -47,7 +47,6 @@ public:
 	std::vector<ST_RenderMeshNode> m_pointLightsVisibleMeshNodes;	// 点光源可见网格节点列表
 	std::vector<ST_RenderMeshNode> m_mainCameraVisibleMeshNodes;	// 主摄像机可见网格节点列表
 	ST_RenderAxisNode m_axisNode;	// 坐标轴节点
-
 
 
 private:

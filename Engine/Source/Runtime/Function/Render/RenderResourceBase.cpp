@@ -1,9 +1,13 @@
 #include "RenderResourceBase.h"
+#include <Runtime/Function/GlobalContext.h>
+#include <Runtime/Resource/AssetManager.h>
 
 NAMESPACE_XYH_BEGIN
 
 std::shared_ptr<TextureData> RenderResourceBase::LoadTextureHDR(std::string file, int desiredChannels)
 {
+	// std::shared_ptr<AssetManager> asset_manager = g_runtimeGlobalContext.m_assetManager;
+
 	return std::shared_ptr<TextureData>();
 }
 

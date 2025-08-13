@@ -138,6 +138,15 @@
     <ClCompile Include="Engine\Source\Runtime\Core\Math\Vector4.cpp">
       <Filter>Engine\Source\Runtime\Core\Math</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Resource\AssetManager.cpp">
+      <Filter>Engine\Source\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderPass.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderPassBase.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Runtime\Engine.h">
@@ -247,6 +256,30 @@
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Core\Math\MathHeaders.h">
       <Filter>Engine\Source\Runtime\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Framework\Object\ObjectIdAllocator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Light.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderCommon.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderGuidAllocator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderObject.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Resource\AssetManager.h">
+      <Filter>Engine\Source\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderPass.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderPassBase.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

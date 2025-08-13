@@ -31,14 +31,14 @@ public:
 	virtual void UpdatePerFrameBuffer(std::shared_ptr<RenderScene> render_scene, std::shared_ptr<RenderCamera> camera) = 0; // 更新每帧缓冲区
 
     // TODO: data caching
-    std::shared_ptr<TextureData> LoadTextureHDR(std::string file, int desiredChannels = 4);
-    std::shared_ptr<TextureData> LoadTexture(std::string file, bool isSrgb = false);
-    ST_RenderMeshData LoadMeshData(const ST_MeshSourceDesc& source, AxisAlignedBox& boundingBox);
-    ST_RenderMaterialData LoadMaterialData(const ST_MaterialSourceDesc& source);
-    AxisAlignedBox GetCachedBoudingBox(const ST_MeshSourceDesc& source) const;
+	std::shared_ptr<TextureData> LoadTextureHDR(std::string file, int desiredChannels = 4);	// 加载HDR纹理数据
+	std::shared_ptr<TextureData> LoadTexture(std::string file, bool isSrgb = false);	// 加载纹理数据
+	ST_RenderMeshData LoadMeshData(const ST_MeshSourceDesc& source, AxisAlignedBox& boundingBox);	// 加载网格数据
+	ST_RenderMaterialData LoadMaterialData(const ST_MaterialSourceDesc& source);	// 加载材质数据
+	AxisAlignedBox GetCachedBoudingBox(const ST_MeshSourceDesc& source) const;	// 获取缓存的边界盒
 
 private:
-    ST_StaticMeshData LoadStaticMesh(std::string meshFile, AxisAlignedBox& boundingBox);
+	ST_StaticMeshData LoadStaticMesh(std::string meshFile, AxisAlignedBox& boundingBox);	// 加载静态网格数据
 
 private:
 	std::unordered_map<ST_MeshSourceDesc, AxisAlignedBox> m_boundingBoxCacheMap;	// 网格边界盒缓存映射

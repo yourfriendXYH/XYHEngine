@@ -5,6 +5,7 @@
 #include "Interface/Vulkan/VulkanRHI.h"
 #include "RenderResource.h"
 #include "RenderCamera.h"
+#include "RenderScene.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -43,6 +44,12 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 	m_renderCamera->m_zFar = 1000.0f;	// 设置远裁剪面
 	m_renderCamera->m_zNear = 0.1f;		// 设置近裁剪面
 	m_renderCamera->SetAspectRatio(1280.0f / 768.0f);	// 设置宽高比
+
+	m_renderScene = std::make_shared<RenderScene>();	// 创建渲染场景
+	m_renderScene->m_ambientLight = { Vector3(0.1f, 0.1f, 0.1f) };	// 设置环境光颜色
+	m_renderScene->m_directionalLight.m_direction = Vector3(-1.0f, -1.0f, -1.0f).normalisedCopy();	// 设置直射光方向
+	m_renderScene->m_directionalLight.m_color = Vector3(1.0f, 1.0f, 1.0f);	// 设置直射光颜色
+	m_renderScene->SetVisibleNodesReference();
 
 }
 
