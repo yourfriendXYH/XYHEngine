@@ -1,6 +1,7 @@
 #include "RenderScene.h"
 #include "RenderResource.h"
 #include "RenderCamera.h"
+#include "RenderPass.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -20,6 +21,10 @@ void RenderScene::UpdateVisibleObjects(std::shared_ptr<RenderResource> renderRes
 
 void RenderScene::SetVisibleNodesReference()
 {
+	RenderPass::s_visibleNodes.m_pDirectionalLightVisibleMeshNodes = &m_directionalLightVisibleMeshNodes;
+	RenderPass::s_visibleNodes.m_pPointLightsVisibleMeshNodes = &m_pointLightsVisibleMeshNodes;
+	RenderPass::s_visibleNodes.m_pMainCameraVisibleMeshNodes = &m_mainCameraVisibleMeshNodes;
+	RenderPass::s_visibleNodes.m_pAxisNode = &m_axisNode;
 }
 
 GuidAllocator<ST_GameObjectPartId>& RenderScene::GetInstanceIdAllocator()

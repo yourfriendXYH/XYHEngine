@@ -48,7 +48,6 @@ public:
 	std::vector<ST_RenderMeshNode> m_mainCameraVisibleMeshNodes;	// 主摄像机可见网格节点列表
 	ST_RenderAxisNode m_axisNode;	// 坐标轴节点
 
-
 private:
 	void UpdateVisibleObjectsDirectionalLight(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera);	// 更新直射光可见对象
 	void UpdateVisibleObjectsPointLight(std::shared_ptr<RenderResource> render_resource);	// 更新点光源可见对象
