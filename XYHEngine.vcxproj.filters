@@ -61,6 +61,9 @@
     <Filter Include="Engine\Source\Runtime\Resource\ResourceType\Data">
       <UniqueIdentifier>{a9fee491-ea44-4caf-b440-29620201c760}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Source\Runtime\Function\Render\Passes">
+      <UniqueIdentifier>{69fae21b-972c-4e40-b77e-b1fc98f87feb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Source\main.cpp">
@@ -146,6 +149,39 @@
     </ClCompile>
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderPassBase.cpp">
       <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderPipeline.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\ColorGradingPass.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\CombineUIPass.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\DirectionalLightPass.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\FXAAPass.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\MainCameraPass.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\ParticlePass.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\PickPass.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\PointLightPass.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\ToneMappingPass.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\UIPass.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -280,6 +316,39 @@
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderPassBase.h">
       <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderPipeline.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\ColorGradingPass.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\CombineUIPass.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\DirectionalLightPass.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\FXAAPass.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\MainCameraPass.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\ParticlePass.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\PickPass.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\PointLightPass.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\ToneMappingPass.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\UIPass.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
