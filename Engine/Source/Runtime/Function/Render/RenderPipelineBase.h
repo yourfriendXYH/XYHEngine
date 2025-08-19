@@ -11,7 +11,7 @@ class RHI;
 // 渲染管线初始化信息
 struct RenderPipelineInitInfo
 {
-	bool m_enableFxaa = false;	// 是否启用FXAA, FXAA 是一种高效的屏幕空间抗锯齿算法，能够在性能开销较小的情况下提升画面质量
+	bool m_enableFXAA = false;	// 是否启用FXAA, FXAA 是一种高效的屏幕空间抗锯齿算法，能够在性能开销较小的情况下提升画面质量
 	std::shared_ptr<RenderResourceBase> m_renderResource = nullptr;	// 渲染资源
 };
 

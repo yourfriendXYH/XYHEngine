@@ -7,6 +7,7 @@ NAMESPACE_XYH_BEGIN
 class DirectionalLightShadowPass : public RenderPass
 {
 public:
+	void PostInitialize() override final;
 
 private:
 

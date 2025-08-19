@@ -7,6 +7,7 @@ NAMESPACE_XYH_BEGIN
 class PointLightShadowPass : public RenderPass
 {
 public:
+	void PostInitialize() override final;
 
 private:
 

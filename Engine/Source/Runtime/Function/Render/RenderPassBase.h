@@ -21,7 +21,7 @@ class RenderPassBase
 public:
     virtual void Initialize(const ST_RenderPassInitInfo* initInfo) = 0;
 	virtual void PostInitialize();  // 后初始化
-	virtual void SetCommonInfo(ST_RenderPassCommonInfo commonInfo);    // 设置通用信息
+	virtual void SetCommonInfo(const ST_RenderPassCommonInfo& commonInfo);    // 设置通用信息
 	virtual void PreparePassData(std::shared_ptr<RenderResourceBase> renderResource);	// 准备渲染通道数据
     //virtual void initializeUIRenderBackend(WindowUI* window_ui);
 
