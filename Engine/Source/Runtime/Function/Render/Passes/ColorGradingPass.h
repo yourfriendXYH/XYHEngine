@@ -4,7 +4,12 @@
 
 NAMESPACE_XYH_BEGIN
 
-// 色调映射渲染通道
+struct ST_ColorGradingPassInitInfo : public ST_RenderPassInitInfo
+{
+
+};
+
+// 色彩分级后处理
 class ColorGradingPass : public RenderPass
 {
 public:

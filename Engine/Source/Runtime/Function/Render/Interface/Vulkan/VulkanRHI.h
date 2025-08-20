@@ -331,6 +331,7 @@ public:
 	RHICommandPool* m_rhiCommandPool;
 	// 其他命令池
 	static uint8_t const s_maxFramesInFlight{ 3 };	// 最大帧数
+	uint8_t m_currentFrameIndex = 0u;	// 当前帧索引
 	VkCommandPool m_commandPools[s_maxFramesInFlight];	// 其他命令池
 	// 3个临时命令缓冲区
 	VkCommandBuffer m_vkCommandBuffers[s_maxFramesInFlight];	// 命令缓冲区列表
@@ -351,6 +352,7 @@ public:
 	ERHIFormat m_swapchainImageFormat = RHI_FORMAT_UNDEFINED;	// Vulkan交换链图像格式
 	ST_RHIExtent2D m_swapchainExtent;	// Vulkan交换链宽高
 	std::vector<RHIImageView*> m_swapchainImageViews;	// Vulkan交换链图像视图
+	uint32_t m_currentSwapchainImageIndex;
 
 	RHIImage* m_depthImage;	// 深度图像
 	VkDeviceMemory m_depthImageMemory = nullptr;	// 深度图像内存

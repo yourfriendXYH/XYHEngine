@@ -15,6 +15,12 @@ class ParticlePass : public RenderPass
 public:
 	void Initialize(const ST_RenderPassInitInfo* initInfo) override final;
 
+	void SetRenderCommandBufferHandle(RHICommandBuffer* commandBuffer);
+
+	void CopyNormalAndDepthImage();
+
+	void Simulate();
+
 private:
 
 };

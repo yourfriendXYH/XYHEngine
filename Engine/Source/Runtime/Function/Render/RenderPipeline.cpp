@@ -9,6 +9,8 @@
 #include "Passes/PickPass.h"
 #include "Passes/FXAAPass.h"
 #include "Passes/ParticlePass.h"
+#include "Interface/Vulkan/VulkanRHI.h"
+#include "RenderResource.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -47,7 +49,7 @@ void RenderPipeline::Initialize(RenderPipelineInitInfo initInfo)
 	std::shared_ptr<ParticlePass> pParticlePass = std::static_pointer_cast<ParticlePass>(m_pParticlePass);
 
 	ST_ParticlePassInitInfo particlePassInitInfo;
-
+	//particle_init_info.m_particle_manager = g_runtime_global_context.m_particle_manager;
 	pParticlePass->Initialize(&particlePassInitInfo);	// 初始化粒子渲染通道
 
 	// 两种阴影的ImageView
@@ -68,23 +70,134 @@ void RenderPipeline::Initialize(RenderPipelineInitInfo initInfo)
 	//tone_mapping_init_info.render_pass = _main_camera_pass->getRenderPass();
 	//tone_mapping_init_info.input_attachment = _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd];
 	m_pToneMappingPass->Initialize(&toneMappingInitInfo);	// 初始化色调映射渲染通道
+
+	ST_ColorGradingPassInitInfo colorGradingInitInfo;
+	//color_grading_init_info.render_pass = _main_camera_pass->getRenderPass();
+	//color_grading_init_info.input_attachment = _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_backup_buffer_even];
+	m_pColorGradingPass->Initialize(&colorGradingInitInfo);	// 初始化色彩分级渲染通道
+
+	ST_UIPassInitInfo uiPassInitInfo;
+	//ui_init_info.render_pass = _main_camera_pass->getRenderPass();
+	m_pUIPass->Initialize(&uiPassInitInfo);	// 初始化UI渲染通道
+
+	ST_CombineUIPassInitInfo combineUIPassInitInfo;
+	//combine_ui_init_info.render_pass = _main_camera_pass->getRenderPass();
+	//combine_ui_init_info.scene_input_attachment = _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd];
+	//combine_ui_init_info.ui_input_attachment =_main_camera_pass->getFramebufferImageViews()[_main_camera_pass_backup_buffer_even];
+	m_pCombineUIPass->Initialize(&combineUIPassInitInfo);	// 初始化合并UI渲染通道
+
+	ST_PickPassInitInfo pickPassInitInfo;
+	//pick_init_info.per_mesh_layout = descriptor_layouts[MainCameraPass::LayoutType::_per_mesh];
+	m_pPickPass->Initialize(&pickPassInitInfo);	// 初始化拾取渲染通道
+
+	ST_FXAAPassInitInfo fxaaPassInitInfo;
+	//fxaa_init_info.render_pass = _main_camera_pass->getRenderPass();
+	//fxaa_init_info.input_attachment = _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_post_process_buffer_odd];
+	m_pFxaaPass->Initialize(&fxaaPassInitInfo);	// 初始化FXAA渲染通道
 }
 
 void RenderPipeline::ForwardRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource)
 {
+	VulkanRHI* pVulkanRHI = static_cast<VulkanRHI*>(pRHI.get());
+	RenderResource* pVulkanResource = static_cast<RenderResource*>(pRenderResource.get());
+
+	pVulkanResource->ResetRingBufferOffset(pVulkanRHI->GetCurrentFrameIndex());	// 重置环形缓冲区偏移
+
+	// ？？？
+	pVulkanRHI->WaitForFences();
+	pVulkanRHI->ResetCommandPool();
+
+	bool recreateSwapchain = pVulkanRHI->PrepareBeforePass(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// 在渲染通道更新后重建交换链???
+	if (recreateSwapchain)
+		return;
+
+	// 绘制阴影
+	static_cast<DirectionalLightShadowPass*>(m_pDirectionalLightPass.get())->Draw();
+	static_cast<PointLightShadowPass*>(m_pPointLightShadowPass.get())->Draw();
+
+	ColorGradingPass& colorGradingPass = *(static_cast<ColorGradingPass*>(m_pColorGradingPass.get()));
+	FXAAPass& fxaaPass = *(static_cast<FXAAPass*>(m_pFxaaPass.get()));
+	ToneMappingPass& toneMappingPass = *(static_cast<ToneMappingPass*>(m_pToneMappingPass.get()));
+	UIPass& uiPass = *(static_cast<UIPass*>(m_pUIPass.get()));
+	CombineUIPass& combineUIPass = *(static_cast<CombineUIPass*>(m_pCombineUIPass.get()));
+	ParticlePass& particlePass = *(static_cast<ParticlePass*>(m_pParticlePass.get()));
+
+	MainCameraPass* pMainCameraPass = static_cast<MainCameraPass*>(m_pMainCameraPass.get());
+	ParticlePass* pParticlePassPtr = static_cast<ParticlePass*>(m_pParticlePass.get());
+
+	// ???
+	pParticlePassPtr->SetRenderCommandBufferHandle(pMainCameraPass->GetRenderCommandBuffer());
+
+	// 前向渲染
+	pMainCameraPass->DrawForward(colorGradingPass, fxaaPass, toneMappingPass, uiPass, combineUIPass, particlePass, pVulkanRHI->m_currentSwapchainImageIndex);
+
+	// 渲染测试
+	//g_runtime_global_context.m_debugdraw_manager->draw(vulkan_rhi->m_current_swapchain_image_index);
+
+	pVulkanRHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// 提交渲染
+	pParticlePassPtr->CopyNormalAndDepthImage();	// 复制法线和深度图像
+	pParticlePassPtr->Simulate();	// ???
 }
 
 void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource)
 {
+	VulkanRHI* pVulkanRHI = static_cast<VulkanRHI*>(pRHI.get());
+	RenderResource* pVulkanResource = static_cast<RenderResource*>(pRenderResource.get());
+
+	pVulkanResource->ResetRingBufferOffset(pVulkanRHI->GetCurrentFrameIndex());	// 重置环形缓冲区偏移
+
+	// ？？？
+	pVulkanRHI->WaitForFences();
+	pVulkanRHI->ResetCommandPool();
+
+	bool recreateSwapchain = pVulkanRHI->PrepareBeforePass(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// 在渲染通道更新后重建交换链???
+	if (recreateSwapchain)
+		return;
+
+	// 绘制阴影
+	static_cast<DirectionalLightShadowPass*>(m_pDirectionalLightPass.get())->Draw();
+	static_cast<PointLightShadowPass*>(m_pPointLightShadowPass.get())->Draw();
+
+	ColorGradingPass& colorGradingPass = *(static_cast<ColorGradingPass*>(m_pColorGradingPass.get()));
+	FXAAPass& fxaaPass = *(static_cast<FXAAPass*>(m_pFxaaPass.get()));
+	ToneMappingPass& toneMappingPass = *(static_cast<ToneMappingPass*>(m_pToneMappingPass.get()));
+	UIPass& uiPass = *(static_cast<UIPass*>(m_pUIPass.get()));
+	CombineUIPass& combineUIPass = *(static_cast<CombineUIPass*>(m_pCombineUIPass.get()));
+	ParticlePass& particlePass = *(static_cast<ParticlePass*>(m_pParticlePass.get()));
+
+	MainCameraPass* pMainCameraPass = static_cast<MainCameraPass*>(m_pMainCameraPass.get());
+	ParticlePass* pParticlePassPtr = static_cast<ParticlePass*>(m_pParticlePass.get());
+
+	// ???
+	pParticlePassPtr->SetRenderCommandBufferHandle(pMainCameraPass->GetRenderCommandBuffer());
+
+	// 延迟渲染
+	pMainCameraPass->Draw(colorGradingPass, fxaaPass, toneMappingPass, uiPass, combineUIPass, particlePass, pVulkanRHI->m_currentSwapchainImageIndex);
+
+	// 渲染测试
+	//g_runtime_global_context.m_debugdraw_manager->draw(vulkan_rhi->m_current_swapchain_image_index);
+
+	pVulkanRHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// 提交渲染
+	pParticlePassPtr->CopyNormalAndDepthImage();	// 复制法线和深度图像
+	pParticlePassPtr->Simulate();	// ???
+}
+
+void RenderPipeline::PassUpdateAfterRecreateSwapchain()
+{
+	MainCameraPass& mainCameraPass = *(static_cast<MainCameraPass*>(m_pMainCameraPass.get()));
+	ColorGradingPass& colorGradingPass = *(static_cast<ColorGradingPass*>(m_pColorGradingPass.get()));
+	FXAAPass& fxaaPass = *(static_cast<FXAAPass*>(m_pFxaaPass.get()));
+	ToneMappingPass& toneMappingPass = *(static_cast<ToneMappingPass*>(m_pToneMappingPass.get()));
+	CombineUIPass& combineUIPass = *(static_cast<CombineUIPass*>(m_pCombineUIPass.get()));
+	PickPass& pickPass = *(static_cast<PickPass*>(m_pPickPass.get()));
+	ParticlePass& particlePass = *(static_cast<ParticlePass*>(m_pParticlePass.get()));
+
+	pickPass.RecreateFramebuffer();	// 重建拾取渲染通道的帧缓冲
 }
 
 uint32_t RenderPipeline::GetGuidOfPickedMesh(const Vector2& pickedUV)
 {
 	return 0;
-}
-
-void RenderPipeline::PassUpdateAfterRecreateSwapchain()
-{
 }
 
 void RenderPipeline::SetAxisVisibleState(bool state)

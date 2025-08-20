@@ -4,6 +4,11 @@
 
 NAMESPACE_XYH_BEGIN
 
+struct ST_CombineUIPassInitInfo : public ST_RenderPassInitInfo
+{
+
+};
+
 // 色调映射渲染通道
 class CombineUIPass : public RenderPass
 {

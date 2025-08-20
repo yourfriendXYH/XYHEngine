@@ -517,7 +517,7 @@ uint8_t VulkanRHI::GetMaxFramesInFlight() const
 
 uint8_t VulkanRHI::GetCurrentFrameIndex() const
 {
-	return 0;
+	return m_currentFrameIndex;
 }
 
 void VulkanRHI::SetCurrentFrameIndex(uint8_t index)

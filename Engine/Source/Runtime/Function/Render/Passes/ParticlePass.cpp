@@ -9,5 +9,17 @@ void ParticlePass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 }
 
+void ParticlePass::SetRenderCommandBufferHandle(RHICommandBuffer* commandBuffer)
+{
+}
+
+void ParticlePass::CopyNormalAndDepthImage()
+{
+}
+
+void ParticlePass::Simulate()
+{
+}
+
 NAMESPACE_XYH_END
 

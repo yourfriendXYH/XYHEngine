@@ -13,9 +13,10 @@ public:
 
 	virtual void DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource) override final;	// 延迟渲染
 
-	virtual uint32_t GetGuidOfPickedMesh(const Vector2& pickedUV) override final;	// 获取拾取的网格的GUID
-
 	void PassUpdateAfterRecreateSwapchain();	// 交换链重建后更新渲染通道
+
+	// 屏幕空间选择
+	virtual uint32_t GetGuidOfPickedMesh(const Vector2& pickedUV) override final;	// 获取拾取的网格的GUID
 
 	void SetAxisVisibleState(bool state);	// 设置坐标轴可见状态
 

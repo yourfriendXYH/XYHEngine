@@ -4,6 +4,11 @@
 
 NAMESPACE_XYH_BEGIN
 
+struct ST_UIPassInitInfo : public ST_RenderPassInitInfo
+{
+
+};
+
 // 色调映射渲染通道
 class UIPass : public RenderPass
 {

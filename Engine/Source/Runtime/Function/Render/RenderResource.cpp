@@ -26,6 +26,12 @@ void RenderResource::UpdatePerFrameBuffer(std::shared_ptr<RenderScene> render_sc
 {
 }
 
+void RenderResource::ResetRingBufferOffset(uint8_t currentFrameIndex)
+{
+	//m_global_render_resource._storage_buffer._global_upload_ringbuffers_end[current_frame_index] =
+	//	m_global_render_resource._storage_buffer._global_upload_ringbuffers_begin[current_frame_index];
+}
+
 
 NAMESPACE_XYH_END
 

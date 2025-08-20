@@ -19,6 +19,8 @@ public:
 
 	virtual void UpdatePerFrameBuffer(std::shared_ptr<RenderScene> render_scene, std::shared_ptr<RenderCamera> camera) override final; // 更新每帧缓冲区
 
+	void ResetRingBufferOffset(uint8_t currentFrameIndex);	// 重置环形缓冲区偏移
+
 private:
 
 };
