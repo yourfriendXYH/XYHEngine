@@ -197,15 +197,22 @@ void RenderPipeline::PassUpdateAfterRecreateSwapchain()
 
 uint32_t RenderPipeline::GetGuidOfPickedMesh(const Vector2& pickedUV)
 {
-	return 0;
+	// 屏幕空间拾取
+	// 根据像素点获取网格的GUID
+	PickPass& pickPass = *(static_cast<PickPass*>(m_pPickPass.get()));
+	return pickPass.Pick(pickedUV);
 }
 
 void RenderPipeline::SetAxisVisibleState(bool state)
 {
+	MainCameraPass& mainCameraPass = *(static_cast<MainCameraPass*>(m_pMainCameraPass.get()));
+	mainCameraPass.m_isShowAxis = state;	// 设置是否显示坐标轴
 }
 
 void RenderPipeline::SetSelectedAxis(size_t selectedAxis)
 {
+	MainCameraPass& mainCameraPass = *(static_cast<MainCameraPass*>(m_pMainCameraPass.get()));
+	mainCameraPass.m_selectedAxis = selectedAxis;	// 设置选中的坐标轴
 }
 
 NAMESPACE_XYH_END

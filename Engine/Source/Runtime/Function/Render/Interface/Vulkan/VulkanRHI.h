@@ -361,6 +361,8 @@ public:
 	// 资源分配器使用 VMA library
 	VmaAllocator m_assetsAllocator;
 
+	VkFence m_isFrameInFlightFences[s_maxFramesInFlight];	// 帧在执行中的栅栏
+
 	// Vulkan函数指针
 	PFN_vkCmdBeginDebugUtilsLabelEXT _vkCmdBeginDebugUtilsLabelEXT;	// 开始调试工具标签
 	PFN_vkCmdEndDebugUtilsLabelEXT   _vkCmdEndDebugUtilsLabelEXT;	// 结束调试工具标签

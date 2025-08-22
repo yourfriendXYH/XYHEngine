@@ -450,10 +450,20 @@ bool VulkanRHI::QueueWaitIdle(RHIQueue* queue)
 
 void VulkanRHI::ResetCommandPool()
 {
+	VkResult resResetCommandPool = _vkResetCommandPool(m_device, m_commandPools[m_currentFrameIndex], 0);	// ÷ÿ÷√√¸¡Ó≥ÿ
+	if (VK_SUCCESS != resResetCommandPool)
+	{
+		LOG_ERROR("failed to synchronize");
+	}
 }
 
 void VulkanRHI::WaitForFences()
 {
+	VkResult resWaitForFences = _vkWaitForFences(m_device, 1, &m_isFrameInFlightFences[m_currentFrameIndex], VK_TRUE, UINT64_MAX);
+	if (VK_SUCCESS != resWaitForFences)
+	{
+		LOG_ERROR("failed to synchronize!");
+	}
 }
 
 void VulkanRHI::GetPhysicalDeviceProperties(ST_RHIPhysicalDeviceProperties* pProperties)

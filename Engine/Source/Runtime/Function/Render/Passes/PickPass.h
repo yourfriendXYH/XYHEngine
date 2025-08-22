@@ -16,6 +16,8 @@ public:
 
 	void RecreateFramebuffer();
 
+	uint32_t Pick(const Vector2& pickedUV);
+
 private:
 
 };

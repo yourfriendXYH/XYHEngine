@@ -29,9 +29,14 @@ public:
 	void SetParticlePass(std::shared_ptr<ParticlePass> pParticlePass);
 
 	RHICommandBuffer* GetRenderCommandBuffer();
+public:
+	bool m_isShowAxis = false;  // 是否显示坐标轴
+
+	size_t m_selectedAxis = 3u;  // 选中的坐标轴
 
 private:
 	std::shared_ptr<ParticlePass> m_pParticlePass;
+
 };
 
 NAMESPACE_XYH_END
