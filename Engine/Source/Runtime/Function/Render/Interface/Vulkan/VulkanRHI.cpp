@@ -196,7 +196,7 @@ void VulkanRHI::CreateFramebufferImageAndViews()
 		m_depthImage = new VulkanImage();
 	}
 	// 创建深度图像
-	VulkanUtil::CreateImage(m_physicalDevice, 
+	VulkanUtil::CreateImage(m_physicalDevice,
 		m_device,
 		m_swapchainExtent.m_width,
 		m_swapchainExtent.m_height,
@@ -545,6 +545,74 @@ void VulkanRHI::EndSingleTimeCommands(RHICommandBuffer* command_buffer)
 
 bool VulkanRHI::PrepareBeforePass(std::function<void()> passUpdateAfterRecreateSwapchain)
 {
+	// 简单来说，它的工作就是：“GPU，请给我下一张可以画的‘画布’的编号。”
+	VkResult acquireImageResult = vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_imageAvailableForRenderSemaphores[m_currentFrameIndex], VK_NULL_HANDLE, &m_currentSwapchainImageIndex);
+
+	if (VK_ERROR_OUT_OF_DATE_KHR == acquireImageResult)	// 交换链已经过期，无法再用于渲染（通常发生在窗口调整大小后）。必须重新创建交换链后才能继续。
+	{
+		RecreateSwapChain();
+		passUpdateAfterRecreateSwapchain();
+	}
+	else if (VK_SUBOPTIMAL_KHR == acquireImageResult)
+	{
+		// 获取到的图像是可用的，但交换链的表面属性（如窗口大小）不再与显示引擎完全匹配。应用程序可以继续使用这个图像进行渲染，但应该重新创建交换链以获得最佳性能。
+
+		RecreateSwapChain();
+		passUpdateAfterRecreateSwapchain();
+
+		// NULL 提交等待信号量
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT };	// 等待阶段
+		VkSubmitInfo submitInfo = {};	// 提交信息
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.waitSemaphoreCount = 1;	// 等待信号量数量
+		submitInfo.pWaitSemaphores = &m_imageAvailableForRenderSemaphores[m_currentFrameIndex];
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 0;
+		submitInfo.pCommandBuffers = NULL;
+		submitInfo.signalSemaphoreCount = 0;
+		submitInfo.pSignalSemaphores = NULL;
+
+		// 变为 unsignaled
+		VkResult resResetFences = _vkResetFences(m_device, 1, &m_isFrameInFlightFences[m_currentFrameIndex]);
+		if (VK_SUCCESS != resResetFences)
+		{
+			LOG_ERROR("_vkResetFences failed!");
+			return false;
+		}
+
+		VkResult resQueueSubmit = vkQueueSubmit(((VulkanQueue*)m_graphicsQueue)->GetResource(), 1, &submitInfo, m_isFrameInFlightFences[m_currentFrameIndex]);
+		if (VK_SUCCESS != resQueueSubmit)
+		{
+			LOG_ERROR("vkQueueSubmit failed!");
+			return false;
+		}
+
+		m_currentFrameIndex = (m_currentFrameIndex + 1) % s_maxFramesInFlight;
+		return RHI_SUCCESS;
+	}
+	else
+	{
+		if (VK_SUCCESS != acquireImageResult)
+		{
+			LOG_ERROR("vkAcquireNextImageKHR failed!");
+			return false;
+		}
+	}
+
+	// begin command buffer
+	VkCommandBufferBeginInfo commandBufferBeginInfo{};	// 命令缓冲区开始信息
+	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	commandBufferBeginInfo.flags = 0;
+	commandBufferBeginInfo.pInheritanceInfo = nullptr;	// 继承信息
+
+	// 开始记录命令
+	VkResult resBeginCommandBuffer = _vkBeginCommandBuffer(m_vkCommandBuffers[m_currentFrameIndex], &commandBufferBeginInfo);
+	if (VK_SUCCESS != resBeginCommandBuffer)
+	{
+		LOG_ERROR("_vkBeginCommandBuffer failed!");
+		return false;
+	}
+
 	return false;
 }
 
@@ -776,7 +844,7 @@ void VulkanRHI::InitializePhysicalDevice()
 		// 遍历排序后的物理设备列表，选择第一个符合要求的设备
 		for (const auto& device : rankedPhysicalDevices)
 		{
-			if (IsDeviceSuitable(device.second)) 
+			if (IsDeviceSuitable(device.second))
 			{
 				m_physicalDevice = device.second;
 				break;
@@ -794,7 +862,7 @@ void VulkanRHI::CreateLogicalDevice()
 	m_queueIndices = FindQueueFamilies(m_physicalDevice);	// 查找物理设备的队列族
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;	// 队列创建信息
-	std::set<uint32_t> queueFamilies = { m_queueIndices.m_graphicsFamily.value(), m_queueIndices.m_presentFamily.value(), m_queueIndices.m_computeFamily.value()};
+	std::set<uint32_t> queueFamilies = { m_queueIndices.m_graphicsFamily.value(), m_queueIndices.m_presentFamily.value(), m_queueIndices.m_computeFamily.value() };
 
 	float queuePriority = 1.0f;	// 队列优先级
 	for (uint32_t queueFamily : queueFamilies)

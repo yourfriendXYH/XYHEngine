@@ -146,7 +146,6 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 
 	pVulkanResource->ResetRingBufferOffset(pVulkanRHI->GetCurrentFrameIndex());	// 重置环形缓冲区偏移
 
-	// ？？？
 	pVulkanRHI->WaitForFences();
 	pVulkanRHI->ResetCommandPool();
 

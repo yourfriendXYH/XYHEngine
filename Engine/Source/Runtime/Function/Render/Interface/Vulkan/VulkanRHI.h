@@ -330,7 +330,7 @@ public:
 	// 默认命令池
 	RHICommandPool* m_rhiCommandPool;
 	// 其他命令池
-	static uint8_t const s_maxFramesInFlight{ 3 };	// 最大帧数
+	static uint8_t const s_maxFramesInFlight = 3u;	// 最大帧数
 	uint8_t m_currentFrameIndex = 0u;	// 当前帧索引
 	VkCommandPool m_commandPools[s_maxFramesInFlight];	// 其他命令池
 	// 3个临时命令缓冲区
@@ -360,8 +360,6 @@ public:
 
 	// 资源分配器使用 VMA library
 	VmaAllocator m_assetsAllocator;
-
-	VkFence m_isFrameInFlightFences[s_maxFramesInFlight];	// 帧在执行中的栅栏
 
 	// Vulkan函数指针
 	PFN_vkCmdBeginDebugUtilsLabelEXT _vkCmdBeginDebugUtilsLabelEXT;	// 开始调试工具标签
