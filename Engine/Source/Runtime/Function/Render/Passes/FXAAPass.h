@@ -13,6 +13,7 @@ struct ST_FXAAPassInitInfo : public ST_RenderPassInitInfo
 class FXAAPass : public RenderPass
 {
 public:
+	void UpdateAfterFramebufferRecreate(RHIImageView* inputAttachment);
 
 private:
 

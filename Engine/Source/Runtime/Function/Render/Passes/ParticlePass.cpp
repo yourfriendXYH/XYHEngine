@@ -21,5 +21,9 @@ void ParticlePass::Simulate()
 {
 }
 
+void ParticlePass::UpdateAfterFramebufferRecreate()
+{
+}
+
 NAMESPACE_XYH_END
 

@@ -13,6 +13,7 @@ struct ST_CombineUIPassInitInfo : public ST_RenderPassInitInfo
 class CombineUIPass : public RenderPass
 {
 public:
+	void UpdateAfterFramebufferRecreate(RHIImageView* sceneInputAttachment, RHIImageView* uiInputAttachment);
 
 private:
 

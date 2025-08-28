@@ -14,6 +14,7 @@ struct ST_ToneMappingPassInitInfo : ST_RenderPassInitInfo
 class ToneMappingPass : public RenderPass
 {
 public:
+    void UpdateAfterFramebufferRecreate(RHIImageView* inputAttachment);
 
 private:
 

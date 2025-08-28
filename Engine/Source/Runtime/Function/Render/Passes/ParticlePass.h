@@ -21,6 +21,8 @@ public:
 
 	void Simulate();
 
+	void UpdateAfterFramebufferRecreate();
+
 private:
 
 };

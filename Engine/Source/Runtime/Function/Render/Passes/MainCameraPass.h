@@ -18,7 +18,33 @@ struct ST_MainCameraPassInitInfp : public ST_RenderPassInitInfo
 class MainCameraPass : public RenderPass
 {
 public:
+	enum ELayoutType : uint8_t
+	{
+		_per_mesh = 0,
+		_mesh_global,
+		_mesh_per_material,
+		_skybox,
+		_axis,
+		_particle,
+		_deferred_lighting,
+		_layout_type_count
+	};
+
+	enum ERenderPipeLineType : uint8_t
+	{
+		_render_pipeline_type_mesh_gbuffer = 0,	// ÑÓ³ÙäÖÈ¾µÄGBuffer½×¶Î
+		_render_pipeline_type_deferred_lighting,	// ÑÓ³ÙäÖÈ¾µÄ¹âÕÕ¼ÆËã½×¶Î
+		_render_pipeline_type_mesh_lighting,
+		_render_pipeline_type_skybox,
+		_render_pipeline_type_axis,
+		_render_pipeline_type_particle,
+		_render_pipeline_type_count
+	};
+
+public:
 	void Initialize(const ST_RenderPassInitInfo* initInfo) override final;
+
+	void PreparePassData(std::shared_ptr<RenderResourceBase> renderResource) override final;
 
 	// Ç°ÏòäÖÈ¾
 	void DrawForward(ColorGradingPass& colorGradingPass, FXAAPass& fxaaPass, ToneMappingPass& toneMappingPass, UIPass& uiPass, CombineUIPass& combineUIPass, ParticlePass& particlePass, uint32_t currentSwapchainImageIndex);
@@ -29,6 +55,8 @@ public:
 	void SetParticlePass(std::shared_ptr<ParticlePass> pParticlePass);
 
 	RHICommandBuffer* GetRenderCommandBuffer();
+
+	void UpdateAfterFramebufferRecreate();
 public:
 	bool m_isShowAxis = false;  // ÊÇ·ñÏÔÊ¾×ø±êÖá
 

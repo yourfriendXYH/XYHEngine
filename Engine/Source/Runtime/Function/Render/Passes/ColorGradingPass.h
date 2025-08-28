@@ -13,6 +13,7 @@ struct ST_ColorGradingPassInitInfo : public ST_RenderPassInitInfo
 class ColorGradingPass : public RenderPass
 {
 public:
+	void UpdateAfterFramebufferRecreate(RHIImageView* inputAttachment);
 
 private:
 

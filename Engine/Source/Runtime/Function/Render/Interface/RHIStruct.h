@@ -129,32 +129,6 @@ struct ST_RHIMemoryBarrier
     RHIAccessFlags m_dstAccessMask;
 };
 
-struct ST_RHIClearDepthStencilValue
-{
-    float depth;
-    uint32_t stencil;
-};
-
-union UN_RHIClearColorValue
-{
-    float float32[4];
-    int32_t int32[4];
-    uint32_t uint32[4];
-};
-
-union UN_RHIClearValue
-{
-    UN_RHIClearColorValue color;
-    ST_RHIClearDepthStencilValue depthStencil;
-};
-
-struct ST_RHIClearAttachment
-{
-    RHIImageAspectFlags aspectMask;
-    uint32_t colorAttachment;
-    UN_RHIClearValue clearValue;
-};
-
 struct ST_RHIOffset2D
 {
     int32_t m_x;
@@ -213,6 +187,43 @@ struct ST_RHIViewport
     float m_height;
     float m_minDepth;
     float m_maxDepth;
+};
+
+struct ST_RHIRenderPassBeginInfo 
+{
+    ERHIStructureType m_sType;
+    const void* m_pNext;
+    RHIRenderPass* m_renderPass;
+    RHIFramebuffer* m_framebuffer;
+    ST_RHIRect2D m_renderArea;
+    uint32_t m_clearValueCount;
+    const UN_RHIClearValue* m_pClearValues;
+};
+
+struct ST_RHIClearDepthStencilValue 
+{
+    float m_depth;
+    uint32_t m_stencil;
+};
+
+union UN_RHIClearColorValue 
+{
+    float m_float32[4];
+    int32_t m_int32[4];
+    uint32_t m_uint32[4];
+};
+
+union UN_RHIClearValue 
+{
+    UN_RHIClearColorValue m_color;
+    ST_RHIClearDepthStencilValue m_depthStencil;
+};
+
+struct ST_RHIClearAttachment
+{
+    RHIImageAspectFlags m_aspectMask;
+    uint32_t m_colorAttachment;
+    UN_RHIClearValue m_clearValue;
 };
 
 struct ST_RHIDepthImageDesc
