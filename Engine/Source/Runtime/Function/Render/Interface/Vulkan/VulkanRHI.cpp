@@ -512,7 +512,13 @@ RHIQueue* VulkanRHI::GetComputeQueue() const
 
 ST_RHISwapChainDesc VulkanRHI::GetSwapchainInfo()
 {
-	return ST_RHISwapChainDesc();
+	ST_RHISwapChainDesc desc;
+	desc.m_imageFormat = m_swapchainImageFormat;
+	desc.m_extent = m_swapchainExtent;
+	desc.m_pViewport = &m_viewport;
+	desc.m_pScissor = &m_scissor;
+	desc.m_imageViews = m_swapchainImageViews;
+	return desc;
 }
 
 ST_RHIDepthImageDesc VulkanRHI::GetDepthImageInfo() const

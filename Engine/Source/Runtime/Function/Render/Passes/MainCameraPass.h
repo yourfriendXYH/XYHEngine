@@ -62,6 +62,30 @@ public:
 
 	size_t m_selectedAxis = 3u;  // 选中的坐标轴
 
+	bool m_enableFXAA = false;	// 是否启用FXAA
+
+private:
+	void SetupParticlePass();	// 设置粒子渲染通道
+	void SetupAttachments();	// 设置附件
+	void SetupRenderPass();	// 设置渲染通道
+	void SetupDescriptorSetLayout();	// 设置描述符集布局
+	void SetupPipelines();	// 设置管线
+	void SetupDescriptorSet();	// 设置描述符集
+	void SetupFramebufferDescriptorSet();	// 设置帧缓冲描述符集
+	void SetupSwapchainFramebuffers();	// 设置交换链帧缓冲
+
+	void SetupModelGlobalDescriptorSet();	// 设置模型全局描述符集
+	void SetupSkyboxDescriptorSet();	// 设置天空盒描述符集
+	void SetupAxisDescriptorSet();	// 设置坐标轴描述符集
+	void SetupParticleDescriptorSet();	// 设置粒子描述符集
+	void SetupGbufferLightingDescriptorSet();	// 设置GBuffer光照描述符集
+
+	void DrawMeshGbuffer();	// 绘制网格GBuffer
+	void DrawDeferredLighting();	// 绘制延迟光照
+	void DrawMeshLighting();	// 绘制网格光照
+	void DrawSkybox();	// 绘制天空盒
+	void DrawAxis();	// 绘制坐标轴
+
 private:
 	std::shared_ptr<ParticlePass> m_pParticlePass;
 

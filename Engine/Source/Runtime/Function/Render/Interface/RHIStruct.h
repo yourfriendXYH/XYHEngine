@@ -172,11 +172,11 @@ struct ST_SwapChainSupportDetails   // 交换链支持细节
 
 struct ST_RHISwapChainDesc
 {
-    ST_RHIExtent2D extent;
-    ERHIFormat   image_format;
-    ST_RHIViewport* viewport;
-    ST_RHIRect2D* scissor;
-    std::vector<RHIImageView*> imageViews;
+	ST_RHIExtent2D m_extent;    // 交换链的宽度和高度
+	ERHIFormat m_imageFormat;   // 交换链图像的格式
+	ST_RHIViewport* m_pViewport;    // 视口
+	ST_RHIRect2D* m_pScissor;   // 裁剪区域
+	std::vector<RHIImageView*> m_imageViews;  // 交换链图像视图
 };
 
 struct ST_RHIViewport
