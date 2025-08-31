@@ -59,9 +59,17 @@ void RenderPipeline::Initialize(RenderPipelineInitInfo initInfo)
 	//	std::static_pointer_cast<RenderPass>(m_directional_light_pass)->m_framebuffer.attachments[0].view;
 
 	ST_MainCameraPassInitInfp mainCameraPassInitInfo;
-	mainCameraPassInitInfo.m_enableFXAA = initInfo.m_enableFXAA;	// 设置是否启用FXAA
+	mainCameraPassInitInfo.m_enableFXAA = initInfo.m_enableFXAA;	// 设置是否启用FXAA, 抗锯齿
 	pMainCameraPass->SetParticlePass(pParticlePass);	// 设置粒子渲染通道
 	m_pMainCameraPass->Initialize(&mainCameraPassInitInfo);	// 初始化主摄像机渲染通道
+
+	//pParticlePass->SetupParticlePass();
+
+	//std::vector<RHIDescriptorSetLayout*> descriptor_layouts = _main_camera_pass->getDescriptorSetLayouts();
+	//std::static_pointer_cast<PointLightShadowPass>(m_point_light_shadow_pass)
+	//	->setPerMeshLayout(descriptor_layouts[MainCameraPass::LayoutType::_per_mesh]);
+	//std::static_pointer_cast<DirectionalLightShadowPass>(m_directional_light_pass)
+	//	->setPerMeshLayout(descriptor_layouts[MainCameraPass::LayoutType::_per_mesh]);
 
 	m_pPointLightShadowPass->PostInitialize();	// 后初始化点光源阴影渲染通道
 	m_pDirectionalLightPass->PostInitialize();	// 后初始化平行光渲染通道

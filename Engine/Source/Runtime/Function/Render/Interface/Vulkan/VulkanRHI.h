@@ -55,11 +55,11 @@ public:
 
 	virtual void CopyBuffer(RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, RHIDeviceSize srcOffset, RHIDeviceSize dstOffset, RHIDeviceSize size);	// 复制缓冲区
 
-	virtual void CreateImage(uint32_t image_width, uint32_t image_height, ERHIFormat format, ERHIImageTiling image_tiling, RHIImageUsageFlags image_usage_flags, RHIMemoryPropertyFlags memory_property_flags,
-		RHIImage*& image, RHIDeviceMemory*& memory, RHIImageCreateFlags image_create_flags, uint32_t array_layers, uint32_t miplevels);	// 创建图像
+	virtual void CreateImage(uint32_t imageWidth, uint32_t imageHeight, ERHIFormat format, ERHIImageTiling imageTiling, RHIImageUsageFlags imageUsageFlags, RHIMemoryPropertyFlags memoryPropertyFlags,
+		RHIImage*& image, RHIDeviceMemory*& memory, RHIImageCreateFlags imageCreateFlags, uint32_t arrayLayers, uint32_t miplevels);	// 创建图像
 
-	virtual void CreateImageView(RHIImage* image, ERHIFormat format, RHIImageAspectFlags image_aspect_flags, ERHIImageViewType view_type, uint32_t layout_count, uint32_t miplevels,
-		RHIImageView*& image_view);	// 创建图像视图
+	virtual void CreateImageView(RHIImage* image, ERHIFormat format, RHIImageAspectFlags imageAspectFlags, ERHIImageViewType viewType, uint32_t layoutCount, uint32_t miplevels,
+		RHIImageView*& imageView);	// 创建图像视图
 
 	virtual void CreateGlobalImage(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, void* texture_image_pixels,
 		ERHIFormat texture_image_format, uint32_t miplevels);	// 创建全局图像

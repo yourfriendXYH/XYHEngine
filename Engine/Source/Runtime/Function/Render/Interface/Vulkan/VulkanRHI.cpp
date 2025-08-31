@@ -196,7 +196,8 @@ void VulkanRHI::CreateFramebufferImageAndViews()
 		m_depthImage = new VulkanImage();
 	}
 	// 创建深度图像
-	VulkanUtil::CreateImage(m_physicalDevice,
+	VulkanUtil::CreateImage(
+		m_physicalDevice,
 		m_device,
 		m_swapchainExtent.m_width,
 		m_swapchainExtent.m_height,
@@ -256,12 +257,40 @@ void VulkanRHI::CopyBuffer(RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, RHIDevice
 {
 }
 
-void VulkanRHI::CreateImage(uint32_t image_width, uint32_t image_height, ERHIFormat format, ERHIImageTiling image_tiling, RHIImageUsageFlags image_usage_flags, RHIMemoryPropertyFlags memory_property_flags, RHIImage*& image, RHIDeviceMemory*& memory, RHIImageCreateFlags image_create_flags, uint32_t array_layers, uint32_t miplevels)
+void VulkanRHI::CreateImage(uint32_t imageWidth, uint32_t imageHeight, ERHIFormat format, ERHIImageTiling imageTiling, RHIImageUsageFlags imageUsageFlags, RHIMemoryPropertyFlags memoryPropertyFlags, RHIImage*& image, RHIDeviceMemory*& memory, RHIImageCreateFlags imageCreateFlags, uint32_t arrayLayers, uint32_t miplevels)
 {
+	VkImage vkImage;
+	VkDeviceMemory vkDeviceMemory;
+	// 创建并获取vulkan的图像和图像内存
+	VulkanUtil::CreateImage(
+		m_physicalDevice,
+		m_device,
+		imageWidth,
+		imageHeight,
+		(VkFormat)format,
+		(VkImageTiling)imageTiling,
+		(VkImageUsageFlags)imageUsageFlags,
+		(VkMemoryPropertyFlags)memoryPropertyFlags,
+		vkImage,
+		vkDeviceMemory,
+		(VkImageCreateFlags)imageCreateFlags,
+		arrayLayers,
+		miplevels);
+
+	image = new VulkanImage();
+	((VulkanImage*)image)->SetResource(vkImage);
+
+	memory = new VulkanDeviceMemory();
+	((VulkanDeviceMemory*)memory)->SetResource(vkDeviceMemory);
 }
 
-void VulkanRHI::CreateImageView(RHIImage* image, ERHIFormat format, RHIImageAspectFlags image_aspect_flags, ERHIImageViewType view_type, uint32_t layout_count, uint32_t miplevels, RHIImageView*& image_view)
+void VulkanRHI::CreateImageView(RHIImage* image, ERHIFormat format, RHIImageAspectFlags imageAspectFlags, ERHIImageViewType viewType, uint32_t layoutCount, uint32_t miplevels, RHIImageView*& imageView)
 {
+	imageView = new VulkanImageView();
+	VkImage vkImage = ((VulkanImage*)image)->GetResource();
+	// 创建图像视图并封装
+	VkImageView vkImageView = VulkanUtil::CreateImageView(m_device, vkImage, (VkFormat)format, imageAspectFlags, (VkImageViewType)viewType, layoutCount, miplevels);
+	((VulkanImageView*)imageView)->SetResource(vkImageView);
 }
 
 void VulkanRHI::CreateGlobalImage(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, void* texture_image_pixels, ERHIFormat texture_image_format, uint32_t miplevels)

@@ -123,22 +123,36 @@ struct ST_RHIClearDepthStencilValue;
 ////////////////////结构体定义////////////////////////
 struct ST_RHIMemoryBarrier
 {
-    ERHIStructureType m_type;
-    const void* m_pNext;
-    RHIAccessFlags m_srcAccessMask;
-    RHIAccessFlags m_dstAccessMask;
+	ERHIStructureType m_type;
+	const void* m_pNext;
+	RHIAccessFlags m_srcAccessMask;
+	RHIAccessFlags m_dstAccessMask;
 };
 
 struct ST_RHIOffset2D
 {
-    int32_t m_x;
-    int32_t m_y;
+	int32_t m_x;
+	int32_t m_y;
 };
 
 struct ST_RHIExtent2D
 {
-    uint32_t m_width;
-    uint32_t m_height;
+	uint32_t m_width;
+	uint32_t m_height;
+};
+
+// 附件描述
+struct ST_RHIAttachmentDescription
+{
+	RHIAttachmentDescriptionFlags m_flags;	// 附件描述标志
+	ERHIFormat m_format;	// 附件格式
+	ERHISampleCountFlagBits m_samples;	// 采样数
+	ERHIAttachmentLoadOp m_loadOp;	// 加载操作
+	ERHIAttachmentStoreOp m_storeOp;	// 存储操作
+	ERHIAttachmentLoadOp m_stencilLoadOp;	// 模板加载操作
+	ERHIAttachmentStoreOp m_stencilStoreOp;	// 模板存储操作
+	ERHIImageLayout m_initialLayout;	// 初始布局
+	ERHIImageLayout m_finalLayout;	// 最终布局
 };
 
 struct ST_RHIRect2D
@@ -147,11 +161,11 @@ struct ST_RHIRect2D
 	ST_RHIExtent2D m_extent;    // 矩形区域的大小
 };
 
-struct ST_RHIClearRect 
+struct ST_RHIClearRect
 {
-    ST_RHIRect2D rect;
-    uint32_t baseArrayLayer;
-    uint32_t layerCount;
+	ST_RHIRect2D rect;
+	uint32_t baseArrayLayer;
+	uint32_t layerCount;
 };
 
 struct ST_QueueFamilyIndices    // 队列族索引
@@ -160,7 +174,7 @@ struct ST_QueueFamilyIndices    // 队列族索引
 	std::optional<uint32_t> m_presentFamily;     // 呈现队列族索引
 	std::optional<uint32_t> m_computeFamily;   // 计算队列族索引
 
-    bool isComplete() { return m_graphicsFamily.has_value() && m_presentFamily.has_value() && m_computeFamily.has_value();; }
+	bool isComplete() { return m_graphicsFamily.has_value() && m_presentFamily.has_value() && m_computeFamily.has_value();; }
 };
 
 struct ST_SwapChainSupportDetails   // 交换链支持细节
@@ -179,58 +193,80 @@ struct ST_RHISwapChainDesc
 	std::vector<RHIImageView*> m_imageViews;  // 交换链图像视图
 };
 
+// 子通道描述
+struct ST_RHISubpassDescription
+{
+	RHISubpassDescriptionFlags m_flags;
+	ERHIPipelineBindPoint m_pipelineBindPoint;	// 管线绑定点
+	uint32_t m_inputAttachmentCount;	// 输入附件数量
+	const ST_RHIAttachmentReference* m_pInputAttachments;
+	uint32_t m_colorAttachmentCount;
+	const ST_RHIAttachmentReference* m_pColorAttachments;
+	const ST_RHIAttachmentReference* m_pResolveAttachments;
+	const ST_RHIAttachmentReference* m_pDepthStencilAttachment;
+	uint32_t m_preserveAttachmentCount;	// 保留附件数量
+	const uint32_t* m_pPreserveAttachments;	// 保留附件索引
+};
+
+// 附件引用
+struct ST_RHIAttachmentReference
+{
+	uint32_t m_attachment;
+	ERHIImageLayout m_layout;	// 附件布局
+};
+
 struct ST_RHIViewport
 {
-    float m_x;
-    float m_y;
-    float m_width;
-    float m_height;
-    float m_minDepth;
-    float m_maxDepth;
+	float m_x;
+	float m_y;
+	float m_width;
+	float m_height;
+	float m_minDepth;
+	float m_maxDepth;
 };
 
-struct ST_RHIRenderPassBeginInfo 
+struct ST_RHIRenderPassBeginInfo
 {
-    ERHIStructureType m_sType;
-    const void* m_pNext;
-    RHIRenderPass* m_renderPass;
-    RHIFramebuffer* m_framebuffer;
-    ST_RHIRect2D m_renderArea;
-    uint32_t m_clearValueCount;
-    const UN_RHIClearValue* m_pClearValues;
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIRenderPass* m_renderPass;
+	RHIFramebuffer* m_framebuffer;
+	ST_RHIRect2D m_renderArea;
+	uint32_t m_clearValueCount;
+	const UN_RHIClearValue* m_pClearValues;
 };
 
-struct ST_RHIClearDepthStencilValue 
+struct ST_RHIClearDepthStencilValue
 {
-    float m_depth;
-    uint32_t m_stencil;
+	float m_depth;
+	uint32_t m_stencil;
 };
 
-union UN_RHIClearColorValue 
+union UN_RHIClearColorValue
 {
-    float m_float32[4];
-    int32_t m_int32[4];
-    uint32_t m_uint32[4];
+	float m_float32[4];
+	int32_t m_int32[4];
+	uint32_t m_uint32[4];
 };
 
-union UN_RHIClearValue 
+union UN_RHIClearValue
 {
-    UN_RHIClearColorValue m_color;
-    ST_RHIClearDepthStencilValue m_depthStencil;
+	UN_RHIClearColorValue m_color;
+	ST_RHIClearDepthStencilValue m_depthStencil;
 };
 
 struct ST_RHIClearAttachment
 {
-    RHIImageAspectFlags m_aspectMask;
-    uint32_t m_colorAttachment;
-    UN_RHIClearValue m_clearValue;
+	RHIImageAspectFlags m_aspectMask;
+	uint32_t m_colorAttachment;
+	UN_RHIClearValue m_clearValue;
 };
 
 struct ST_RHIDepthImageDesc
 {
-    RHIImage* depth_image = VK_NULL_HANDLE;
-    RHIImageView* depth_image_view = VK_NULL_HANDLE;
-    ERHIFormat        depth_image_format;
+	RHIImage* m_depthImage = VK_NULL_HANDLE;
+	RHIImageView* m_depthImageView = VK_NULL_HANDLE;
+	ERHIFormat m_depthImageFormat;
 };
 
 NAMESPACE_XYH_END

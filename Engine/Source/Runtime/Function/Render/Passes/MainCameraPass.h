@@ -66,7 +66,12 @@ public:
 
 private:
 	void SetupParticlePass();	// 设置粒子渲染通道
+
+	/// <summary>
+	/// 创建帧缓冲中的图像及视图
+	/// </summary>
 	void SetupAttachments();	// 设置附件
+
 	void SetupRenderPass();	// 设置渲染通道
 	void SetupDescriptorSetLayout();	// 设置描述符集布局
 	void SetupPipelines();	// 设置管线
