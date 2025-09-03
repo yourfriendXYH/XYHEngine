@@ -246,6 +246,116 @@ void MainCameraPass::SetupRenderPass()
 
 	// 子通道描述
 	ST_RHISubpassDescription subpasses[_main_camera_subpass_count] = {};
+
+	// Main Camera Pass 的第一个子通道 基础通道
+	ST_RHIAttachmentReference basePassColorAttachmentsReference[3] = {};	// 3个颜色附件引用
+	basePassColorAttachmentsReference[0].m_attachment = &gbufferNormalAttachmentDescription - attachments;;	// 地址偏移值
+	basePassColorAttachmentsReference[0].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// 颜色附件最优
+	basePassColorAttachmentsReference[1].m_attachment = &gbufferMetallicRoughnessShadingmodeidAttachmentDescription - attachments;	// 地址偏移值
+	basePassColorAttachmentsReference[1].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// 颜色附件最优
+	basePassColorAttachmentsReference[2].m_attachment = &gbufferAlbedoAttachmentDescription - attachments;	// 地址偏移值
+	basePassColorAttachmentsReference[2].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// 颜色附件最优
+
+	ST_RHIAttachmentReference basePassDepthAttachmentReference = {};	// 深度附件引用
+	basePassDepthAttachmentReference.m_attachment = &depthAttachmentDescription - attachments;	// 地址偏移值
+	basePassDepthAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;	// 深度模板附件最优
+
+	ST_RHISubpassDescription& basePass = subpasses[_main_camera_subpass_basepass];
+	basePass.m_pipelineBindPoint = ERHIPipelineBindPoint::RHI_PIPELINE_BIND_POINT_GRAPHICS;	// 图形管线绑定点
+	basePass.m_colorAttachmentCount = sizeof(basePassColorAttachmentsReference) / sizeof(basePassColorAttachmentsReference[0]);	// 颜色附件数量
+	basePass.m_pColorAttachments = &basePassColorAttachmentsReference[0];	// 颜色附件引用
+	basePass.m_pDepthStencilAttachment = &basePassDepthAttachmentReference;	// 深度附件引用
+	basePass.m_preserveAttachmentCount = 0;
+	basePass.m_pPreserveAttachments = nullptr;
+
+	// Main Camera Pass 的第二个子通道 延迟光照通道
+	ST_RHIAttachmentReference deferredLightingPassInputAttachmentsReference[4] = {};
+	deferredLightingPassInputAttachmentsReference[0].m_attachment = &gbufferNormalAttachmentDescription - attachments;
+	deferredLightingPassInputAttachmentsReference[0].m_layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// 着色器只读最优
+	deferredLightingPassInputAttachmentsReference[1].m_attachment = &gbufferMetallicRoughnessShadingmodeidAttachmentDescription - attachments;
+	deferredLightingPassInputAttachmentsReference[1].m_layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// 着色器只读最优
+	deferredLightingPassInputAttachmentsReference[2].m_attachment = &gbufferAlbedoAttachmentDescription - attachments;
+	deferredLightingPassInputAttachmentsReference[2].m_layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// 着色器只读最优
+	deferredLightingPassInputAttachmentsReference[3].m_attachment = &depthAttachmentDescription - attachments;
+	deferredLightingPassInputAttachmentsReference[3].m_layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// 着色器只读最优
+
+	ST_RHIAttachmentReference deferredLightingPassColorAttachmentReference[1] = {};
+	deferredLightingPassColorAttachmentReference[0].m_attachment = &backupOddColorAttachmentDescription - attachments;
+	deferredLightingPassColorAttachmentReference[0].m_layout = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// 颜色附件最优
+
+	ST_RHISubpassDescription& deferredLightingPass = subpasses[_main_camera_subpass_deferred_lighting];
+	deferredLightingPass.m_pipelineBindPoint = ERHIPipelineBindPoint::RHI_PIPELINE_BIND_POINT_GRAPHICS;	// 图形管线绑定点
+	deferredLightingPass.m_inputAttachmentCount = sizeof(deferredLightingPassInputAttachmentsReference) / sizeof(deferredLightingPassInputAttachmentsReference[0]);	// 输入附件数量
+	deferredLightingPass.m_pInputAttachments = &deferredLightingPassInputAttachmentsReference[0];	// 输入附件引用
+	deferredLightingPass.m_colorAttachmentCount = sizeof(deferredLightingPassColorAttachmentReference) / sizeof(deferredLightingPassColorAttachmentReference[0]);	// 颜色附件数量
+	deferredLightingPass.m_pColorAttachments = &deferredLightingPassColorAttachmentReference[0];	// 颜色附件引用
+	deferredLightingPass.m_pDepthStencilAttachment = nullptr;
+	deferredLightingPass.m_preserveAttachmentCount = 0;	// 保留附件数量
+	deferredLightingPass.m_pPreserveAttachments = nullptr;	// 保留附件引用
+
+	// Main Camera Pass 的第三个子通道 前向光照通道
+	ST_RHIAttachmentReference forwardLightingPassColorAttachmentsReference[1] = {};
+	forwardLightingPassColorAttachmentsReference[0].m_attachment = &backupOddColorAttachmentDescription - attachments;
+	forwardLightingPassColorAttachmentsReference[0].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// 颜色附件最优
+
+	ST_RHIAttachmentReference forwardLightingPassDepthAttachmentReference{};
+	forwardLightingPassDepthAttachmentReference.m_attachment = &depthAttachmentDescription - attachments;
+	forwardLightingPassDepthAttachmentReference.m_layout = RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;	// 深度模板附件最优
+
+	ST_RHISubpassDescription& forwardLightingPass = subpasses[_main_camera_subpass_forward_lighting];
+	forwardLightingPass.m_pipelineBindPoint = ERHIPipelineBindPoint::RHI_PIPELINE_BIND_POINT_GRAPHICS;	// 图形管线绑定点
+	forwardLightingPass.m_inputAttachmentCount = 0;	// 输入附件数量
+	forwardLightingPass.m_pInputAttachments = nullptr;	// 输入附件引用
+	forwardLightingPass.m_colorAttachmentCount = sizeof(forwardLightingPassColorAttachmentsReference) / sizeof(forwardLightingPassColorAttachmentsReference[0]);	// 颜色附件数量
+	forwardLightingPass.m_pColorAttachments = &forwardLightingPassColorAttachmentsReference[0];	// 颜色附件引用
+	forwardLightingPass.m_pDepthStencilAttachment = &forwardLightingPassDepthAttachmentReference;	// 深度附件引用
+	forwardLightingPass.m_preserveAttachmentCount = 0;	// 保留附件数量
+	forwardLightingPass.m_pPreserveAttachments = nullptr;	// 保留附件引用
+
+	// 
+	ST_RHIAttachmentReference toneMappingPassInputAttachmentReference{};
+	toneMappingPassInputAttachmentReference.m_attachment = &backupOddColorAttachmentDescription - attachments;
+	toneMappingPassInputAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	ST_RHIAttachmentReference toneMappingPassColorAttachmentReference{};
+	toneMappingPassColorAttachmentReference.m_attachment = &backupEvenColorAttachmentDescription - attachments;
+	toneMappingPassColorAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// 颜色附件最优
+
+	ST_RHISubpassDescription& toneMappingPass = subpasses[_main_camera_subpass_tone_mapping];
+	toneMappingPass.m_pipelineBindPoint = RHI_PIPELINE_BIND_POINT_GRAPHICS;
+	toneMappingPass.m_inputAttachmentCount = 1;
+	toneMappingPass.m_pInputAttachments = &toneMappingPassInputAttachmentReference;
+	toneMappingPass.m_colorAttachmentCount = 1;
+	toneMappingPass.m_pColorAttachments = &toneMappingPassColorAttachmentReference;
+	toneMappingPass.m_pDepthStencilAttachment = nullptr;
+	toneMappingPass.m_preserveAttachmentCount = 0;
+	toneMappingPass.m_pPreserveAttachments = nullptr;
+
+	// 
+	ST_RHIAttachmentReference colorGradingPassInputAttachmentReference{};
+	colorGradingPassInputAttachmentReference.m_attachment = &backupEvenColorAttachmentDescription - attachments;
+	colorGradingPassInputAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	ST_RHIAttachmentReference colorGradingPassColorAttachmentReference{};
+	if (m_enableFXAA)
+	{
+		colorGradingPassColorAttachmentReference.m_attachment = &postProcessOddColorAttachmentDescription - attachments;
+	}
+	else
+	{
+		colorGradingPassColorAttachmentReference.m_attachment = &backupOddColorAttachmentDescription - attachments;
+	}
+	colorGradingPassColorAttachmentReference.m_layout = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	ST_RHISubpassDescription& colorGradingPass = subpasses[_main_camera_subpass_color_grading];
+	colorGradingPass.m_pipelineBindPoint = RHI_PIPELINE_BIND_POINT_GRAPHICS;
+	colorGradingPass.m_inputAttachmentCount = 1;
+	colorGradingPass.m_pInputAttachments = &colorGradingPassInputAttachmentReference;
+	colorGradingPass.m_colorAttachmentCount = 1;
+	colorGradingPass.m_pColorAttachments = &colorGradingPassColorAttachmentReference;
+	colorGradingPass.m_pDepthStencilAttachment = nullptr;
+	colorGradingPass.m_preserveAttachmentCount = 0;
+	colorGradingPass.m_pPreserveAttachments = nullptr;
 }
 
 void MainCameraPass::SetupDescriptorSetLayout()
