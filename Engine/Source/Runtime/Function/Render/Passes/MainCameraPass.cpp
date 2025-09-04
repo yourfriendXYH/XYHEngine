@@ -244,6 +244,7 @@ void MainCameraPass::SetupRenderPass()
 	swapchainImageAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// 初始布局 未定义
 	swapchainImageAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_PRESENT_SRC_KHR;	// 最终布局 呈现源
 
+
 	// 子通道描述
 	ST_RHISubpassDescription subpasses[_main_camera_subpass_count] = {};
 
@@ -312,7 +313,7 @@ void MainCameraPass::SetupRenderPass()
 	forwardLightingPass.m_preserveAttachmentCount = 0;	// 保留附件数量
 	forwardLightingPass.m_pPreserveAttachments = nullptr;	// 保留附件引用
 
-	// 
+	// 色调映射通道
 	ST_RHIAttachmentReference toneMappingPassInputAttachmentReference{};
 	toneMappingPassInputAttachmentReference.m_attachment = &backupOddColorAttachmentDescription - attachments;
 	toneMappingPassInputAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -331,7 +332,7 @@ void MainCameraPass::SetupRenderPass()
 	toneMappingPass.m_preserveAttachmentCount = 0;
 	toneMappingPass.m_pPreserveAttachments = nullptr;
 
-	// 
+	// 颜色分级通道
 	ST_RHIAttachmentReference colorGradingPassInputAttachmentReference{};
 	colorGradingPassInputAttachmentReference.m_attachment = &backupEvenColorAttachmentDescription - attachments;
 	colorGradingPassInputAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -339,13 +340,13 @@ void MainCameraPass::SetupRenderPass()
 	ST_RHIAttachmentReference colorGradingPassColorAttachmentReference{};
 	if (m_enableFXAA)
 	{
-		colorGradingPassColorAttachmentReference.m_attachment = &postProcessOddColorAttachmentDescription - attachments;
+		colorGradingPassColorAttachmentReference.m_attachment = &postProcessOddColorAttachmentDescription - attachments;	// 输出到后处理 偶数
 	}
 	else
 	{
 		colorGradingPassColorAttachmentReference.m_attachment = &backupOddColorAttachmentDescription - attachments;
 	}
-	colorGradingPassColorAttachmentReference.m_layout = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	colorGradingPassColorAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	ST_RHISubpassDescription& colorGradingPass = subpasses[_main_camera_subpass_color_grading];
 	colorGradingPass.m_pipelineBindPoint = RHI_PIPELINE_BIND_POINT_GRAPHICS;
@@ -356,6 +357,82 @@ void MainCameraPass::SetupRenderPass()
 	colorGradingPass.m_pDepthStencilAttachment = nullptr;
 	colorGradingPass.m_preserveAttachmentCount = 0;
 	colorGradingPass.m_pPreserveAttachments = nullptr;
+
+	// FXAA通道 
+	ST_RHIAttachmentReference fxaaPassInputAttachmentReference{};
+	if (m_enableFXAA)
+	{
+		fxaaPassInputAttachmentReference.m_attachment = &postProcessOddColorAttachmentDescription - attachments;	// 后处理 偶数
+	}
+	else
+	{
+		fxaaPassInputAttachmentReference.m_attachment = &backupEvenColorAttachmentDescription - attachments;	// 奇数
+	}
+	fxaaPassInputAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	ST_RHIAttachmentReference fxaaPassColorAttachmentReference{};
+	fxaaPassColorAttachmentReference.m_attachment = &backupOddColorAttachmentDescription - attachments;
+	fxaaPassColorAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	ST_RHISubpassDescription& fxaaPass = subpasses[_main_camera_subpass_fxaa];
+	fxaaPass.m_pipelineBindPoint = ERHIPipelineBindPoint::RHI_PIPELINE_BIND_POINT_GRAPHICS;
+	fxaaPass.m_inputAttachmentCount = 1;
+	fxaaPass.m_pInputAttachments = &fxaaPassInputAttachmentReference;
+	fxaaPass.m_colorAttachmentCount = 1;
+	fxaaPass.m_pColorAttachments = &fxaaPassColorAttachmentReference;
+	fxaaPass.m_pDepthStencilAttachment = nullptr;
+	fxaaPass.m_preserveAttachmentCount = 0;
+	fxaaPass.m_pPreserveAttachments = nullptr;
+
+	// UI通道
+	ST_RHIAttachmentReference uiPassColorAttachmentReference{};
+	uiPassColorAttachmentReference.m_attachment = &backupEvenColorAttachmentDescription - attachments;
+	uiPassColorAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	uint32_t uiPassPreserveAttachment = &backupOddColorAttachmentDescription - attachments;
+
+	ST_RHISubpassDescription& uiPass = subpasses[_main_camera_subpass_ui];
+	uiPass.m_pipelineBindPoint = ERHIPipelineBindPoint::RHI_PIPELINE_BIND_POINT_GRAPHICS;
+	uiPass.m_inputAttachmentCount = 0;
+	uiPass.m_pInputAttachments = nullptr;
+	uiPass.m_colorAttachmentCount = 1;
+	uiPass.m_pColorAttachments = &uiPassColorAttachmentReference;
+	uiPass.m_pDepthStencilAttachment = nullptr;
+	uiPass.m_preserveAttachmentCount = 1;
+	uiPass.m_pPreserveAttachments = &uiPassPreserveAttachment;
+
+	// 
+	ST_RHIAttachmentReference combineUIPassInputAttachmentsReference[2] = {};
+	combineUIPassInputAttachmentsReference[0].m_attachment = &backupOddColorAttachmentDescription - attachments;
+	combineUIPassInputAttachmentsReference[0].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	combineUIPassInputAttachmentsReference[1].m_attachment = &backupEvenColorAttachmentDescription - attachments;
+	combineUIPassInputAttachmentsReference[1].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	ST_RHIAttachmentReference combineUIPassColorAttachmentReference{};
+	combineUIPassColorAttachmentReference.m_attachment = &swapchainImageAttachmentDescription - attachments;
+	combineUIPassColorAttachmentReference.m_layout = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	ST_RHISubpassDescription& combineUIPass = subpasses[_main_camera_subpass_combine_ui];
+	combineUIPass.m_pipelineBindPoint = RHI_PIPELINE_BIND_POINT_GRAPHICS;
+	combineUIPass.m_inputAttachmentCount = sizeof(combineUIPassInputAttachmentsReference) / sizeof(combineUIPassInputAttachmentsReference[0]);
+	combineUIPass.m_pInputAttachments = combineUIPassInputAttachmentsReference;
+	combineUIPass.m_colorAttachmentCount = 1;
+	combineUIPass.m_pColorAttachments = &combineUIPassColorAttachmentReference;
+	combineUIPass.m_pDepthStencilAttachment = nullptr;
+	combineUIPass.m_preserveAttachmentCount = 0;
+	combineUIPass.m_pPreserveAttachments = nullptr;
+
+	// 依赖？？？
+	ST_RHISubpassDependency dependencies[8] = {};
+
+	ST_RHISubpassDependency& deferredLightingPassDependOnShadowMapPass = dependencies[0];
+	deferredLightingPassDependOnShadowMapPass.m_srcSubpass = RHI_SUBPASS_EXTERNAL;
+	deferredLightingPassDependOnShadowMapPass.m_dstSubpass = _main_camera_subpass_deferred_lighting;
+	deferredLightingPassDependOnShadowMapPass.m_srcStageMask = ERHIPipelineStageFlagBits::RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	deferredLightingPassDependOnShadowMapPass.m_dstStageMask = ERHIPipelineStageFlagBits::RHI_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	deferredLightingPassDependOnShadowMapPass.m_srcAccessMask = ERHIAccessFlagBits::RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	deferredLightingPassDependOnShadowMapPass.m_dstAccessMask = ERHIAccessFlagBits::RHI_ACCESS_SHADER_READ_BIT;
+	deferredLightingPassDependOnShadowMapPass.m_dependencyFlags = 0; // NOT BY REGION
 }
 
 void MainCameraPass::SetupDescriptorSetLayout()

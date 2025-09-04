@@ -193,6 +193,17 @@ struct ST_RHISwapChainDesc
 	std::vector<RHIImageView*> m_imageViews;  // 交换链图像视图
 };
 
+struct ST_RHISubpassDependency
+{
+	uint32_t m_srcSubpass;
+	uint32_t m_dstSubpass;
+	RHIPipelineStageFlags m_srcStageMask;
+	RHIPipelineStageFlags m_dstStageMask;
+	RHIAccessFlags m_srcAccessMask;
+	RHIAccessFlags m_dstAccessMask;
+	RHIDependencyFlags m_dependencyFlags;
+};
+
 // 子通道描述
 struct ST_RHISubpassDescription
 {
