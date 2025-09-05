@@ -52,17 +52,13 @@ public:
 	// 延迟渲染
 	void Draw(ColorGradingPass& colorGradingPass, FXAAPass& fxaaPass, ToneMappingPass& toneMappingPass, UIPass& uiPass, CombineUIPass& combineUIPass, ParticlePass& particlePass, uint32_t currentSwapchainImageIndex);
 
+	void CopyNormalAndDepthImage();
+
 	void SetParticlePass(std::shared_ptr<ParticlePass> pParticlePass);
 
 	RHICommandBuffer* GetRenderCommandBuffer();
 
 	void UpdateAfterFramebufferRecreate();
-public:
-	bool m_isShowAxis = false;  // 是否显示坐标轴
-
-	size_t m_selectedAxis = 3u;  // 选中的坐标轴
-
-	bool m_enableFXAA = false;	// 是否启用FXAA
 
 private:
 	void SetupParticlePass();	// 设置粒子渲染通道
@@ -73,6 +69,7 @@ private:
 	void SetupAttachments();	// 设置附件
 
 	void SetupRenderPass();	// 设置渲染通道
+
 	void SetupDescriptorSetLayout();	// 设置描述符集布局
 	void SetupPipelines();	// 设置管线
 	void SetupDescriptorSet();	// 设置描述符集
@@ -90,6 +87,17 @@ private:
 	void DrawMeshLighting();	// 绘制网格光照
 	void DrawSkybox();	// 绘制天空盒
 	void DrawAxis();	// 绘制坐标轴
+
+public:
+
+	RHIImageView* m_pPointLightShadowColorImageView;
+	RHIImageView* m_pDirectionalLightShadowColorImageView;
+
+	bool m_isShowAxis = false;  // 是否显示坐标轴
+
+	size_t m_selectedAxis = 3u;  // 选中的坐标轴
+
+	bool m_enableFXAA = false;	// 是否启用FXAA
 
 private:
 	std::shared_ptr<ParticlePass> m_pParticlePass;

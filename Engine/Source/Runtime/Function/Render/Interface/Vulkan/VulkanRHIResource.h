@@ -151,4 +151,20 @@ private:
 	VkImage m_resource;
 };
 
+// ‰÷»æÕ®µ¿
+class VulkanRenderPass : public RHIRenderPass
+{
+public:
+	void SetResource(VkRenderPass res)
+	{
+		m_resource = res;
+	}
+	VkRenderPass GetResource() const
+	{
+		return m_resource;
+	}
+private:
+	VkRenderPass m_resource;
+};
+
 NAMESPACE_XYH_END

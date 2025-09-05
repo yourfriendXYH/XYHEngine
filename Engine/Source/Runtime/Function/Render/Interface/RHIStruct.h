@@ -193,6 +193,19 @@ struct ST_RHISwapChainDesc
 	std::vector<RHIImageView*> m_imageViews;  // Ωªªª¡¥ÕºœÒ ”Õº
 };
 
+struct ST_RHIRenderPassCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIRenderPassCreateFlags m_flags;
+	uint32_t m_attachmentCount;
+	const ST_RHIAttachmentDescription* m_pAttachments;
+	uint32_t m_subpassCount;
+	const ST_RHISubpassDescription* m_pSubpasses;
+	uint32_t m_dependencyCount;
+	const ST_RHISubpassDependency* m_pDependencies;
+};
+
 struct ST_RHISubpassDependency
 {
 	uint32_t m_srcSubpass;
