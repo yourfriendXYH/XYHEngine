@@ -391,7 +391,7 @@ bool VulkanRHI::CreateRenderPass(const ST_RHIRenderPassCreateInfo* pCreateInfo, 
 
 		vkDesc.flags = (VkSubpassDescriptionFlags)(rhiDesc).m_flags;
 		vkDesc.pipelineBindPoint = (VkPipelineBindPoint)(rhiDesc).m_pipelineBindPoint;
-		vkDesc.preserveAttachmentCount = (rhiDesc).m_preserveAttachmentCount;
+		vkDesc.preserveAttachmentCount = (rhiDesc).m_preserveAttachmentCount;	// 指定本子流程不直接使用，但需要保留其内容的附件
 		vkDesc.pPreserveAttachments = (const uint32_t*)(rhiDesc).m_pPreserveAttachments;
 
 		// 填充 输入附件
@@ -425,7 +425,7 @@ bool VulkanRHI::CreateRenderPass(const ST_RHIRenderPassCreateInfo* pCreateInfo, 
 		// 填充 解决附件
 		if (rhiDesc.m_pResolveAttachments != nullptr)
 		{
-			vkDesc.pResolveAttachments = &vkAttachmentReference[currentAttachmentReference];
+			vkDesc.pResolveAttachments = &vkAttachmentReference[currentAttachmentReference];	// 用于多重采样抗锯齿（MSAA） 的解析操作
 			for (uint32_t i = 0; i < (rhiDesc).m_colorAttachmentCount; ++i)
 			{
 				const auto& rhiAttachmentReferenceResolve = (rhiDesc).m_pResolveAttachments[i];
@@ -441,7 +441,7 @@ bool VulkanRHI::CreateRenderPass(const ST_RHIRenderPassCreateInfo* pCreateInfo, 
 		// 填充 深度模板附件
 		if (rhiDesc.m_pDepthStencilAttachment != nullptr)
 		{
-			vkDesc.pDepthStencilAttachment = &vkAttachmentReference[currentAttachmentReference];
+			vkDesc.pDepthStencilAttachment = &vkAttachmentReference[currentAttachmentReference];	// 指定用于深度和模板测试的附件
 			for (uint32_t i = 0; i < (rhiDesc).m_colorAttachmentCount; ++i)
 			{
 				const auto& rhiAttachmentReferenceDepth = (rhiDesc).m_pDepthStencilAttachment[i];
