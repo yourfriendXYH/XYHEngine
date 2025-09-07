@@ -167,4 +167,36 @@ private:
 	VkRenderPass m_resource;
 };
 
+// 采样器 封装
+class VulkanSampler : public RHISampler
+{
+public:
+	void SetResource(VkSampler res)
+	{
+		m_resource = res;
+	}
+	VkSampler GetResource() const
+	{
+		return m_resource;
+	}
+private:
+	VkSampler m_resource;
+};
+
+// 描述符集布局 封装
+class VulkanDescriptorSetLayout : public RHIDescriptorSetLayout
+{
+public:
+	void SetResource(VkDescriptorSetLayout res)
+	{
+		m_resource = res;
+	}
+	VkDescriptorSetLayout GetResource() const
+	{
+		return m_resource;
+	}
+private:
+	VkDescriptorSetLayout m_resource;
+};
+
 NAMESPACE_XYH_END

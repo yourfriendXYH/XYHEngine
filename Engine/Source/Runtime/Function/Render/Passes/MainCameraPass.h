@@ -20,7 +20,7 @@ class MainCameraPass : public RenderPass
 public:
 	enum ELayoutType : uint8_t
 	{
-		_per_mesh = 0,
+		_per_mesh = 0,	// 每个网格
 		_mesh_global,
 		_mesh_per_material,
 		_skybox,
@@ -71,6 +71,7 @@ private:
 	void SetupRenderPass();	// 设置渲染通道
 
 	void SetupDescriptorSetLayout();	// 设置描述符集布局
+
 	void SetupPipelines();	// 设置管线
 	void SetupDescriptorSet();	// 设置描述符集
 	void SetupFramebufferDescriptorSet();	// 设置帧缓冲描述符集

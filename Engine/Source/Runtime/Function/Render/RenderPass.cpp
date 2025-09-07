@@ -39,7 +39,7 @@ std::vector<RHIDescriptorSetLayout*> RenderPass::GetDescriptorSetLayouts() const
 	std::vector<RHIDescriptorSetLayout*> layouts;
 	for (const auto& descriptor : m_descriptorInfos)
 	{
-		layouts.push_back(descriptor.m_descriptorSetLayout);
+		layouts.push_back(descriptor.m_pDescriptorSetLayout);
 	}
 	return layouts;
 }

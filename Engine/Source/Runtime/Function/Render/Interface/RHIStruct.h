@@ -293,4 +293,24 @@ struct ST_RHIDepthImageDesc
 	ERHIFormat m_depthImageFormat;
 };
 
+// 描述符集布局绑定
+struct ST_RHIDescriptorSetLayoutBinding
+{
+	uint32_t m_binding;
+	ERHIDescriptorType m_descriptorType;
+	uint32_t m_descriptorCount;
+	RHIShaderStageFlags m_stageFlags;
+	RHISampler* const* m_pImmutableSamplers = nullptr;	// 不可变采样器
+};
+
+// 描述符集布局创建信息
+struct ST_RHIDescriptorSetLayoutCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIDescriptorSetLayoutCreateFlags m_flags;
+	uint32_t m_bindingCount;
+	const ST_RHIDescriptorSetLayoutBinding* m_pBindings;
+};
+
 NAMESPACE_XYH_END

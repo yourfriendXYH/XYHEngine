@@ -67,8 +67,8 @@ public:
 
 	struct ST_Descriptor	// 描述符
 	{
-		RHIDescriptorSetLayout* m_descriptorSetLayout = nullptr;	// 描述符集布局
-		RHIDescriptorSet* m_descriptorSet = nullptr;	// 描述符集
+		RHIDescriptorSetLayout* m_pDescriptorSetLayout = nullptr;	// 描述符集布局
+		RHIDescriptorSet* m_pDescriptorSet = nullptr;	// 描述符集
 	};
 
 	struct ST_RenderPipelineBase	// 渲染管线

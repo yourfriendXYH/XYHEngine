@@ -313,7 +313,78 @@ bool VulkanRHI::CreateDescriptorPool(const ST_RHIDescriptorPoolCreateInfo* pCrea
 
 bool VulkanRHI::CreateDescriptorSetLayout(const ST_RHIDescriptorSetLayoutCreateInfo* pCreateInfo, RHIDescriptorSetLayout*& pSetLayout)
 {
-	return false;
+	int descriptorSetLayoutBindingSize = pCreateInfo->m_bindingCount;	// 描述符集布局绑定数量
+	std::vector<VkDescriptorSetLayoutBinding> vkDescriptorSetLayoutBindingList(descriptorSetLayoutBindingSize);
+
+	// 计算采样器数量
+	int samplerCount = 0;
+	for (int i = 0; i < descriptorSetLayoutBindingSize; ++i)
+	{
+		const auto& rhiDescriptorSetLayoutBindingElement = pCreateInfo->m_pBindings[i];
+		if (rhiDescriptorSetLayoutBindingElement.m_pImmutableSamplers != nullptr)
+		{
+			samplerCount += rhiDescriptorSetLayoutBindingElement.m_descriptorCount;
+		}
+	}
+
+	std::vector<VkSampler> samplerList(samplerCount);
+	int samplerCurrent = 0;
+
+	for (int i = 0; i < descriptorSetLayoutBindingSize; ++i)
+	{
+		const auto& rhiDescriptorSetLayoutBindingElement = pCreateInfo->m_pBindings[i];
+		auto& vkDescriptorSetLayoutBindingElement = vkDescriptorSetLayoutBindingList[i];
+
+		//添加采样器
+		vkDescriptorSetLayoutBindingElement.pImmutableSamplers = nullptr;
+		if (rhiDescriptorSetLayoutBindingElement.m_pImmutableSamplers)
+		{
+			vkDescriptorSetLayoutBindingElement.pImmutableSamplers = &samplerList[samplerCurrent];
+			for (uint32_t i = 0; i < rhiDescriptorSetLayoutBindingElement.m_descriptorCount; ++i)
+			{
+				const auto& rhiSamplerElement = rhiDescriptorSetLayoutBindingElement.m_pImmutableSamplers[i];
+				auto& vkSamplerElement = samplerList[samplerCurrent];
+
+				vkSamplerElement = ((VulkanSampler*)rhiSamplerElement)->GetResource();
+
+				samplerCurrent++;
+			};
+		}
+
+		vkDescriptorSetLayoutBindingElement.binding = rhiDescriptorSetLayoutBindingElement.m_binding;	// 绑定号。这个数字必须与着色器（GLSL/HLSL）中使用的绑定号完全匹配。
+		vkDescriptorSetLayoutBindingElement.descriptorType = (VkDescriptorType)rhiDescriptorSetLayoutBindingElement.m_descriptorType;	// 指定描述符的类型。它决定了这个绑定点对应的是哪种资源
+		vkDescriptorSetLayoutBindingElement.descriptorCount = rhiDescriptorSetLayoutBindingElement.m_descriptorCount;	// 指定该绑定点有多少个描述符。通常为 1。如果大于 1，则表示这是一个描述符数组。
+		vkDescriptorSetLayoutBindingElement.stageFlags = rhiDescriptorSetLayoutBindingElement.m_stageFlags;	// 指定哪个着色器阶段可以访问这个描述符。
+	};
+
+	if (samplerCount != samplerCurrent)
+	{
+		LOG_ERROR("sampler_count != sampller_current");
+		return false;
+	}
+
+	// 创建描述符集布局
+	VkDescriptorSetLayoutCreateInfo createInfo{};
+	createInfo.sType = (VkStructureType)pCreateInfo->m_sType;	// 结构体的类型标识符，必须设置为 VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO
+	createInfo.pNext = (const void*)pCreateInfo->m_pNext;	// 指向扩展结构的指针。用于启用一些扩展功能，通常设置为 nullptr
+	createInfo.flags = (VkDescriptorSetLayoutCreateFlags)pCreateInfo->m_flags;	// 用于控制描述符集布局创建的标志位。通常设置为 0 或保留供未来使用
+	createInfo.bindingCount = pCreateInfo->m_bindingCount;	// 指定 pBindings 数组中有多少个 VkDescriptorSetLayoutBinding 结构体
+	createInfo.pBindings = vkDescriptorSetLayoutBindingList.data();	// 指向 VkDescriptorSetLayoutBinding 结构体数组的指针。这是最重要的成员，它包含了所有绑定的具体定义
+
+	pSetLayout = new VulkanDescriptorSetLayout();
+	VkDescriptorSetLayout vkDescriptorSetLayout;
+	VkResult result = vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &vkDescriptorSetLayout);
+	((VulkanDescriptorSetLayout*)pSetLayout)->SetResource(vkDescriptorSetLayout);
+
+	if (result == VK_SUCCESS)
+	{
+		return RHI_SUCCESS;
+	}
+	else
+	{
+		LOG_ERROR("vkCreateDescriptorSetLayout failed!");
+		return false;
+	}
 }
 
 bool VulkanRHI::CreateFence(const ST_RHIFenceCreateInfo* pCreateInfo, RHIFence*& pFence)

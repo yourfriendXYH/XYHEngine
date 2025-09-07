@@ -1,4 +1,4 @@
-#include "MainCameraPass.h"
+ï»¿#include "MainCameraPass.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -9,15 +9,15 @@ void MainCameraPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	const ST_MainCameraPassInitInfp* mainCameraPassInitInfo = static_cast<const ST_MainCameraPassInitInfp*>(initInfo);
 	m_enableFXAA = mainCameraPassInitInfo->m_enableFXAA;
 
-	SetupAttachments();	// ´´½¨Ö¡»º³åµÄÍ¼Ïñ¼°ÊÓÍ¼
+	SetupAttachments();	// åˆ›å»ºå¸§ç¼“å†²çš„å›¾åƒåŠè§†å›¾
 
-	SetupRenderPass();
+	SetupRenderPass();	// åˆ›å»ºæ¸²æŸ“é€šé“
 
-	SetupDescriptorSetLayout();
+	SetupDescriptorSetLayout();	// åˆ›å»ºæè¿°ç¬¦é›†å¸ƒå±€(è‰²å™¨çš„ç¼“å­˜æ•°æ®)
 
-	SetupPipelines();
+	SetupPipelines();	// åˆ›å»ºæ¸²æŸ“ç®¡çº¿
 
-	SetupDescriptorSet();
+	SetupDescriptorSet();	// 
 
 	SetupFramebufferDescriptorSet();
 
@@ -63,11 +63,11 @@ void MainCameraPass::SetupAttachments()
 {
 	m_framebuffer.m_attachments.resize(_main_camera_pass_custom_attachment_count + _main_camera_pass_post_process_attachment_count);	// 5 + 2 = 7
 
-	m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_format = ERHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;	// GBuffer A: Î»ÖÃ
-	m_framebuffer.m_attachments[_main_camera_pass_gbuffer_b].m_format = ERHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;	// GBuffer B: ·¨Ïß
-	m_framebuffer.m_attachments[_main_camera_pass_gbuffer_c].m_format = ERHIFormat::RHI_FORMAT_R8G8B8A8_SRGB;	// GBuffer C: ÑÕÉ«
-	m_framebuffer.m_attachments[_main_camera_pass_backup_buffer_odd].m_format = ERHIFormat::RHI_FORMAT_R16G16B16A16_SFLOAT;	// ±¸ÓÃ»º³åÇø ÆæÊı
-	m_framebuffer.m_attachments[_main_camera_pass_backup_buffer_even].m_format = ERHIFormat::RHI_FORMAT_R16G16B16A16_SFLOAT;	// ±¸ÓÃ»º³åÇø Å¼Êı
+	m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_format = ERHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;	// GBuffer A: ä½ç½®
+	m_framebuffer.m_attachments[_main_camera_pass_gbuffer_b].m_format = ERHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;	// GBuffer B: æ³•çº¿
+	m_framebuffer.m_attachments[_main_camera_pass_gbuffer_c].m_format = ERHIFormat::RHI_FORMAT_R8G8B8A8_SRGB;	// GBuffer C: é¢œè‰²
+	m_framebuffer.m_attachments[_main_camera_pass_backup_buffer_odd].m_format = ERHIFormat::RHI_FORMAT_R16G16B16A16_SFLOAT;	// å¤‡ç”¨ç¼“å†²åŒº å¥‡æ•°
+	m_framebuffer.m_attachments[_main_camera_pass_backup_buffer_even].m_format = ERHIFormat::RHI_FORMAT_R16G16B16A16_SFLOAT;	// å¤‡ç”¨ç¼“å†²åŒº å¶æ•°
 
 	for (int bufferIndex = 0; bufferIndex < _main_camera_pass_custom_attachment_count; ++bufferIndex)
 	{
@@ -75,16 +75,16 @@ void MainCameraPass::SetupAttachments()
 		{
 			m_pRHI->CreateImage(
 				m_pRHI->GetSwapchainInfo().m_extent.m_width,
-				m_pRHI->GetSwapchainInfo().m_extent.m_height,	// ½»»»Á´µÄ¿í¶ÈºÍ¸ß¶È
-				m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_format,	// Í¼Ïñ¸ñÊ½
-				ERHIImageTiling::RHI_IMAGE_TILING_OPTIMAL,	// ×î¼Ñ²¼¾Ö
-				ERHIImageUsageFlagBits::RHI_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | ERHIImageUsageFlagBits::RHI_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | ERHIImageUsageFlagBits::RHI_IMAGE_USAGE_TRANSFER_SRC_BIT,	// ÓÃ×÷ÊäÈë¸½¼ş¡¢ÑÕÉ«¸½¼şºÍ´«ÊäÔ´
-				ERHIMemoryPropertyFlagBits::RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,	// Î»ÓÚÉè±¸±¾µØÄÚ´æÖĞ
-				m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_pImage,	// Í¼Ïñ
-				m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_pMemory,	// Í¼ÏñÄÚ´æ
-				0,	// Í¼Ïñ´´½¨±êÖ¾
-				1,	// Í¼ÏñÊı×é²ãÊı
-				1);	// Í¼Ïñmiplevels
+				m_pRHI->GetSwapchainInfo().m_extent.m_height,	// äº¤æ¢é“¾çš„å®½åº¦å’Œé«˜åº¦
+				m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_format,	// å›¾åƒæ ¼å¼
+				ERHIImageTiling::RHI_IMAGE_TILING_OPTIMAL,	// æœ€ä½³å¸ƒå±€
+				ERHIImageUsageFlagBits::RHI_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | ERHIImageUsageFlagBits::RHI_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | ERHIImageUsageFlagBits::RHI_IMAGE_USAGE_TRANSFER_SRC_BIT,	// ç”¨ä½œè¾“å…¥é™„ä»¶ã€é¢œè‰²é™„ä»¶å’Œä¼ è¾“æº
+				ERHIMemoryPropertyFlagBits::RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,	// ä½äºè®¾å¤‡æœ¬åœ°å†…å­˜ä¸­
+				m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_pImage,	// å›¾åƒ
+				m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_pMemory,	// å›¾åƒå†…å­˜
+				0,	// å›¾åƒåˆ›å»ºæ ‡å¿—
+				1,	// å›¾åƒæ•°ç»„å±‚æ•°
+				1);	// å›¾åƒmiplevels
 		}
 		else
 		{
@@ -92,38 +92,38 @@ void MainCameraPass::SetupAttachments()
 				m_pRHI->GetSwapchainInfo().m_extent.m_width,
 				m_pRHI->GetSwapchainInfo().m_extent.m_height,
 				m_framebuffer.m_attachments[bufferIndex].m_format,
-				ERHIImageTiling::RHI_IMAGE_TILING_OPTIMAL,	// ×î¼Ñ²¼¾Ö
-				ERHIImageUsageFlagBits::RHI_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | RHI_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | RHI_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,	// ÓÃ×÷ÑÕÉ«¸½¼ş¡¢ÊäÈë¸½¼şºÍÁÙÊ±¸½¼ş
-				ERHIMemoryPropertyFlagBits::RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,	// Î»ÓÚÉè±¸±¾µØÄÚ´æÖĞ
-				m_framebuffer.m_attachments[bufferIndex].m_pImage,	// Í¼Ïñ
-				m_framebuffer.m_attachments[bufferIndex].m_pMemory,	// Í¼ÏñÄÚ´æ
-				0,	// Í¼Ïñ´´½¨±êÖ¾
-				1,	// Í¼ÏñÊı×é²ãÊı
-				1);	// Í¼Ïñmiplevels
+				ERHIImageTiling::RHI_IMAGE_TILING_OPTIMAL,	// æœ€ä½³å¸ƒå±€
+				ERHIImageUsageFlagBits::RHI_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | RHI_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | RHI_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,	// ç”¨ä½œé¢œè‰²é™„ä»¶ã€è¾“å…¥é™„ä»¶å’Œä¸´æ—¶é™„ä»¶
+				ERHIMemoryPropertyFlagBits::RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,	// ä½äºè®¾å¤‡æœ¬åœ°å†…å­˜ä¸­
+				m_framebuffer.m_attachments[bufferIndex].m_pImage,	// å›¾åƒ
+				m_framebuffer.m_attachments[bufferIndex].m_pMemory,	// å›¾åƒå†…å­˜
+				0,	// å›¾åƒåˆ›å»ºæ ‡å¿—
+				1,	// å›¾åƒæ•°ç»„å±‚æ•°
+				1);	// å›¾åƒmiplevels
 		}
 
 		m_pRHI->CreateImageView(
-			m_framebuffer.m_attachments[bufferIndex].m_pImage,	// Í¼Ïñ
-			m_framebuffer.m_attachments[bufferIndex].m_format,	// Í¼Ïñ¸ñÊ½
-			ERHIImageAspectFlagBits::RHI_IMAGE_ASPECT_COLOR_BIT,	// Í¼Ïñ·½Ãæ±êÖ¾Î» ÎªÑÕÉ«
-			ERHIImageViewType::RHI_IMAGE_VIEW_TYPE_2D,	// Í¼ÏñÊÓÍ¼ÀàĞÍ Îª2D
-			1,	// Í¼ÏñÊÓÍ¼²¼¾ÖÊıÁ¿
-			1,	// Í¼ÏñÊÓÍ¼miplevels
-			m_framebuffer.m_attachments[bufferIndex].m_pView);	// Í¼ÏñÊÓÍ¼
+			m_framebuffer.m_attachments[bufferIndex].m_pImage,	// å›¾åƒ
+			m_framebuffer.m_attachments[bufferIndex].m_format,	// å›¾åƒæ ¼å¼
+			ERHIImageAspectFlagBits::RHI_IMAGE_ASPECT_COLOR_BIT,	// å›¾åƒæ–¹é¢æ ‡å¿—ä½ ä¸ºé¢œè‰²
+			ERHIImageViewType::RHI_IMAGE_VIEW_TYPE_2D,	// å›¾åƒè§†å›¾ç±»å‹ ä¸º2D
+			1,	// å›¾åƒè§†å›¾å¸ƒå±€æ•°é‡
+			1,	// å›¾åƒè§†å›¾miplevels
+			m_framebuffer.m_attachments[bufferIndex].m_pView);	// å›¾åƒè§†å›¾
 	}
 
-	m_framebuffer.m_attachments[_main_camera_pass_post_process_buffer_odd].m_format = RHI_FORMAT_R16G16B16A16_SFLOAT;	// ºó´¦Àí»º³åÇø ÆæÊı
-	m_framebuffer.m_attachments[_main_camera_pass_post_process_buffer_even].m_format = RHI_FORMAT_R16G16B16A16_SFLOAT;	// ºó´¦Àí»º³åÇø Å¼Êı
-	// ´´½¨ºó´¦Àí»º³åÇøÍ¼ÏñºÍÍ¼ÏñÊÓÍ¼
+	m_framebuffer.m_attachments[_main_camera_pass_post_process_buffer_odd].m_format = RHI_FORMAT_R16G16B16A16_SFLOAT;	// åå¤„ç†ç¼“å†²åŒº å¥‡æ•°
+	m_framebuffer.m_attachments[_main_camera_pass_post_process_buffer_even].m_format = RHI_FORMAT_R16G16B16A16_SFLOAT;	// åå¤„ç†ç¼“å†²åŒº å¶æ•°
+	// åˆ›å»ºåå¤„ç†ç¼“å†²åŒºå›¾åƒå’Œå›¾åƒè§†å›¾
 	for (int attachmentIndex = _main_camera_pass_custom_attachment_count; attachmentIndex < _main_camera_pass_custom_attachment_count + _main_camera_pass_post_process_attachment_count; ++attachmentIndex)
 	{
 		m_pRHI->CreateImage(
 			m_pRHI->GetSwapchainInfo().m_extent.m_width,
 			m_pRHI->GetSwapchainInfo().m_extent.m_height,
 			m_framebuffer.m_attachments[attachmentIndex].m_format,
-			ERHIImageTiling::RHI_IMAGE_TILING_OPTIMAL,	// ×î¼Ñ²¼¾Ö
+			ERHIImageTiling::RHI_IMAGE_TILING_OPTIMAL,	// æœ€ä½³å¸ƒå±€
 			ERHIImageUsageFlagBits::RHI_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | RHI_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | RHI_IMAGE_USAGE_SAMPLED_BIT,
-			ERHIMemoryPropertyFlagBits::RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,	// Î»ÓÚÉè±¸±¾µØÄÚ´æÖĞ
+			ERHIMemoryPropertyFlagBits::RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,	// ä½äºè®¾å¤‡æœ¬åœ°å†…å­˜ä¸­
 			m_framebuffer.m_attachments[attachmentIndex].m_pImage,
 			m_framebuffer.m_attachments[attachmentIndex].m_pMemory,
 			0,
@@ -145,182 +145,182 @@ void MainCameraPass::SetupRenderPass()
 {
 	ST_RHIAttachmentDescription attachments[_main_camera_pass_attachment_count] = {};
 
-	// ·¨ÏßµÄGBufferÃèÊö
+	// æ³•çº¿çš„GBufferæè¿°
 	ST_RHIAttachmentDescription& gbufferNormalAttachmentDescription = attachments[_main_camera_pass_gbuffer_a];
-	gbufferNormalAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_format;	// Í¼Ïñ¸ñÊ½
-	gbufferNormalAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// ²ÉÑùÊı
-	gbufferNormalAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// ¼ÓÔØ²Ù×÷ Çå³ı
-	gbufferNormalAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_STORE;	// ´æ´¢²Ù×÷ ´æ´¢
-	gbufferNormalAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// Ä£°å¼ÓÔØ²Ù×÷ ²»¹ØĞÄ
-	gbufferNormalAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// Ä£°å´æ´¢²Ù×÷ ²»¹ØĞÄ
-	gbufferNormalAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// ³õÊ¼²¼¾Ö Î´¶¨Òå
-	gbufferNormalAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ×îÖÕ²¼¾Ö ×ÅÉ«Æ÷Ö»¶Á×îÓÅ
+	gbufferNormalAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_format;	// å›¾åƒæ ¼å¼
+	gbufferNormalAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// é‡‡æ ·æ•°
+	gbufferNormalAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// åŠ è½½æ“ä½œ æ¸…é™¤
+	gbufferNormalAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_STORE;	// å­˜å‚¨æ“ä½œ å­˜å‚¨
+	gbufferNormalAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// æ¨¡æ¿åŠ è½½æ“ä½œ ä¸å…³å¿ƒ
+	gbufferNormalAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// æ¨¡æ¿å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	gbufferNormalAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// åˆå§‹å¸ƒå±€ æœªå®šä¹‰
+	gbufferNormalAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// æœ€ç»ˆå¸ƒå±€ ç€è‰²å™¨åªè¯»æœ€ä¼˜
 
-	// ½ğÊô¶È-´Ö²Ú¶ÈµÄGBufferÃèÊö
+	// é‡‘å±åº¦-ç²—ç³™åº¦çš„GBufferæè¿°
 	ST_RHIAttachmentDescription& gbufferMetallicRoughnessShadingmodeidAttachmentDescription = attachments[_main_camera_pass_gbuffer_b];
-	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_gbuffer_b].m_format;	// Í¼Ïñ¸ñÊ½
-	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// ²ÉÑùÊı
-	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// ¼ÓÔØ²Ù×÷ Çå³ı
-	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// ´æ´¢²Ù×÷ ²»¹ØĞÄ
-	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// Ä£°å¼ÓÔØ²Ù×÷ ²»¹ØĞÄ
-	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// Ä£°å´æ´¢²Ù×÷ ²»¹ØĞÄ
-	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// ³õÊ¼²¼¾Ö Î´¶¨Òå
-	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ×îÖÕ²¼¾Ö ×ÅÉ«Æ÷Ö»¶Á×îÓÅ
+	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_gbuffer_b].m_format;	// å›¾åƒæ ¼å¼
+	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// é‡‡æ ·æ•°
+	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// åŠ è½½æ“ä½œ æ¸…é™¤
+	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// æ¨¡æ¿åŠ è½½æ“ä½œ ä¸å…³å¿ƒ
+	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// æ¨¡æ¿å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// åˆå§‹å¸ƒå±€ æœªå®šä¹‰
+	gbufferMetallicRoughnessShadingmodeidAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// æœ€ç»ˆå¸ƒå±€ ç€è‰²å™¨åªè¯»æœ€ä¼˜
 
-	// ÑÕÉ«µÄGBufferÃèÊö
+	// é¢œè‰²çš„GBufferæè¿°
 	ST_RHIAttachmentDescription& gbufferAlbedoAttachmentDescription = attachments[_main_camera_pass_gbuffer_c];
-	gbufferAlbedoAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_gbuffer_c].m_format;	// Í¼Ïñ¸ñÊ½
-	gbufferAlbedoAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// ²ÉÑùÊı
-	gbufferAlbedoAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// ¼ÓÔØ²Ù×÷ Çå³ı
-	gbufferAlbedoAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// ´æ´¢²Ù×÷ ²»¹ØĞÄ
-	gbufferAlbedoAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// Ä£°å¼ÓÔØ²Ù×÷ ²»¹ØĞÄ
-	gbufferAlbedoAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// Ä£°å´æ´¢²Ù×÷ ²»¹ØĞÄ
-	gbufferAlbedoAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// ³õÊ¼²¼¾Ö Î´¶¨Òå
-	gbufferAlbedoAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ×îÖÕ²¼¾Ö ×ÅÉ«Æ÷Ö»¶Á×îÓÅ
+	gbufferAlbedoAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_gbuffer_c].m_format;	// å›¾åƒæ ¼å¼
+	gbufferAlbedoAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// é‡‡æ ·æ•°
+	gbufferAlbedoAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// åŠ è½½æ“ä½œ æ¸…é™¤
+	gbufferAlbedoAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	gbufferAlbedoAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// æ¨¡æ¿åŠ è½½æ“ä½œ ä¸å…³å¿ƒ
+	gbufferAlbedoAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// æ¨¡æ¿å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	gbufferAlbedoAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// åˆå§‹å¸ƒå±€ æœªå®šä¹‰
+	gbufferAlbedoAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// æœ€ç»ˆå¸ƒå±€ ç€è‰²å™¨åªè¯»æœ€ä¼˜
 
-	// ±¸ÓÃ»º³åÇø Å¼Êı ÃèÊö
+	// å¤‡ç”¨ç¼“å†²åŒº å¶æ•° æè¿°
 	ST_RHIAttachmentDescription& backupOddColorAttachmentDescription = attachments[_main_camera_pass_backup_buffer_odd];
-	backupOddColorAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_backup_buffer_odd].m_format;	// Í¼Ïñ¸ñÊ½
-	backupOddColorAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// ²ÉÑùÊı
-	backupOddColorAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// ¼ÓÔØ²Ù×÷ Çå³ı
-	backupOddColorAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// ´æ´¢²Ù×÷ ²»¹ØĞÄ
-	backupOddColorAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// Ä£°å¼ÓÔØ²Ù×÷ ²»¹ØĞÄ
-	backupOddColorAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// Ä£°å´æ´¢²Ù×÷ ²»¹ØĞÄ
-	backupOddColorAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// ³õÊ¼²¼¾Ö Î´¶¨Òå
-	backupOddColorAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ×îÖÕ²¼¾Ö ×ÅÉ«Æ÷Ö»¶Á×îÓÅ
+	backupOddColorAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_backup_buffer_odd].m_format;	// å›¾åƒæ ¼å¼
+	backupOddColorAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// é‡‡æ ·æ•°
+	backupOddColorAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// åŠ è½½æ“ä½œ æ¸…é™¤
+	backupOddColorAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	backupOddColorAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// æ¨¡æ¿åŠ è½½æ“ä½œ ä¸å…³å¿ƒ
+	backupOddColorAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// æ¨¡æ¿å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	backupOddColorAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// åˆå§‹å¸ƒå±€ æœªå®šä¹‰
+	backupOddColorAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// æœ€ç»ˆå¸ƒå±€ ç€è‰²å™¨åªè¯»æœ€ä¼˜
 
-	// ±¸ÓÃ»º³åÇø ÆæÊı ÃèÊö
+	// å¤‡ç”¨ç¼“å†²åŒº å¥‡æ•° æè¿°
 	ST_RHIAttachmentDescription& backupEvenColorAttachmentDescription = attachments[_main_camera_pass_backup_buffer_even];
-	backupEvenColorAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_backup_buffer_even].m_format;	// Í¼Ïñ¸ñÊ½
-	backupEvenColorAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// ²ÉÑùÊı
-	backupEvenColorAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// ¼ÓÔØ²Ù×÷ Çå³ı
-	backupEvenColorAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// ´æ´¢²Ù×÷ ²»¹ØĞÄ
-	backupEvenColorAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// Ä£°å¼ÓÔØ²Ù×÷ ²»¹ØĞÄ
-	backupEvenColorAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// Ä£°å´æ´¢²Ù×÷ ²»¹ØĞÄ
-	backupEvenColorAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// ³õÊ¼²¼¾Ö Î´¶¨Òå
-	backupEvenColorAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ×îÖÕ²¼¾Ö ×ÅÉ«Æ÷Ö»¶Á×îÓÅ
+	backupEvenColorAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_backup_buffer_even].m_format;	// å›¾åƒæ ¼å¼
+	backupEvenColorAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// é‡‡æ ·æ•°
+	backupEvenColorAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// åŠ è½½æ“ä½œ æ¸…é™¤
+	backupEvenColorAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	backupEvenColorAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// æ¨¡æ¿åŠ è½½æ“ä½œ ä¸å…³å¿ƒ
+	backupEvenColorAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// æ¨¡æ¿å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	backupEvenColorAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// åˆå§‹å¸ƒå±€ æœªå®šä¹‰
+	backupEvenColorAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// æœ€ç»ˆå¸ƒå±€ ç€è‰²å™¨åªè¯»æœ€ä¼˜
 
-	// ºó´¦Àí»º³åÇø Å¼Êı ÃèÊö
+	// åå¤„ç†ç¼“å†²åŒº å¶æ•° æè¿°
 	ST_RHIAttachmentDescription& postProcessOddColorAttachmentDescription = attachments[_main_camera_pass_post_process_buffer_odd];
-	postProcessOddColorAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_post_process_buffer_odd].m_format;	// Í¼Ïñ¸ñÊ½
-	postProcessOddColorAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// ²ÉÑùÊı
-	postProcessOddColorAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// ¼ÓÔØ²Ù×÷ Çå³ı
-	postProcessOddColorAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// ´æ´¢²Ù×÷ ²»¹ØĞÄ
-	postProcessOddColorAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// Ä£°å¼ÓÔØ²Ù×÷ ²»¹ØĞÄ
-	postProcessOddColorAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// Ä£°å´æ´¢²Ù×÷ ²»¹ØĞÄ
-	postProcessOddColorAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// ³õÊ¼²¼¾Ö Î´¶¨Òå
-	postProcessOddColorAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ×îÖÕ²¼¾Ö ×ÅÉ«Æ÷Ö»¶Á×îÓÅ
+	postProcessOddColorAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_post_process_buffer_odd].m_format;	// å›¾åƒæ ¼å¼
+	postProcessOddColorAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// é‡‡æ ·æ•°
+	postProcessOddColorAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// åŠ è½½æ“ä½œ æ¸…é™¤
+	postProcessOddColorAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	postProcessOddColorAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// æ¨¡æ¿åŠ è½½æ“ä½œ ä¸å…³å¿ƒ
+	postProcessOddColorAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// æ¨¡æ¿å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	postProcessOddColorAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// åˆå§‹å¸ƒå±€ æœªå®šä¹‰
+	postProcessOddColorAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// æœ€ç»ˆå¸ƒå±€ ç€è‰²å™¨åªè¯»æœ€ä¼˜
 
-	// ºó´¦Àí»º³åÇø ÆæÊı ÃèÊö
+	// åå¤„ç†ç¼“å†²åŒº å¥‡æ•° æè¿°
 	ST_RHIAttachmentDescription& postProcessEvenColorAttachmentDescription = attachments[_main_camera_pass_post_process_buffer_even];
-	postProcessEvenColorAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_post_process_buffer_odd].m_format;	// Í¼Ïñ¸ñÊ½
-	postProcessEvenColorAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// ²ÉÑùÊı
-	postProcessEvenColorAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// ¼ÓÔØ²Ù×÷ Çå³ı
-	postProcessEvenColorAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// ´æ´¢²Ù×÷ ²»¹ØĞÄ
-	postProcessEvenColorAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// Ä£°å¼ÓÔØ²Ù×÷ ²»¹ØĞÄ
-	postProcessEvenColorAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// Ä£°å´æ´¢²Ù×÷ ²»¹ØĞÄ
-	postProcessEvenColorAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// ³õÊ¼²¼¾Ö Î´¶¨Òå
-	postProcessEvenColorAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ×îÖÕ²¼¾Ö ×ÅÉ«Æ÷Ö»¶Á×îÓÅ
+	postProcessEvenColorAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_post_process_buffer_odd].m_format;	// å›¾åƒæ ¼å¼
+	postProcessEvenColorAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// é‡‡æ ·æ•°
+	postProcessEvenColorAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// åŠ è½½æ“ä½œ æ¸…é™¤
+	postProcessEvenColorAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	postProcessEvenColorAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// æ¨¡æ¿åŠ è½½æ“ä½œ ä¸å…³å¿ƒ
+	postProcessEvenColorAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// æ¨¡æ¿å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	postProcessEvenColorAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// åˆå§‹å¸ƒå±€ æœªå®šä¹‰
+	postProcessEvenColorAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// æœ€ç»ˆå¸ƒå±€ ç€è‰²å™¨åªè¯»æœ€ä¼˜
 
-	// Éî¶È¸½¼şÃèÊö
+	// æ·±åº¦é™„ä»¶æè¿°
 	ST_RHIAttachmentDescription& depthAttachmentDescription = attachments[_main_camera_pass_depth];
 	depthAttachmentDescription.m_format = m_pRHI->GetDepthImageInfo().m_depthImageFormat;
-	depthAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// ²ÉÑùÊı
-	depthAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// ¼ÓÔØ²Ù×÷ Çå³ı
-	depthAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_STORE;	// ´æ´¢²Ù×÷ ´æ´¢
-	depthAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// Ä£°å¼ÓÔØ²Ù×÷ ²»¹ØĞÄ
-	depthAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// Ä£°å´æ´¢²Ù×÷ ²»¹ØĞÄ
-	depthAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// ³õÊ¼²¼¾Ö Î´¶¨Òå
-	depthAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;	// ×îÖÕ²¼¾Ö Éî¶ÈÄ£°å¸½¼ş×îÓÅ
+	depthAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// é‡‡æ ·æ•°
+	depthAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// åŠ è½½æ“ä½œ æ¸…é™¤
+	depthAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_STORE;	// å­˜å‚¨æ“ä½œ å­˜å‚¨
+	depthAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// æ¨¡æ¿åŠ è½½æ“ä½œ ä¸å…³å¿ƒ
+	depthAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// æ¨¡æ¿å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	depthAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// åˆå§‹å¸ƒå±€ æœªå®šä¹‰
+	depthAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;	// æœ€ç»ˆå¸ƒå±€ æ·±åº¦æ¨¡æ¿é™„ä»¶æœ€ä¼˜
 
-	// ½»»»Á´Í¼ÏñÃèÊö
-	ST_RHIAttachmentDescription& swapchainImageAttachmentDescription = attachments[_main_camera_pass_swap_chain_image];	// ½»»»Á´Í¼ÏñÃèÊö
-	swapchainImageAttachmentDescription.m_format = m_pRHI->GetSwapchainInfo().m_imageFormat;	// Í¼Ïñ¸ñÊ½
-	swapchainImageAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// ²ÉÑùÊı
-	swapchainImageAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// ¼ÓÔØ²Ù×÷ Çå³ı
-	swapchainImageAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_STORE;	// ´æ´¢²Ù×÷ ´æ´¢
-	swapchainImageAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// Ä£°å¼ÓÔØ²Ù×÷ ²»¹ØĞÄ
-	swapchainImageAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// Ä£°å´æ´¢²Ù×÷ ²»¹ØĞÄ
-	swapchainImageAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// ³õÊ¼²¼¾Ö Î´¶¨Òå
-	swapchainImageAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_PRESENT_SRC_KHR;	// ×îÖÕ²¼¾Ö ³ÊÏÖÔ´
+	// äº¤æ¢é“¾å›¾åƒæè¿°
+	ST_RHIAttachmentDescription& swapchainImageAttachmentDescription = attachments[_main_camera_pass_swap_chain_image];	// äº¤æ¢é“¾å›¾åƒæè¿°
+	swapchainImageAttachmentDescription.m_format = m_pRHI->GetSwapchainInfo().m_imageFormat;	// å›¾åƒæ ¼å¼
+	swapchainImageAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// é‡‡æ ·æ•°
+	swapchainImageAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// åŠ è½½æ“ä½œ æ¸…é™¤
+	swapchainImageAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_STORE;	// å­˜å‚¨æ“ä½œ å­˜å‚¨
+	swapchainImageAttachmentDescription.m_stencilLoadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_DONT_CARE;	// æ¨¡æ¿åŠ è½½æ“ä½œ ä¸å…³å¿ƒ
+	swapchainImageAttachmentDescription.m_stencilStoreOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// æ¨¡æ¿å­˜å‚¨æ“ä½œ ä¸å…³å¿ƒ
+	swapchainImageAttachmentDescription.m_initialLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_UNDEFINED;	// åˆå§‹å¸ƒå±€ æœªå®šä¹‰
+	swapchainImageAttachmentDescription.m_finalLayout = ERHIImageLayout::RHI_IMAGE_LAYOUT_PRESENT_SRC_KHR;	// æœ€ç»ˆå¸ƒå±€ å‘ˆç°æº
 
 
-	// ×ÓÍ¨µÀÃèÊö
+	// å­é€šé“æè¿°
 	ST_RHISubpassDescription subpasses[_main_camera_subpass_count] = {};
 
-	// Main Camera Pass µÄµÚÒ»¸ö×ÓÍ¨µÀ »ù´¡Í¨µÀ
-	ST_RHIAttachmentReference basePassColorAttachmentsReference[3] = {};	// 3¸öÑÕÉ«¸½¼şÒıÓÃ
-	basePassColorAttachmentsReference[0].m_attachment = static_cast<uint32_t>(&gbufferNormalAttachmentDescription - attachments);	// µØÖ·Æ«ÒÆÖµ
-	basePassColorAttachmentsReference[0].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// ÑÕÉ«¸½¼ş×îÓÅ
-	basePassColorAttachmentsReference[1].m_attachment = static_cast<uint32_t>(&gbufferMetallicRoughnessShadingmodeidAttachmentDescription - attachments);	// µØÖ·Æ«ÒÆÖµ
-	basePassColorAttachmentsReference[1].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// ÑÕÉ«¸½¼ş×îÓÅ
-	basePassColorAttachmentsReference[2].m_attachment = static_cast<uint32_t>(&gbufferAlbedoAttachmentDescription - attachments);	// µØÖ·Æ«ÒÆÖµ
-	basePassColorAttachmentsReference[2].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// ÑÕÉ«¸½¼ş×îÓÅ
+	// Main Camera Pass çš„ç¬¬ä¸€ä¸ªå­é€šé“ åŸºç¡€é€šé“
+	ST_RHIAttachmentReference basePassColorAttachmentsReference[3] = {};	// 3ä¸ªé¢œè‰²é™„ä»¶å¼•ç”¨
+	basePassColorAttachmentsReference[0].m_attachment = static_cast<uint32_t>(&gbufferNormalAttachmentDescription - attachments);	// åœ°å€åç§»å€¼
+	basePassColorAttachmentsReference[0].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// é¢œè‰²é™„ä»¶æœ€ä¼˜
+	basePassColorAttachmentsReference[1].m_attachment = static_cast<uint32_t>(&gbufferMetallicRoughnessShadingmodeidAttachmentDescription - attachments);	// åœ°å€åç§»å€¼
+	basePassColorAttachmentsReference[1].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// é¢œè‰²é™„ä»¶æœ€ä¼˜
+	basePassColorAttachmentsReference[2].m_attachment = static_cast<uint32_t>(&gbufferAlbedoAttachmentDescription - attachments);	// åœ°å€åç§»å€¼
+	basePassColorAttachmentsReference[2].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// é¢œè‰²é™„ä»¶æœ€ä¼˜
 
-	ST_RHIAttachmentReference basePassDepthAttachmentReference = {};	// Éî¶È¸½¼şÒıÓÃ
-	basePassDepthAttachmentReference.m_attachment = static_cast<uint32_t>(&depthAttachmentDescription - attachments);	// µØÖ·Æ«ÒÆÖµ
-	basePassDepthAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;	// Éî¶ÈÄ£°å¸½¼ş×îÓÅ
+	ST_RHIAttachmentReference basePassDepthAttachmentReference = {};	// æ·±åº¦é™„ä»¶å¼•ç”¨
+	basePassDepthAttachmentReference.m_attachment = static_cast<uint32_t>(&depthAttachmentDescription - attachments);	// åœ°å€åç§»å€¼
+	basePassDepthAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;	// æ·±åº¦æ¨¡æ¿é™„ä»¶æœ€ä¼˜
 
 	ST_RHISubpassDescription& basePass = subpasses[_main_camera_subpass_basepass];
-	basePass.m_pipelineBindPoint = ERHIPipelineBindPoint::RHI_PIPELINE_BIND_POINT_GRAPHICS;	// Í¼ĞÎ¹ÜÏß°ó¶¨µã
-	basePass.m_colorAttachmentCount = sizeof(basePassColorAttachmentsReference) / sizeof(basePassColorAttachmentsReference[0]);	// ÑÕÉ«¸½¼şÊıÁ¿
-	basePass.m_pColorAttachments = &basePassColorAttachmentsReference[0];	// ÑÕÉ«¸½¼şÒıÓÃ
-	basePass.m_pDepthStencilAttachment = &basePassDepthAttachmentReference;	// Éî¶È¸½¼şÒıÓÃ
+	basePass.m_pipelineBindPoint = ERHIPipelineBindPoint::RHI_PIPELINE_BIND_POINT_GRAPHICS;	// å›¾å½¢ç®¡çº¿ç»‘å®šç‚¹
+	basePass.m_colorAttachmentCount = sizeof(basePassColorAttachmentsReference) / sizeof(basePassColorAttachmentsReference[0]);	// é¢œè‰²é™„ä»¶æ•°é‡
+	basePass.m_pColorAttachments = &basePassColorAttachmentsReference[0];	// é¢œè‰²é™„ä»¶å¼•ç”¨
+	basePass.m_pDepthStencilAttachment = &basePassDepthAttachmentReference;	// æ·±åº¦é™„ä»¶å¼•ç”¨
 	basePass.m_preserveAttachmentCount = 0;
 	basePass.m_pPreserveAttachments = nullptr;
 
-	// Main Camera Pass µÄµÚ¶ş¸ö×ÓÍ¨µÀ ÑÓ³Ù¹âÕÕÍ¨µÀ
+	// Main Camera Pass çš„ç¬¬äºŒä¸ªå­é€šé“ å»¶è¿Ÿå…‰ç…§é€šé“
 	ST_RHIAttachmentReference deferredLightingPassInputAttachmentsReference[4] = {};
 	deferredLightingPassInputAttachmentsReference[0].m_attachment = static_cast<uint32_t>(&gbufferNormalAttachmentDescription - attachments);
-	deferredLightingPassInputAttachmentsReference[0].m_layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ×ÅÉ«Æ÷Ö»¶Á×îÓÅ
+	deferredLightingPassInputAttachmentsReference[0].m_layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ç€è‰²å™¨åªè¯»æœ€ä¼˜
 	deferredLightingPassInputAttachmentsReference[1].m_attachment = static_cast<uint32_t>(&gbufferMetallicRoughnessShadingmodeidAttachmentDescription - attachments);
-	deferredLightingPassInputAttachmentsReference[1].m_layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ×ÅÉ«Æ÷Ö»¶Á×îÓÅ
+	deferredLightingPassInputAttachmentsReference[1].m_layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ç€è‰²å™¨åªè¯»æœ€ä¼˜
 	deferredLightingPassInputAttachmentsReference[2].m_attachment = static_cast<uint32_t>(&gbufferAlbedoAttachmentDescription - attachments);
-	deferredLightingPassInputAttachmentsReference[2].m_layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ×ÅÉ«Æ÷Ö»¶Á×îÓÅ
+	deferredLightingPassInputAttachmentsReference[2].m_layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ç€è‰²å™¨åªè¯»æœ€ä¼˜
 	deferredLightingPassInputAttachmentsReference[3].m_attachment = static_cast<uint32_t>(&depthAttachmentDescription - attachments);
-	deferredLightingPassInputAttachmentsReference[3].m_layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ×ÅÉ«Æ÷Ö»¶Á×îÓÅ
+	deferredLightingPassInputAttachmentsReference[3].m_layout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ç€è‰²å™¨åªè¯»æœ€ä¼˜
 
 	ST_RHIAttachmentReference deferredLightingPassColorAttachmentReference[1] = {};
 	deferredLightingPassColorAttachmentReference[0].m_attachment = static_cast<uint32_t>(&backupOddColorAttachmentDescription - attachments);
-	deferredLightingPassColorAttachmentReference[0].m_layout = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// ÑÕÉ«¸½¼ş×îÓÅ
+	deferredLightingPassColorAttachmentReference[0].m_layout = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// é¢œè‰²é™„ä»¶æœ€ä¼˜
 
 	ST_RHISubpassDescription& deferredLightingPass = subpasses[_main_camera_subpass_deferred_lighting];
-	deferredLightingPass.m_pipelineBindPoint = ERHIPipelineBindPoint::RHI_PIPELINE_BIND_POINT_GRAPHICS;	// Í¼ĞÎ¹ÜÏß°ó¶¨µã
-	deferredLightingPass.m_inputAttachmentCount = sizeof(deferredLightingPassInputAttachmentsReference) / sizeof(deferredLightingPassInputAttachmentsReference[0]);	// ÊäÈë¸½¼şÊıÁ¿
-	deferredLightingPass.m_pInputAttachments = &deferredLightingPassInputAttachmentsReference[0];	// ÊäÈë¸½¼şÒıÓÃ
-	deferredLightingPass.m_colorAttachmentCount = sizeof(deferredLightingPassColorAttachmentReference) / sizeof(deferredLightingPassColorAttachmentReference[0]);	// ÑÕÉ«¸½¼şÊıÁ¿
-	deferredLightingPass.m_pColorAttachments = &deferredLightingPassColorAttachmentReference[0];	// ÑÕÉ«¸½¼şÒıÓÃ
+	deferredLightingPass.m_pipelineBindPoint = ERHIPipelineBindPoint::RHI_PIPELINE_BIND_POINT_GRAPHICS;	// å›¾å½¢ç®¡çº¿ç»‘å®šç‚¹
+	deferredLightingPass.m_inputAttachmentCount = sizeof(deferredLightingPassInputAttachmentsReference) / sizeof(deferredLightingPassInputAttachmentsReference[0]);	// è¾“å…¥é™„ä»¶æ•°é‡
+	deferredLightingPass.m_pInputAttachments = &deferredLightingPassInputAttachmentsReference[0];	// è¾“å…¥é™„ä»¶å¼•ç”¨
+	deferredLightingPass.m_colorAttachmentCount = sizeof(deferredLightingPassColorAttachmentReference) / sizeof(deferredLightingPassColorAttachmentReference[0]);	// é¢œè‰²é™„ä»¶æ•°é‡
+	deferredLightingPass.m_pColorAttachments = &deferredLightingPassColorAttachmentReference[0];	// é¢œè‰²é™„ä»¶å¼•ç”¨
 	deferredLightingPass.m_pDepthStencilAttachment = nullptr;
-	deferredLightingPass.m_preserveAttachmentCount = 0;	// ±£Áô¸½¼şÊıÁ¿
-	deferredLightingPass.m_pPreserveAttachments = nullptr;	// ±£Áô¸½¼şÒıÓÃ
+	deferredLightingPass.m_preserveAttachmentCount = 0;	// ä¿ç•™é™„ä»¶æ•°é‡
+	deferredLightingPass.m_pPreserveAttachments = nullptr;	// ä¿ç•™é™„ä»¶å¼•ç”¨
 
-	// Main Camera Pass µÄµÚÈı¸ö×ÓÍ¨µÀ Ç°Ïò¹âÕÕÍ¨µÀ
+	// Main Camera Pass çš„ç¬¬ä¸‰ä¸ªå­é€šé“ å‰å‘å…‰ç…§é€šé“
 	ST_RHIAttachmentReference forwardLightingPassColorAttachmentsReference[1] = {};
 	forwardLightingPassColorAttachmentsReference[0].m_attachment = static_cast<uint32_t>(&backupOddColorAttachmentDescription - attachments);
-	forwardLightingPassColorAttachmentsReference[0].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// ÑÕÉ«¸½¼ş×îÓÅ
+	forwardLightingPassColorAttachmentsReference[0].m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// é¢œè‰²é™„ä»¶æœ€ä¼˜
 
 	ST_RHIAttachmentReference forwardLightingPassDepthAttachmentReference{};
 	forwardLightingPassDepthAttachmentReference.m_attachment = static_cast<uint32_t>(&depthAttachmentDescription - attachments);
-	forwardLightingPassDepthAttachmentReference.m_layout = RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;	// Éî¶ÈÄ£°å¸½¼ş×îÓÅ
+	forwardLightingPassDepthAttachmentReference.m_layout = RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;	// æ·±åº¦æ¨¡æ¿é™„ä»¶æœ€ä¼˜
 
 	ST_RHISubpassDescription& forwardLightingPass = subpasses[_main_camera_subpass_forward_lighting];
-	forwardLightingPass.m_pipelineBindPoint = ERHIPipelineBindPoint::RHI_PIPELINE_BIND_POINT_GRAPHICS;	// Í¼ĞÎ¹ÜÏß°ó¶¨µã
-	forwardLightingPass.m_inputAttachmentCount = 0;	// ÊäÈë¸½¼şÊıÁ¿
-	forwardLightingPass.m_pInputAttachments = nullptr;	// ÊäÈë¸½¼şÒıÓÃ
-	forwardLightingPass.m_colorAttachmentCount = sizeof(forwardLightingPassColorAttachmentsReference) / sizeof(forwardLightingPassColorAttachmentsReference[0]);	// ÑÕÉ«¸½¼şÊıÁ¿
-	forwardLightingPass.m_pColorAttachments = &forwardLightingPassColorAttachmentsReference[0];	// ÑÕÉ«¸½¼şÒıÓÃ
-	forwardLightingPass.m_pDepthStencilAttachment = &forwardLightingPassDepthAttachmentReference;	// Éî¶È¸½¼şÒıÓÃ
-	forwardLightingPass.m_preserveAttachmentCount = 0;	// ±£Áô¸½¼şÊıÁ¿
-	forwardLightingPass.m_pPreserveAttachments = nullptr;	// ±£Áô¸½¼şÒıÓÃ
+	forwardLightingPass.m_pipelineBindPoint = ERHIPipelineBindPoint::RHI_PIPELINE_BIND_POINT_GRAPHICS;	// å›¾å½¢ç®¡çº¿ç»‘å®šç‚¹
+	forwardLightingPass.m_inputAttachmentCount = 0;	// è¾“å…¥é™„ä»¶æ•°é‡
+	forwardLightingPass.m_pInputAttachments = nullptr;	// è¾“å…¥é™„ä»¶å¼•ç”¨
+	forwardLightingPass.m_colorAttachmentCount = sizeof(forwardLightingPassColorAttachmentsReference) / sizeof(forwardLightingPassColorAttachmentsReference[0]);	// é¢œè‰²é™„ä»¶æ•°é‡
+	forwardLightingPass.m_pColorAttachments = &forwardLightingPassColorAttachmentsReference[0];	// é¢œè‰²é™„ä»¶å¼•ç”¨
+	forwardLightingPass.m_pDepthStencilAttachment = &forwardLightingPassDepthAttachmentReference;	// æ·±åº¦é™„ä»¶å¼•ç”¨
+	forwardLightingPass.m_preserveAttachmentCount = 0;	// ä¿ç•™é™„ä»¶æ•°é‡
+	forwardLightingPass.m_pPreserveAttachments = nullptr;	// ä¿ç•™é™„ä»¶å¼•ç”¨
 
-	// É«µ÷Ó³ÉäÍ¨µÀ
+	// è‰²è°ƒæ˜ å°„é€šé“
 	ST_RHIAttachmentReference toneMappingPassInputAttachmentReference{};
 	toneMappingPassInputAttachmentReference.m_attachment = static_cast<uint32_t>(&backupOddColorAttachmentDescription - attachments);
 	toneMappingPassInputAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	ST_RHIAttachmentReference toneMappingPassColorAttachmentReference{};
 	toneMappingPassColorAttachmentReference.m_attachment = static_cast<uint32_t>(&backupEvenColorAttachmentDescription - attachments);
-	toneMappingPassColorAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// ÑÕÉ«¸½¼ş×îÓÅ
+	toneMappingPassColorAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;	// é¢œè‰²é™„ä»¶æœ€ä¼˜
 
 	ST_RHISubpassDescription& toneMappingPass = subpasses[_main_camera_subpass_tone_mapping];
 	toneMappingPass.m_pipelineBindPoint = RHI_PIPELINE_BIND_POINT_GRAPHICS;
@@ -332,7 +332,7 @@ void MainCameraPass::SetupRenderPass()
 	toneMappingPass.m_preserveAttachmentCount = 0;
 	toneMappingPass.m_pPreserveAttachments = nullptr;
 
-	// ÑÕÉ«·Ö¼¶Í¨µÀ
+	// é¢œè‰²åˆ†çº§é€šé“
 	ST_RHIAttachmentReference colorGradingPassInputAttachmentReference{};
 	colorGradingPassInputAttachmentReference.m_attachment = static_cast<uint32_t>(&backupEvenColorAttachmentDescription - attachments);
 	colorGradingPassInputAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -340,7 +340,7 @@ void MainCameraPass::SetupRenderPass()
 	ST_RHIAttachmentReference colorGradingPassColorAttachmentReference{};
 	if (m_enableFXAA)
 	{
-		colorGradingPassColorAttachmentReference.m_attachment = static_cast<uint32_t>(&postProcessOddColorAttachmentDescription - attachments);	// Êä³öµ½ºó´¦Àí Å¼Êı
+		colorGradingPassColorAttachmentReference.m_attachment = static_cast<uint32_t>(&postProcessOddColorAttachmentDescription - attachments);	// è¾“å‡ºåˆ°åå¤„ç† å¶æ•°
 	}
 	else
 	{
@@ -358,15 +358,15 @@ void MainCameraPass::SetupRenderPass()
 	colorGradingPass.m_preserveAttachmentCount = 0;
 	colorGradingPass.m_pPreserveAttachments = nullptr;
 
-	// FXAAÍ¨µÀ 
+	// FXAAé€šé“ 
 	ST_RHIAttachmentReference fxaaPassInputAttachmentReference{};
 	if (m_enableFXAA)
 	{
-		fxaaPassInputAttachmentReference.m_attachment = static_cast<uint32_t>(&postProcessOddColorAttachmentDescription - attachments);	// ºó´¦Àí Å¼Êı
+		fxaaPassInputAttachmentReference.m_attachment = static_cast<uint32_t>(&postProcessOddColorAttachmentDescription - attachments);	// åå¤„ç† å¶æ•°
 	}
 	else
 	{
-		fxaaPassInputAttachmentReference.m_attachment = static_cast<uint32_t>(&backupEvenColorAttachmentDescription - attachments);	// ÆæÊı
+		fxaaPassInputAttachmentReference.m_attachment = static_cast<uint32_t>(&backupEvenColorAttachmentDescription - attachments);	// å¥‡æ•°
 	}
 	fxaaPassInputAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -384,7 +384,7 @@ void MainCameraPass::SetupRenderPass()
 	fxaaPass.m_preserveAttachmentCount = 0;
 	fxaaPass.m_pPreserveAttachments = nullptr;
 
-	// UIÍ¨µÀ
+	// UIé€šé“
 	ST_RHIAttachmentReference uiPassColorAttachmentReference{};
 	uiPassColorAttachmentReference.m_attachment = static_cast<uint32_t>(&backupEvenColorAttachmentDescription - attachments);
 	uiPassColorAttachmentReference.m_layout = ERHIImageLayout::RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -422,7 +422,7 @@ void MainCameraPass::SetupRenderPass()
 	combineUIPass.m_preserveAttachmentCount = 0;
 	combineUIPass.m_pPreserveAttachments = nullptr;
 
-	// ÒÀÀµ£¿£¿£¿
+	// ä¾èµ–ï¼Ÿï¼Ÿï¼Ÿ
 	ST_RHISubpassDependency dependencies[8] = {};
 
 	ST_RHISubpassDependency& deferredLightingPassDependOnShadowMapPass = dependencies[0];
@@ -513,6 +513,270 @@ void MainCameraPass::SetupRenderPass()
 
 void MainCameraPass::SetupDescriptorSetLayout()
 {
+	m_descriptorInfos.resize(_layout_type_count);
+
+	// ç½‘æ ¼æè¿°ç¬¦é›†
+	{
+		ST_RHIDescriptorSetLayoutBinding meshMeshLayoutBindings[1];
+
+		ST_RHIDescriptorSetLayoutBinding& meshMeshLayoutUniformBufferBinding = meshMeshLayoutBindings[0];	// ç»Ÿä¸€ç¼“å†²åŒºç»‘å®š èµ‹å€¼
+		meshMeshLayoutUniformBufferBinding.m_binding = 0;
+		meshMeshLayoutUniformBufferBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;	// å­˜å‚¨ç¼“å†²åŒº
+		meshMeshLayoutUniformBufferBinding.m_descriptorCount = 1;
+		meshMeshLayoutUniformBufferBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT;	// é¡¶ç‚¹ç€è‰²å™¨
+		meshMeshLayoutUniformBufferBinding.m_pImmutableSamplers = nullptr;	// ä¸å¯å˜é‡‡æ ·å™¨
+
+		ST_RHIDescriptorSetLayoutCreateInfo meshMeshLayoutCreateInfo{};
+		meshMeshLayoutCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		meshMeshLayoutCreateInfo.m_bindingCount = 1;
+		meshMeshLayoutCreateInfo.m_pBindings = meshMeshLayoutBindings;
+
+		// åˆ›å»º ç½‘æ ¼æè¿°ç¬¦é›† å¸ƒå±€
+		if (m_pRHI->CreateDescriptorSetLayout(&meshMeshLayoutCreateInfo, m_descriptorInfos[_per_mesh].m_pDescriptorSetLayout) != RHI_SUCCESS)
+		{
+			throw std::runtime_error("create mesh mesh layout");
+		}
+	}
+
+	// å…¨å±€æè¿°ç¬¦é›†
+	{
+		ST_RHIDescriptorSetLayoutBinding meshGlobalLayoutBindings[8];
+
+		// æ¯å¸§å­˜å‚¨ç¼“å†²åŒºç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshGlobalLayoutPerframeStorageBufferBinding = meshGlobalLayoutBindings[0];
+		meshGlobalLayoutPerframeStorageBufferBinding.m_binding = 0;
+		meshGlobalLayoutPerframeStorageBufferBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+		meshGlobalLayoutPerframeStorageBufferBinding.m_descriptorCount = 1;
+		meshGlobalLayoutPerframeStorageBufferBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT | RHI_SHADER_STAGE_FRAGMENT_BIT;
+		meshGlobalLayoutPerframeStorageBufferBinding.m_pImmutableSamplers = nullptr;
+
+		// æ¯æ¬¡ç»˜åˆ¶å­˜å‚¨ç¼“å†²åŒºç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshGlobalLayoutPerDrawcallStorageBufferBinding = meshGlobalLayoutBindings[1];
+		meshGlobalLayoutPerDrawcallStorageBufferBinding.m_binding = 1;
+		meshGlobalLayoutPerDrawcallStorageBufferBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;	// åŠ¨æ€å­˜å‚¨ç¼“å†²åŒºï¼Œå…è®¸åœ¨è¿è¡Œæ—¶æ›´æ”¹ç¼“å†²åŒº
+		meshGlobalLayoutPerDrawcallStorageBufferBinding.m_descriptorCount = 1;
+		meshGlobalLayoutPerDrawcallStorageBufferBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT;
+		meshGlobalLayoutPerDrawcallStorageBufferBinding.m_pImmutableSamplers = nullptr;
+
+		// é¡¶ç‚¹æ··åˆå­˜å‚¨ç¼“å†²åŒºç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshGlobalLayoutPerDrawcallVertexBlendingStorageBufferBinding = meshGlobalLayoutBindings[2];
+		meshGlobalLayoutPerDrawcallVertexBlendingStorageBufferBinding.m_binding = 2;
+		meshGlobalLayoutPerDrawcallVertexBlendingStorageBufferBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+		meshGlobalLayoutPerDrawcallVertexBlendingStorageBufferBinding.m_descriptorCount = 1;
+		meshGlobalLayoutPerDrawcallVertexBlendingStorageBufferBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT;
+		meshGlobalLayoutPerDrawcallVertexBlendingStorageBufferBinding.m_pImmutableSamplers = nullptr;
+
+		// BRDF LUT çº¹ç†ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshGlobalLayoutBrdfLUTTextureBinding = meshGlobalLayoutBindings[3];
+		meshGlobalLayoutBrdfLUTTextureBinding.m_binding = 3;
+		meshGlobalLayoutBrdfLUTTextureBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;	// ç»„åˆå›¾åƒé‡‡æ ·å™¨ï¼Œé€šå¸¸ç”¨äºçº¹ç†é‡‡æ ·
+		meshGlobalLayoutBrdfLUTTextureBinding.m_descriptorCount = 1;
+		meshGlobalLayoutBrdfLUTTextureBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_FRAGMENT_BIT;
+		meshGlobalLayoutBrdfLUTTextureBinding.m_pImmutableSamplers = nullptr;
+
+		// ç¯å¢ƒå…‰ç…§çº¹ç†ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshGlobalLayoutIrradianceTextureBinding = meshGlobalLayoutBindings[4];
+		meshGlobalLayoutIrradianceTextureBinding = meshGlobalLayoutBrdfLUTTextureBinding;
+		meshGlobalLayoutIrradianceTextureBinding.m_binding = 4;
+
+		// é•œé¢åå°„çº¹ç†ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshGlobalLayoutSpecularTextureBinding = meshGlobalLayoutBindings[5];
+		meshGlobalLayoutSpecularTextureBinding = meshGlobalLayoutBrdfLUTTextureBinding;
+		meshGlobalLayoutSpecularTextureBinding.m_binding = 5;
+
+		// ç‚¹å…‰æºé˜´å½±çº¹ç†ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshGlobalLayoutPointLightShadowTextureBinding = meshGlobalLayoutBindings[6];
+		meshGlobalLayoutPointLightShadowTextureBinding = meshGlobalLayoutBrdfLUTTextureBinding;
+		meshGlobalLayoutPointLightShadowTextureBinding.m_binding = 6;
+
+		// ç›´å°„å…‰é˜´å½±çº¹ç†ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshGlobalLayoutDirectionalLightShadowTextureBinding = meshGlobalLayoutBindings[7];
+		meshGlobalLayoutDirectionalLightShadowTextureBinding = meshGlobalLayoutBrdfLUTTextureBinding;
+		meshGlobalLayoutDirectionalLightShadowTextureBinding.m_binding = 7;
+
+		ST_RHIDescriptorSetLayoutCreateInfo meshGlobalLayoutCreateInfo;
+		meshGlobalLayoutCreateInfo.m_sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		meshGlobalLayoutCreateInfo.m_pNext = NULL;
+		meshGlobalLayoutCreateInfo.m_flags = 0;
+		meshGlobalLayoutCreateInfo.m_bindingCount = (sizeof(meshGlobalLayoutBindings) / sizeof(meshGlobalLayoutBindings[0]));
+		meshGlobalLayoutCreateInfo.m_pBindings = meshGlobalLayoutBindings;
+
+		// åˆ›å»º å…¨å±€æè¿°ç¬¦é›† å¸ƒå±€
+		if (RHI_SUCCESS != m_pRHI->CreateDescriptorSetLayout(&meshGlobalLayoutCreateInfo, m_descriptorInfos[_mesh_global].m_pDescriptorSetLayout))
+		{
+			throw std::runtime_error("create mesh global layout");
+		}
+	}
+
+	// ç½‘æ ¼æè´¨æè¿°ç¬¦é›†
+	{
+		ST_RHIDescriptorSetLayoutBinding meshMaterialLayoutBindings[6];
+
+		// (set = 2, binding = 0 in fragment shader)
+		// æè´¨ç»Ÿä¸€ç¼“å†²åŒºç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshMaterialLayoutUniformBufferBinding = meshMaterialLayoutBindings[0];
+		meshMaterialLayoutUniformBufferBinding.m_binding = 0;
+		meshMaterialLayoutUniformBufferBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		meshMaterialLayoutUniformBufferBinding.m_descriptorCount = 1;
+		meshMaterialLayoutUniformBufferBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_FRAGMENT_BIT;
+		meshMaterialLayoutUniformBufferBinding.m_pImmutableSamplers = nullptr;
+
+		// (set = 2, binding = 1 in fragment shader)
+		// åŸºç¡€é¢œè‰²çº¹ç†ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshMaterialLayoutBaseColorTextureBinding = meshMaterialLayoutBindings[1];
+		meshMaterialLayoutBaseColorTextureBinding.m_binding = 1;
+		meshMaterialLayoutBaseColorTextureBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		meshMaterialLayoutBaseColorTextureBinding.m_descriptorCount = 1;
+		meshMaterialLayoutBaseColorTextureBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_FRAGMENT_BIT;
+		meshMaterialLayoutBaseColorTextureBinding.m_pImmutableSamplers = nullptr;
+
+		// (set = 2, binding = 2 in fragment shader)
+		// é‡‘å±åº¦-ç²—ç³™åº¦çº¹ç†ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshMaterialLayoutMetallicRoughnessTextureBinding = meshMaterialLayoutBindings[2];
+		meshMaterialLayoutMetallicRoughnessTextureBinding = meshMaterialLayoutBaseColorTextureBinding;
+		meshMaterialLayoutMetallicRoughnessTextureBinding.m_binding = 2;
+
+		// (set = 2, binding = 3 in fragment shader)
+		// æ³•çº¿-ç²—ç³™åº¦çº¹ç†ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshMaterialLayoutNormalRoughnessTextureBinding = meshMaterialLayoutBindings[3];
+		meshMaterialLayoutNormalRoughnessTextureBinding = meshMaterialLayoutBaseColorTextureBinding;
+		meshMaterialLayoutNormalRoughnessTextureBinding.m_binding = 3;
+
+		// (set = 2, binding = 4 in fragment shader)
+		// é®æŒ¡çº¹ç†ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshMaterialLayoutOcclusionTexture_binding = meshMaterialLayoutBindings[4];
+		meshMaterialLayoutOcclusionTexture_binding = meshMaterialLayoutBaseColorTextureBinding;
+		meshMaterialLayoutOcclusionTexture_binding.m_binding = 4;
+
+		// (set = 2, binding = 5 in fragment shader)
+		// è‡ªå‘å…‰çº¹ç†ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& meshMaterialLayoutEmissiveTextureBinding = meshMaterialLayoutBindings[5];
+		meshMaterialLayoutEmissiveTextureBinding = meshMaterialLayoutBaseColorTextureBinding;
+		meshMaterialLayoutEmissiveTextureBinding.m_binding = 5;
+
+		// åˆ›å»º ç½‘æ ¼æè´¨æè¿°ç¬¦é›† å¸ƒå±€
+		ST_RHIDescriptorSetLayoutCreateInfo meshMaterialLayoutCreateInfo;
+		meshMaterialLayoutCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		meshMaterialLayoutCreateInfo.m_pNext = nullptr;
+		meshMaterialLayoutCreateInfo.m_flags = 0;
+		meshMaterialLayoutCreateInfo.m_bindingCount = 6;
+		meshMaterialLayoutCreateInfo.m_pBindings = meshMaterialLayoutBindings;
+
+		if (m_pRHI->CreateDescriptorSetLayout(&meshMaterialLayoutCreateInfo, m_descriptorInfos[_mesh_per_material].m_pDescriptorSetLayout) != RHI_SUCCESS)
+		{
+			throw std::runtime_error("create mesh material layout");
+		}
+	}
+
+	// å¤©ç©ºç›’æè¿°ç¬¦é›†
+	{
+		ST_RHIDescriptorSetLayoutBinding skyboxLayoutBindings[2];
+
+		// æ¯å¸§å­˜å‚¨ç¼“å†²åŒºç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& skyboxLayoutPerframeStorageBufferBinding = skyboxLayoutBindings[0];
+		skyboxLayoutPerframeStorageBufferBinding.m_binding = 0;
+		skyboxLayoutPerframeStorageBufferBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+		skyboxLayoutPerframeStorageBufferBinding.m_descriptorCount = 1;
+		skyboxLayoutPerframeStorageBufferBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT;
+		skyboxLayoutPerframeStorageBufferBinding.m_pImmutableSamplers = nullptr;
+
+		// ç¯å¢ƒçº¹ç†ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& skyboxLayoutSpecularTextureBinding = skyboxLayoutBindings[1];
+		skyboxLayoutSpecularTextureBinding.m_binding = 1;
+		skyboxLayoutSpecularTextureBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		skyboxLayoutSpecularTextureBinding.m_descriptorCount = 1;
+		skyboxLayoutSpecularTextureBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_FRAGMENT_BIT;
+		skyboxLayoutSpecularTextureBinding.m_pImmutableSamplers = nullptr;
+
+		// åˆ›å»º å¤©ç©ºç›’æè¿°ç¬¦é›† å¸ƒå±€
+		ST_RHIDescriptorSetLayoutCreateInfo skyboxLayoutCreateInfo{};
+		skyboxLayoutCreateInfo.m_sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		skyboxLayoutCreateInfo.m_bindingCount = 2;
+		skyboxLayoutCreateInfo.m_pBindings = skyboxLayoutBindings;
+
+		if (RHI_SUCCESS != m_pRHI->CreateDescriptorSetLayout(&skyboxLayoutCreateInfo, m_descriptorInfos[_skybox].m_pDescriptorSetLayout))
+		{
+			throw std::runtime_error("create skybox layout");
+		}
+	}
+
+	// åæ ‡è½´æè¿°ç¬¦é›†
+	{
+		ST_RHIDescriptorSetLayoutBinding axisLayoutBindings[2];
+
+		// æ¯å¸§å­˜å‚¨ç¼“å†²åŒºç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& axisLayoutPerframeStorageBufferBinding = axisLayoutBindings[0];
+		axisLayoutPerframeStorageBufferBinding.m_binding = 0;
+		axisLayoutPerframeStorageBufferBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;	// åŠ¨æ€å­˜å‚¨ç¼“å†²åŒºï¼Œå…è®¸åœ¨è¿è¡Œæ—¶æ›´æ”¹ç¼“å†²åŒº
+		axisLayoutPerframeStorageBufferBinding.m_descriptorCount = 1;
+		axisLayoutPerframeStorageBufferBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT;
+		axisLayoutPerframeStorageBufferBinding.m_pImmutableSamplers = NULL;
+
+		// æ¨¡å‹å­˜å‚¨ç¼“å†²åŒºç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& axisLayoutStorageBufferBinding = axisLayoutBindings[1];
+		axisLayoutStorageBufferBinding.m_binding = 1;
+		axisLayoutStorageBufferBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;	// å­˜å‚¨ç¼“å†²åŒºï¼Œé€šå¸¸ç”¨äºå­˜å‚¨å¤§é‡æ•°æ®
+		axisLayoutStorageBufferBinding.m_descriptorCount = 1;
+		axisLayoutStorageBufferBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT;
+		axisLayoutStorageBufferBinding.m_pImmutableSamplers = NULL;
+
+		// åˆ›å»º åæ ‡è½´æè¿°ç¬¦é›† å¸ƒå±€
+		ST_RHIDescriptorSetLayoutCreateInfo axisLayoutCreateInfo{};
+		axisLayoutCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		axisLayoutCreateInfo.m_bindingCount = 2;
+		axisLayoutCreateInfo.m_pBindings = axisLayoutBindings;
+
+		if (RHI_SUCCESS != m_pRHI->CreateDescriptorSetLayout(&axisLayoutCreateInfo, m_descriptorInfos[_axis].m_pDescriptorSetLayout))
+		{
+			throw std::runtime_error("create axis layout");
+		}
+	}
+
+	// å»¶è¿Ÿå…‰ç…§å…¨å±€æè¿°ç¬¦é›†
+	{
+		ST_RHIDescriptorSetLayoutBinding gbufferLightingGlobalLayoutBindings[4];
+
+		// æ³•çº¿ è¾“å…¥é™„ä»¶ ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& gbufferNormalGlobalLayoutInputAttachmentBinding = gbufferLightingGlobalLayoutBindings[0];
+		gbufferNormalGlobalLayoutInputAttachmentBinding.m_binding = 0;
+		gbufferNormalGlobalLayoutInputAttachmentBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;	// è¾“å…¥é™„ä»¶ï¼Œé€šå¸¸ç”¨äºæ¸²æŸ“ç®¡çº¿ä¸­çš„å­é€šé“
+		gbufferNormalGlobalLayoutInputAttachmentBinding.m_descriptorCount = 1;
+		gbufferNormalGlobalLayoutInputAttachmentBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_FRAGMENT_BIT;
+
+		// é‡‘å±åº¦-ç²—ç³™åº¦-é®æŒ¡ è¾“å…¥é™„ä»¶ ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& gbufferMetallicRoughnessShadingmodeidGlobalLayoutInputAttachmentBinding = gbufferLightingGlobalLayoutBindings[1];
+		gbufferMetallicRoughnessShadingmodeidGlobalLayoutInputAttachmentBinding.m_binding = 1;
+		gbufferMetallicRoughnessShadingmodeidGlobalLayoutInputAttachmentBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		gbufferMetallicRoughnessShadingmodeidGlobalLayoutInputAttachmentBinding.m_descriptorCount = 1;
+		gbufferMetallicRoughnessShadingmodeidGlobalLayoutInputAttachmentBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_FRAGMENT_BIT;
+
+		// åŸºç¡€é¢œè‰² è¾“å…¥é™„ä»¶ ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& gbufferAlbedoGlobalLayoutInputAttachmentBinding = gbufferLightingGlobalLayoutBindings[2];
+		gbufferAlbedoGlobalLayoutInputAttachmentBinding.m_binding = 2;
+		gbufferAlbedoGlobalLayoutInputAttachmentBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		gbufferAlbedoGlobalLayoutInputAttachmentBinding.m_descriptorCount = 1;
+		gbufferAlbedoGlobalLayoutInputAttachmentBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_FRAGMENT_BIT;
+
+		// æ·±åº¦ è¾“å…¥é™„ä»¶ ç»‘å®š èµ‹å€¼
+		ST_RHIDescriptorSetLayoutBinding& gbufferDepthGlobalLayoutInputAttachmentBinding = gbufferLightingGlobalLayoutBindings[3];
+		gbufferDepthGlobalLayoutInputAttachmentBinding.m_binding = 3;
+		gbufferDepthGlobalLayoutInputAttachmentBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		gbufferDepthGlobalLayoutInputAttachmentBinding.m_descriptorCount = 1;
+		gbufferDepthGlobalLayoutInputAttachmentBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_FRAGMENT_BIT;
+
+		// åˆ›å»º å»¶è¿Ÿå…‰ç…§å…¨å±€æè¿°ç¬¦é›† å¸ƒå±€
+		ST_RHIDescriptorSetLayoutCreateInfo gbufferLightingGlobalLayoutCreateInfo;
+		gbufferLightingGlobalLayoutCreateInfo.m_sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		gbufferLightingGlobalLayoutCreateInfo.m_pNext = NULL;
+		gbufferLightingGlobalLayoutCreateInfo.m_flags = 0;
+		gbufferLightingGlobalLayoutCreateInfo.m_bindingCount = sizeof(gbufferLightingGlobalLayoutBindings) / sizeof(gbufferLightingGlobalLayoutBindings[0]);
+		gbufferLightingGlobalLayoutCreateInfo.m_pBindings = gbufferLightingGlobalLayoutBindings;
+
+		if (RHI_SUCCESS != m_pRHI->CreateDescriptorSetLayout(&gbufferLightingGlobalLayoutCreateInfo, m_descriptorInfos[_deferred_lighting].m_pDescriptorSetLayout))
+		{
+			throw std::runtime_error("create deferred lighting global layout");
+		}
+	}
 }
 
 void MainCameraPass::SetupPipelines()
