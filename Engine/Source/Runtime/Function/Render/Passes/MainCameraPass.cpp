@@ -1,5 +1,9 @@
 ﻿#include "MainCameraPass.h"
 
+#include <MeshVert.h>
+#include <MeshGBufferFrag.h>
+#include "Runtime/Function/Render/RenderMesh.h"
+
 NAMESPACE_XYH_BEGIN
 
 void MainCameraPass::Initialize(const ST_RenderPassInitInfo* initInfo)
@@ -17,7 +21,7 @@ void MainCameraPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 	SetupPipelines();	// 创建渲染管线
 
-	SetupDescriptorSet();	// 
+	SetupDescriptorSet();	// 设置描述符集
 
 	SetupFramebufferDescriptorSet();
 
@@ -781,6 +785,95 @@ void MainCameraPass::SetupDescriptorSetLayout()
 
 void MainCameraPass::SetupPipelines()
 {
+	m_renderPipelines.resize(_render_pipeline_type_count);	// 调整渲染管线数组大小
+
+	// 网格GBuffer 图形管线
+	{
+		RHIDescriptorSetLayout* descriptorsetLayouts[3] = {
+			m_descriptorInfos[_mesh_global].m_pDescriptorSetLayout,
+			m_descriptorInfos[_per_mesh].m_pDescriptorSetLayout,
+			m_descriptorInfos[_mesh_per_material].m_pDescriptorSetLayout
+		};
+
+		// 创建渲染管线布局
+		ST_RHIPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+		pipelineLayoutCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutCreateInfo.m_setLayoutCount = 3;
+		pipelineLayoutCreateInfo.m_pSetLayouts = descriptorsetLayouts;
+
+		if (m_pRHI->CreatePipelineLayout(&pipelineLayoutCreateInfo, m_renderPipelines[_render_pipeline_type_mesh_gbuffer].m_pipelineLayout) != RHI_SUCCESS)
+		{
+			throw std::runtime_error("create mesh gbuffer pipeline layout");
+		}
+
+		RHIShader* pVertShaderModule = m_pRHI->CreateShaderModule(MESH_VERT);	// 顶点着色器
+		RHIShader* pFragShaderModule = m_pRHI->CreateShaderModule(MESH_GBUFFER_FRAG);	// 片段着色器
+
+		// 顶点着色器阶段创建信息
+		ST_RHIPipelineShaderStageCreateInfo vertPipelineShaderStageCreateInfo{};
+		vertPipelineShaderStageCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		vertPipelineShaderStageCreateInfo.m_stage = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT;
+		vertPipelineShaderStageCreateInfo.m_module = pVertShaderModule;
+		vertPipelineShaderStageCreateInfo.m_pName = "main";
+
+		// 片段着色器阶段创建信息
+		ST_RHIPipelineShaderStageCreateInfo fragPipelineShaderStageCreateInfo{};
+		fragPipelineShaderStageCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		fragPipelineShaderStageCreateInfo.m_stage = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_FRAGMENT_BIT;
+		fragPipelineShaderStageCreateInfo.m_module = pFragShaderModule;
+		fragPipelineShaderStageCreateInfo.m_pName = "main";
+
+		ST_RHIPipelineShaderStageCreateInfo shaderStages[] = {
+			vertPipelineShaderStageCreateInfo,
+			fragPipelineShaderStageCreateInfo
+		};
+
+		// 获取顶点布局信息
+		auto vertexBindingDescriptions = ST_MeshVertex::GetBindingDescriptions();
+		auto vertexAttributeDescriptions = ST_MeshVertex::GetAttributeDescriptions();
+
+		// 顶点输入状态创建信息（顶点布局）
+		ST_RHIPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
+		vertexInputStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		vertexInputStateCreateInfo.m_vertexBindingDescriptionCount = vertexBindingDescriptions.size();
+		vertexInputStateCreateInfo.m_pVertexBindingDescriptions = &vertexBindingDescriptions[0];
+		vertexInputStateCreateInfo.m_vertexAttributeDescriptionCount = vertexAttributeDescriptions.size();
+		vertexInputStateCreateInfo.m_pVertexAttributeDescriptions = &vertexAttributeDescriptions[0];
+
+		// 输入汇编状态创建信息（拓扑类型）
+		ST_RHIPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo{};
+		inputAssemblyCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+		inputAssemblyCreateInfo.m_topology = ERHIPrimitiveTopology::RHI_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;	// 图元拓扑类型
+		inputAssemblyCreateInfo.m_primitiveRestartEnable = RHI_FALSE;	// 是否启用图元重启
+
+		// 视口状态创建信息（视口和裁剪矩形）
+		ST_RHIPipelineViewportStateCreateInfo viewportStateCreateInfo{};
+		viewportStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+		viewportStateCreateInfo.m_viewportCount = 1;
+		viewportStateCreateInfo.m_pViewports = m_pRHI->GetSwapchainInfo().m_pViewport;
+		viewportStateCreateInfo.m_scissorCount = 1;
+		viewportStateCreateInfo.m_pScissors = m_pRHI->GetSwapchainInfo().m_pScissor;
+
+		// 光栅化状态创建信息
+		ST_RHIPipelineRasterizationStateCreateInfo rasterization_state_create_info{};
+		rasterization_state_create_info.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+		rasterization_state_create_info.m_depthClampEnable = RHI_FALSE;
+		rasterization_state_create_info.m_rasterizerDiscardEnable = RHI_FALSE;
+		rasterization_state_create_info.m_polygonMode = ERHIPolygonMode::RHI_POLYGON_MODE_FILL;
+		rasterization_state_create_info.m_lineWidth = 1.0f;
+		rasterization_state_create_info.m_cullMode = ERHICullModeFlagBits::RHI_CULL_MODE_BACK_BIT;	// 背面剔除
+		rasterization_state_create_info.m_frontFace = ERHIFrontFace::RHI_FRONT_FACE_COUNTER_CLOCKWISE;	// 逆时针为正面
+		rasterization_state_create_info.m_depthBiasEnable = RHI_FALSE;
+		rasterization_state_create_info.m_depthBiasConstantFactor = 0.0f;
+		rasterization_state_create_info.m_depthBiasClamp = 0.0f;
+		rasterization_state_create_info.m_depthBiasSlopeFactor = 0.0f;
+
+		// 多重采样状态创建信息
+		ST_RHIPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{};
+		multisampleStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+		multisampleStateCreateInfo.m_sampleShadingEnable = RHI_FALSE;
+		multisampleStateCreateInfo.m_rasterizationSamples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;
+	}
 }
 
 void MainCameraPass::SetupDescriptorSet()

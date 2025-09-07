@@ -199,4 +199,36 @@ private:
 	VkDescriptorSetLayout m_resource;
 };
 
+// 着色器 封装
+class VulkanShader : public RHIShader
+{
+public:
+	void SetResource(VkShaderModule res)
+	{
+		m_resource = res;
+	}
+	VkShaderModule GetResource() const
+	{
+		return m_resource;
+	}
+private:
+	VkShaderModule m_resource;
+};
+
+// 管线布局 封装
+class VulkanPipelineLayout : public RHIPipelineLayout
+{
+public:
+	void SetResource(VkPipelineLayout res)
+	{
+		m_resource = res;
+	}
+	VkPipelineLayout GetResource() const
+	{
+		return m_resource;
+	}
+private:
+	VkPipelineLayout m_resource;
+};
+
 NAMESPACE_XYH_END

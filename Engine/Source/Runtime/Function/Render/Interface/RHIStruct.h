@@ -135,6 +135,14 @@ struct ST_RHIOffset2D
 	int32_t m_y;
 };
 
+// 特化映射条目
+struct ST_RHISpecializationMapEntry
+{
+	uint32_t m_constantID;
+	uint32_t m_offset;
+	size_t m_size;
+};
+
 struct ST_RHIExtent2D
 {
 	uint32_t m_width;
@@ -159,6 +167,15 @@ struct ST_RHIRect2D
 {
 	ST_RHIOffset2D m_offset;    // 矩形区域的左上角坐标
 	ST_RHIExtent2D m_extent;    // 矩形区域的大小
+};
+
+// 顶点输入属性描述
+struct ST_RHIVertexInputAttributeDescription
+{
+	uint32_t m_location;
+	uint32_t m_binding;
+	ERHIFormat m_format;
+	uint32_t m_offset;
 };
 
 struct ST_RHIClearRect
@@ -239,6 +256,14 @@ struct ST_RHIAttachmentReference
 	ERHIImageLayout m_layout;	// 附件布局
 };
 
+// 顶点输入属性描述
+struct ST_RHIVertexInputBindingDescription
+{
+	uint32_t m_binding;
+	uint32_t m_stride;
+	ERHIVertexInputRate m_inputRate;
+};
+
 struct ST_RHIViewport
 {
 	float m_x;
@@ -311,6 +336,113 @@ struct ST_RHIDescriptorSetLayoutCreateInfo
 	RHIDescriptorSetLayoutCreateFlags m_flags;
 	uint32_t m_bindingCount;
 	const ST_RHIDescriptorSetLayoutBinding* m_pBindings;
+};
+
+// 管线布局创建信息
+struct ST_RHIPipelineLayoutCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIPipelineLayoutCreateFlags m_flags;
+	uint32_t m_setLayoutCount;
+	RHIDescriptorSetLayout* const* m_pSetLayouts;
+	uint32_t m_pushConstantRangeCount;
+	const ST_RHIPushConstantRange* m_pPushConstantRanges;
+};
+
+// 推送常量范围
+struct ST_RHIPushConstantRange
+{
+	RHIShaderStageFlags m_stageFlags;
+	uint32_t m_offset;
+	uint32_t m_size;
+};
+
+// 管线着色器阶段创建信息
+struct ST_RHIPipelineShaderStageCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIPipelineShaderStageCreateFlags m_flags;
+	ERHIShaderStageFlagBits m_stage;
+	RHIShader* m_module;
+	const char* m_pName;
+	const ST_RHISpecializationInfo* m_pSpecializationInfo;	// 特殊化信息
+};
+
+// 特殊化映射条目
+struct ST_RHISpecializationInfo
+{
+	uint32_t m_mapEntryCount;
+	const ST_RHISpecializationMapEntry** m_pMapEntries;
+	size_t m_dataSize;
+	const void* m_pData;
+};
+
+// 管线顶点输入状态创建信息
+struct ST_RHIPipelineVertexInputStateCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIPipelineVertexInputStateCreateFlags m_flags;
+	uint32_t m_vertexBindingDescriptionCount;
+	const ST_RHIVertexInputBindingDescription* m_pVertexBindingDescriptions;
+	uint32_t m_vertexAttributeDescriptionCount;
+	const ST_RHIVertexInputAttributeDescription* m_pVertexAttributeDescriptions;
+};
+
+// 管线输入装配状态创建信息
+struct ST_RHIPipelineInputAssemblyStateCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIPipelineInputAssemblyStateCreateFlags m_flags;
+	ERHIPrimitiveTopology m_topology;	// 图元拓扑类型
+	RHIBool32 m_primitiveRestartEnable;
+};
+
+// 管线视口状态创建信息
+struct ST_RHIPipelineViewportStateCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIPipelineViewportStateCreateFlags m_flags;
+	uint32_t m_viewportCount;
+	const ST_RHIViewport* m_pViewports;
+	uint32_t m_scissorCount;
+	const ST_RHIRect2D* m_pScissors;
+};
+
+// 管线光栅化状态创建信息
+struct ST_RHIPipelineRasterizationStateCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIPipelineRasterizationStateCreateFlags m_flags;	// 管线光栅化状态创建标志
+	RHIBool32 m_depthClampEnable;	// 是否启用深度裁剪
+	RHIBool32 m_rasterizerDiscardEnable;	// 是否丢弃光栅化阶段
+	ERHIPolygonMode m_polygonMode;	// 多边形模式
+	RHICullModeFlags m_cullMode;	// 剔除模式
+	ERHIFrontFace m_frontFace;
+	RHIBool32 m_depthBiasEnable;	// 是否启用深度偏移
+	float m_depthBiasConstantFactor;	// 常量深度偏移因子
+	float m_depthBiasClamp;	// 深度偏移夹具
+	float m_depthBiasSlopeFactor;	// 斜率深度偏移因子
+	float m_lineWidth;	// 线宽
+};
+
+// 管线多重采样状态创建信息
+struct ST_RHIPipelineMultisampleStateCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIPipelineMultisampleStateCreateFlags m_flags;
+	ERHISampleCountFlagBits m_rasterizationSamples;
+	RHIBool32 m_sampleShadingEnable;
+	float m_minSampleShading;
+	const RHISampleMask** m_pSampleMask;
+	RHIBool32 m_alphaToCoverageEnable;	// 是否启用Alpha到覆盖
+	RHIBool32 m_alphaToOneEnable;
 };
 
 NAMESPACE_XYH_END

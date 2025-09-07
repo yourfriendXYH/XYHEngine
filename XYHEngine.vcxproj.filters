@@ -70,6 +70,15 @@
     <Filter Include="Engine\Source\Runtime\Function\Framework\Object">
       <UniqueIdentifier>{eb3474bc-0ae2-4d0d-9d68-5db1e76e0470}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Shader">
+      <UniqueIdentifier>{21b33123-d393-4a4e-8849-fb1647b6c23b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Shader\Generated">
+      <UniqueIdentifier>{ca77687d-7cb9-48f1-912b-21b9af3907d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Shader\Generated\Cpp">
+      <UniqueIdentifier>{4cf45c6c-8db1-4075-93be-df15325be782}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Source\main.cpp">
@@ -354,6 +363,15 @@
       <Filter>Engine\Source\Runtime\Function\Render</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderObject.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Shader\Generated\Cpp\MeshVert.h">
+      <Filter>Engine\Shader\Generated\Cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Shader\Generated\Cpp\MeshGBufferFrag.h">
+      <Filter>Engine\Shader\Generated\Cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderMesh.h">
       <Filter>Engine\Source\Runtime\Function\Render</Filter>
     </ClInclude>
   </ItemGroup>

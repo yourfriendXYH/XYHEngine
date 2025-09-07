@@ -60,6 +60,8 @@
     <ClCompile Include="Engine\Source\Runtime\Resource\ConfigManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Shader\Generated\Cpp\MeshGBufferFrag.h" />
+    <ClInclude Include="Engine\Shader\Generated\Cpp\MeshVert.h" />
     <ClInclude Include="Engine\Source\Common\Common.h" />
     <ClInclude Include="Engine\Source\Editor\Editor.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\LogSystem.h" />
@@ -99,6 +101,7 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderCommon.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderEntity.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderGuidAllocator.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderMesh.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderObject.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderPassBase.h" />
@@ -206,7 +209,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)Engine/3rdparty/glfw-3.4.bin.WIN64/include;$(ProjectDir)Engine/3rdparty/spdlog/include;$(ProjectDir)Engine/Source/Common;$(ProjectDir)Engine/3rdparty/VulkanSDK/include;$(ProjectDir)Engine/3rdparty/vulkanmemoryallocator/include;$(ProjectDir)Engine/Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Engine/3rdparty/glfw-3.4.bin.WIN64/include;$(ProjectDir)Engine/3rdparty/spdlog/include;$(ProjectDir)Engine/Source/Common;$(ProjectDir)Engine/3rdparty/VulkanSDK/include;$(ProjectDir)Engine/3rdparty/vulkanmemoryallocator/include;$(ProjectDir)Engine/Source;$(ProjectDir)Engine/Shader/Generated/Cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

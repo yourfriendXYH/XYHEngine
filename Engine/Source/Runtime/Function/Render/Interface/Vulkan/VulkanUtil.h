@@ -1,12 +1,17 @@
 #pragma once
 #include <Common.h>
 #include <vulkan/vulkan.h>
+#include <vector>
 
 NAMESPACE_XYH_BEGIN
 
 class VulkanUtil
 {
 public:
+
+	// 创建着色器模块
+	static VkShaderModule CreateShaderModule(VkDevice device, const std::vector<unsigned char>& shaderCode);
+
 	// 创建图像视图
 	static VkImageView CreateImageView(
 		VkDevice device,

@@ -1,6 +1,22 @@
 #include "VulkanUtil.h"
 #include "../../../../Core/Macro.h"
+
 NAMESPACE_XYH_BEGIN
+
+VkShaderModule VulkanUtil::CreateShaderModule(VkDevice device, const std::vector<unsigned char>& shaderCode)
+{
+	VkShaderModuleCreateInfo shaderModuleCreateInfo{};
+	shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;	// 设置结构体类型
+	shaderModuleCreateInfo.codeSize = shaderCode.size();
+	shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
+
+	VkShaderModule shaderModule;
+	if (vkCreateShaderModule(device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS)
+	{
+		return VK_NULL_HANDLE;
+	}
+	return shaderModule;
+}
 
 VkImageView VulkanUtil::CreateImageView(
 	VkDevice device,

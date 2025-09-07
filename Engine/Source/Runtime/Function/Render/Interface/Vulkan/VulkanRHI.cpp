@@ -232,7 +232,13 @@ RHISampler* VulkanRHI::GetOrCreateMipmapSampler(uint32_t width, uint32_t height)
 
 RHIShader* VulkanRHI::CreateShaderModule(const std::vector<unsigned char>& shaderCode)
 {
-	return nullptr;
+	RHIShader* shahder = new VulkanShader();
+
+	VkShaderModule vk_shader = VulkanUtil::CreateShaderModule(m_device, shaderCode);
+
+	((VulkanShader*)shahder)->SetResource(vk_shader);
+
+	return shahder;
 }
 
 void VulkanRHI::CreateBuffer(RHIDeviceSize size, RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory)
@@ -409,7 +415,38 @@ bool VulkanRHI::CreateComputePipelines(RHIPipelineCache* pipelineCache, uint32_t
 
 bool VulkanRHI::CreatePipelineLayout(const ST_RHIPipelineLayoutCreateInfo* pCreateInfo, RHIPipelineLayout*& pPipelineLayout)
 {
-	return false;
+	//descriptor_set_layout
+	int descriptorSetLayoutSize = pCreateInfo->m_setLayoutCount;
+	std::vector<VkDescriptorSetLayout> vkDescriptorSetLayoutList(descriptorSetLayoutSize);
+	for (int i = 0; i < descriptorSetLayoutSize; ++i)
+	{
+		const auto& rhiDescriptorSetLayoutElement = pCreateInfo->m_pSetLayouts[i];
+		auto& vkDescriptorSetLayoutEslement = vkDescriptorSetLayoutList[i];
+
+		vkDescriptorSetLayoutEslement = ((VulkanDescriptorSetLayout*)rhiDescriptorSetLayoutElement)->GetResource();
+	};
+
+	VkPipelineLayoutCreateInfo createInfo{};
+	createInfo.sType = (VkStructureType)pCreateInfo->m_sType;
+	createInfo.pNext = (const void*)pCreateInfo->m_pNext;
+	createInfo.flags = (VkPipelineLayoutCreateFlags)pCreateInfo->m_flags;
+	createInfo.setLayoutCount = pCreateInfo->m_setLayoutCount;	// 指定 pSetLayouts 数组中有多少个描述符集布局。
+	createInfo.pSetLayouts = vkDescriptorSetLayoutList.data();	// 指向 VkDescriptorSetLayout 数组的指针。每个元素对应一个描述符集（set）。
+
+	pPipelineLayout = new VulkanPipelineLayout();
+	VkPipelineLayout vkPipelineLayout;
+	VkResult result = vkCreatePipelineLayout(m_device, &createInfo, nullptr, &vkPipelineLayout);	// 创建管线布局
+	((VulkanPipelineLayout*)pPipelineLayout)->SetResource(vkPipelineLayout);
+
+	if (result == VK_SUCCESS)
+	{
+		return RHI_SUCCESS;
+	}
+	else
+	{
+		LOG_ERROR("vkCreatePipelineLayout failed!");
+		return false;
+	}
 }
 
 bool VulkanRHI::CreateRenderPass(const ST_RHIRenderPassCreateInfo* pCreateInfo, RHIRenderPass*& pRenderPass)
