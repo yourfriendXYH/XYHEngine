@@ -835,9 +835,9 @@ void MainCameraPass::SetupPipelines()
 		// 顶点输入状态创建信息（顶点布局）
 		ST_RHIPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
 		vertexInputStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputStateCreateInfo.m_vertexBindingDescriptionCount = vertexBindingDescriptions.size();
+		vertexInputStateCreateInfo.m_vertexBindingDescriptionCount = static_cast<uint32_t>(vertexBindingDescriptions.size());
 		vertexInputStateCreateInfo.m_pVertexBindingDescriptions = &vertexBindingDescriptions[0];
-		vertexInputStateCreateInfo.m_vertexAttributeDescriptionCount = vertexAttributeDescriptions.size();
+		vertexInputStateCreateInfo.m_vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttributeDescriptions.size());
 		vertexInputStateCreateInfo.m_pVertexAttributeDescriptions = &vertexAttributeDescriptions[0];
 
 		// 输入汇编状态创建信息（拓扑类型）
@@ -855,24 +855,107 @@ void MainCameraPass::SetupPipelines()
 		viewportStateCreateInfo.m_pScissors = m_pRHI->GetSwapchainInfo().m_pScissor;
 
 		// 光栅化状态创建信息
-		ST_RHIPipelineRasterizationStateCreateInfo rasterization_state_create_info{};
-		rasterization_state_create_info.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-		rasterization_state_create_info.m_depthClampEnable = RHI_FALSE;
-		rasterization_state_create_info.m_rasterizerDiscardEnable = RHI_FALSE;
-		rasterization_state_create_info.m_polygonMode = ERHIPolygonMode::RHI_POLYGON_MODE_FILL;
-		rasterization_state_create_info.m_lineWidth = 1.0f;
-		rasterization_state_create_info.m_cullMode = ERHICullModeFlagBits::RHI_CULL_MODE_BACK_BIT;	// 背面剔除
-		rasterization_state_create_info.m_frontFace = ERHIFrontFace::RHI_FRONT_FACE_COUNTER_CLOCKWISE;	// 逆时针为正面
-		rasterization_state_create_info.m_depthBiasEnable = RHI_FALSE;
-		rasterization_state_create_info.m_depthBiasConstantFactor = 0.0f;
-		rasterization_state_create_info.m_depthBiasClamp = 0.0f;
-		rasterization_state_create_info.m_depthBiasSlopeFactor = 0.0f;
+		ST_RHIPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo{};
+		rasterizationStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+		rasterizationStateCreateInfo.m_depthClampEnable = RHI_FALSE;
+		rasterizationStateCreateInfo.m_rasterizerDiscardEnable = RHI_FALSE;
+		rasterizationStateCreateInfo.m_polygonMode = ERHIPolygonMode::RHI_POLYGON_MODE_FILL;
+		rasterizationStateCreateInfo.m_lineWidth = 1.0f;
+		rasterizationStateCreateInfo.m_cullMode = ERHICullModeFlagBits::RHI_CULL_MODE_BACK_BIT;	// 背面剔除
+		rasterizationStateCreateInfo.m_frontFace = ERHIFrontFace::RHI_FRONT_FACE_COUNTER_CLOCKWISE;	// 逆时针为正面
+		rasterizationStateCreateInfo.m_depthBiasEnable = RHI_FALSE;
+		rasterizationStateCreateInfo.m_depthBiasConstantFactor = 0.0f;
+		rasterizationStateCreateInfo.m_depthBiasClamp = 0.0f;
+		rasterizationStateCreateInfo.m_depthBiasSlopeFactor = 0.0f;
 
 		// 多重采样状态创建信息
 		ST_RHIPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{};
 		multisampleStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		multisampleStateCreateInfo.m_sampleShadingEnable = RHI_FALSE;
 		multisampleStateCreateInfo.m_rasterizationSamples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;
+
+		// 每个颜色附件的混合状态
+		ST_RHIPipelineColorBlendAttachmentState colorBlendAttachments[3] = {};	// 每个颜色附件的混合状态
+		colorBlendAttachments[0].m_colorWriteMask = RHI_COLOR_COMPONENT_R_BIT | RHI_COLOR_COMPONENT_G_BIT | RHI_COLOR_COMPONENT_B_BIT | RHI_COLOR_COMPONENT_A_BIT;
+		colorBlendAttachments[0].m_blendEnable = RHI_FALSE;
+		colorBlendAttachments[0].m_srcColorBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ONE;
+		colorBlendAttachments[0].m_dstColorBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ZERO;
+		colorBlendAttachments[0].m_colorBlendOp = ERHIBlendOp::RHI_BLEND_OP_ADD;
+		colorBlendAttachments[0].m_srcAlphaBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ONE;
+		colorBlendAttachments[0].m_dstAlphaBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ZERO;
+		colorBlendAttachments[0].m_alphaBlendOp = ERHIBlendOp::RHI_BLEND_OP_ADD;
+
+		colorBlendAttachments[1].m_colorWriteMask = RHI_COLOR_COMPONENT_R_BIT | RHI_COLOR_COMPONENT_G_BIT | RHI_COLOR_COMPONENT_B_BIT | RHI_COLOR_COMPONENT_A_BIT;
+		colorBlendAttachments[1].m_blendEnable = RHI_FALSE;
+		colorBlendAttachments[1].m_srcColorBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ONE;
+		colorBlendAttachments[1].m_dstColorBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ZERO;
+		colorBlendAttachments[1].m_colorBlendOp = ERHIBlendOp::RHI_BLEND_OP_ADD;
+		colorBlendAttachments[1].m_srcAlphaBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ONE;
+		colorBlendAttachments[1].m_dstAlphaBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ZERO;
+		colorBlendAttachments[1].m_alphaBlendOp = ERHIBlendOp::RHI_BLEND_OP_ADD;
+
+		colorBlendAttachments[2].m_colorWriteMask = RHI_COLOR_COMPONENT_R_BIT | RHI_COLOR_COMPONENT_G_BIT | RHI_COLOR_COMPONENT_B_BIT | RHI_COLOR_COMPONENT_A_BIT;
+		colorBlendAttachments[2].m_blendEnable = RHI_FALSE;
+		colorBlendAttachments[2].m_srcColorBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ONE;
+		colorBlendAttachments[2].m_dstColorBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ZERO;
+		colorBlendAttachments[2].m_colorBlendOp = ERHIBlendOp::RHI_BLEND_OP_ADD;
+		colorBlendAttachments[2].m_srcAlphaBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ONE;
+		colorBlendAttachments[2].m_dstAlphaBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ZERO;
+		colorBlendAttachments[2].m_alphaBlendOp = ERHIBlendOp::RHI_BLEND_OP_ADD;
+
+		// 颜色混合状态创建信息
+		ST_RHIPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = {};
+		colorBlendStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+		colorBlendStateCreateInfo.m_logicOpEnable = RHI_FALSE;
+		colorBlendStateCreateInfo.m_logicOp = RHI_LOGIC_OP_COPY;
+		colorBlendStateCreateInfo.m_attachmentCount = sizeof(colorBlendAttachments) / sizeof(colorBlendAttachments[0]);
+		colorBlendStateCreateInfo.m_pAttachments = &colorBlendAttachments[0];
+		colorBlendStateCreateInfo.m_blendConstants[0] = 0.0f;
+		colorBlendStateCreateInfo.m_blendConstants[1] = 0.0f;
+		colorBlendStateCreateInfo.m_blendConstants[2] = 0.0f;
+		colorBlendStateCreateInfo.m_blendConstants[3] = 0.0f;
+
+		// 深度模板状态创建信息
+		ST_RHIPipelineDepthStencilStateCreateInfo depthStencilCreateInfo{};
+		depthStencilCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depthStencilCreateInfo.m_depthTestEnable = RHI_TRUE;
+		depthStencilCreateInfo.m_depthWriteEnable = RHI_TRUE;
+		depthStencilCreateInfo.m_depthCompareOp = ERHICompareOp::RHI_COMPARE_OP_LESS;	// 通过深度测试的条件
+		depthStencilCreateInfo.m_depthBoundsTestEnable = RHI_FALSE;
+		depthStencilCreateInfo.m_stencilTestEnable = RHI_FALSE;
+
+		// 动态状态创建信息
+		ERHIDynamicState dynamicStates[] = { RHI_DYNAMIC_STATE_VIEWPORT, RHI_DYNAMIC_STATE_SCISSOR };
+		ST_RHIPipelineDynamicStateCreateInfo dynamicStateCreateInfo{};
+		dynamicStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+		dynamicStateCreateInfo.m_dynamicStateCount = 2;
+		dynamicStateCreateInfo.m_pDynamicStates = dynamicStates;
+
+		// 图形管线创建信息
+		ST_RHIGraphicsPipelineCreateInfo pipelineInfo{};
+		pipelineInfo.m_sType = RHI_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineInfo.m_stageCount = 2;
+		pipelineInfo.m_pStages = shaderStages;	// 着色器阶段
+		pipelineInfo.m_pVertexInputState = &vertexInputStateCreateInfo;
+		pipelineInfo.m_pInputAssemblyState = &inputAssemblyCreateInfo;
+		pipelineInfo.m_pViewportState = &viewportStateCreateInfo;
+		pipelineInfo.m_pRasterizationState = &rasterizationStateCreateInfo;
+		pipelineInfo.m_pMultisampleState = &multisampleStateCreateInfo;
+		pipelineInfo.m_pColorBlendState = &colorBlendStateCreateInfo;
+		pipelineInfo.m_pDepthStencilState = &depthStencilCreateInfo;
+		pipelineInfo.m_pLayout = m_renderPipelines[_render_pipeline_type_mesh_gbuffer].m_pipelineLayout;
+		pipelineInfo.m_pRenderPass = m_framebuffer.m_pRenderPass;
+		pipelineInfo.m_subpass = _main_camera_subpass_basepass;
+		pipelineInfo.m_pBasePipelineHandle = RHI_NULL_HANDLE;
+		pipelineInfo.m_pDynamicState = &dynamicStateCreateInfo;
+
+		if (RHI_SUCCESS != m_pRHI->CreateGraphicsPipelines(RHI_NULL_HANDLE, 1, &pipelineInfo, m_renderPipelines[_render_pipeline_type_mesh_gbuffer].m_pipeline))
+		{
+			throw std::runtime_error("create mesh gbuffer graphics pipeline");
+		}
+
+		m_pRHI->DestroyShaderModule(pVertShaderModule);
+		m_pRHI->DestroyShaderModule(pFragShaderModule);
 	}
 }
 

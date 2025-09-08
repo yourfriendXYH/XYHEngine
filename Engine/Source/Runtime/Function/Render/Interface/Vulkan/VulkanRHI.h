@@ -222,7 +222,7 @@ public:
 
 	virtual void DestroyMipmappedSampler();	// 销毁mipmap采样器
 
-	virtual void DestroyShaderModule(RHIShader* shader);	// 销毁着色器模块
+	virtual void DestroyShaderModule(RHIShader* shaderModule);	// 销毁着色器模块
 
 	virtual void DestroySemaphore(RHISemaphore* semaphore);	// 销毁信号量
 

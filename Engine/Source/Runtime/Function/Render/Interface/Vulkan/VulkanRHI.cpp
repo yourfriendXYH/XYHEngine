@@ -953,8 +953,11 @@ void VulkanRHI::DestroyMipmappedSampler()
 {
 }
 
-void VulkanRHI::DestroyShaderModule(RHIShader* shader)
+void VulkanRHI::DestroyShaderModule(RHIShader* shaderModule)
 {
+	vkDestroyShaderModule(m_device, ((VulkanShader*)shaderModule)->GetResource(), nullptr);
+
+	delete(shaderModule);
 }
 
 void VulkanRHI::DestroySemaphore(RHISemaphore* semaphore)

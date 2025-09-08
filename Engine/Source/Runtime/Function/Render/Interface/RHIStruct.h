@@ -163,6 +163,60 @@ struct ST_RHIAttachmentDescription
 	ERHIImageLayout m_finalLayout;	// 最终布局
 };
 
+// 管线颜色混合附件状态
+struct ST_RHIPipelineColorBlendAttachmentState
+{
+	RHIBool32 m_blendEnable;
+	ERHIBlendFactor m_srcColorBlendFactor;
+	ERHIBlendFactor m_dstColorBlendFactor;
+	ERHIBlendOp m_colorBlendOp;
+	ERHIBlendFactor m_srcAlphaBlendFactor;
+	ERHIBlendFactor m_dstAlphaBlendFactor;
+	ERHIBlendOp m_alphaBlendOp;
+	RHIColorComponentFlags m_colorWriteMask;
+};
+
+// 管线颜色混合状态创建信息
+struct ST_RHIPipelineColorBlendStateCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIPipelineColorBlendStateCreateFlags m_flags;
+	RHIBool32 m_logicOpEnable;
+	ERHILogicOp m_logicOp;
+	uint32_t m_attachmentCount;
+	const ST_RHIPipelineColorBlendAttachmentState* m_pAttachments;
+	float m_blendConstants[4];
+};
+
+struct ST_RHIStencilOpState
+{
+	ERHIStencilOp m_failOp;
+	ERHIStencilOp m_passOp;
+	ERHIStencilOp m_depthFailOp;
+	ERHICompareOp m_compareOp;
+	uint32_t m_compareMask;
+	uint32_t m_writeMask;
+	uint32_t m_reference;
+};
+
+// 管线深度模板状态创建信息
+struct ST_RHIPipelineDepthStencilStateCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIPipelineDepthStencilStateCreateFlags m_flags;
+	RHIBool32 m_depthTestEnable;
+	RHIBool32 m_depthWriteEnable;
+	ERHICompareOp m_depthCompareOp;
+	RHIBool32 m_depthBoundsTestEnable;
+	RHIBool32 m_stencilTestEnable;
+	ST_RHIStencilOpState m_front;
+	ST_RHIStencilOpState m_back;
+	float m_minDepthBounds;
+	float m_maxDepthBounds;
+};
+
 struct ST_RHIRect2D
 {
 	ST_RHIOffset2D m_offset;    // 矩形区域的左上角坐标
@@ -443,6 +497,39 @@ struct ST_RHIPipelineMultisampleStateCreateInfo
 	const RHISampleMask** m_pSampleMask;
 	RHIBool32 m_alphaToCoverageEnable;	// 是否启用Alpha到覆盖
 	RHIBool32 m_alphaToOneEnable;
+};
+
+// 管线动态状态创建信息
+struct ST_RHIPipelineDynamicStateCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIPipelineDynamicStateCreateFlags m_flags;
+	uint32_t m_dynamicStateCount;
+	const ERHIDynamicState* m_pDynamicStates;
+};
+
+struct ST_RHIGraphicsPipelineCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIPipelineCreateFlags m_flags;
+	uint32_t m_stageCount;
+	const ST_RHIPipelineShaderStageCreateInfo* m_pStages;
+	const ST_RHIPipelineVertexInputStateCreateInfo* m_pVertexInputState;
+	const ST_RHIPipelineInputAssemblyStateCreateInfo* m_pInputAssemblyState;	// 输入装配状态
+	const ST_RHIPipelineTessellationStateCreateInfo* m_pTessellationState;	// 曲面细分状态
+	const ST_RHIPipelineViewportStateCreateInfo* m_pViewportState;
+	const ST_RHIPipelineRasterizationStateCreateInfo* m_pRasterizationState;
+	const ST_RHIPipelineMultisampleStateCreateInfo* m_pMultisampleState;
+	const ST_RHIPipelineDepthStencilStateCreateInfo* m_pDepthStencilState;
+	const ST_RHIPipelineColorBlendStateCreateInfo* m_pColorBlendState;
+	const ST_RHIPipelineDynamicStateCreateInfo* m_pDynamicState;
+	RHIPipelineLayout* m_pLayout;
+	RHIRenderPass* m_pRenderPass;
+	uint32_t m_subpass;
+	RHIPipeline* m_pBasePipelineHandle;
+	int32_t m_basePipelineIndex;
 };
 
 NAMESPACE_XYH_END
