@@ -509,6 +509,15 @@ struct ST_RHIPipelineDynamicStateCreateInfo
 	const ERHIDynamicState* m_pDynamicStates;
 };
 
+// 管线曲面细分状态创建信息
+struct ST_RHIPipelineTessellationStateCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIPipelineTessellationStateCreateFlags m_flags;
+	uint32_t m_patchControlPoints;	// 曲面控制点数
+};
+
 struct ST_RHIGraphicsPipelineCreateInfo
 {
 	ERHIStructureType m_sType;

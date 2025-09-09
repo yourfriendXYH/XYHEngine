@@ -231,4 +231,36 @@ private:
 	VkPipelineLayout m_resource;
 };
 
+// 管线 封装
+class VulkanPipeline : public RHIPipeline
+{
+public:
+	void SetResource(VkPipeline res)
+	{
+		m_resource = res;
+	}
+	VkPipeline GetResource() const
+	{
+		return m_resource;
+	}
+private:
+	VkPipeline m_resource;
+};
+
+// 管线缓存 封装
+class VulkanPipelineCache : public RHIPipelineCache
+{
+public:
+	void SetResource(VkPipelineCache res)
+	{
+		m_resource = res;
+	}
+	VkPipelineCache GetResource() const
+	{
+		return m_resource;
+	}
+private:
+	VkPipelineCache m_resource;
+};
+
 NAMESPACE_XYH_END

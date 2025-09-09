@@ -403,12 +403,347 @@ bool VulkanRHI::CreateFramebuffer(const ST_RHIFramebufferCreateInfo* pCreateInfo
 	return false;
 }
 
-bool VulkanRHI::CreateGraphicsPipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIGraphicsPipelineCreateInfo* pCreateInfos, RHIPipeline*& pPipelines)
+bool VulkanRHI::CreateGraphicsPipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIGraphicsPipelineCreateInfo* pCreateInfo, RHIPipeline*& pPipelines)
 {
-	return false;
+	int pipelineShaderStageCreateInfoSize = pCreateInfo->m_stageCount;
+	std::vector<VkPipelineShaderStageCreateInfo> vkPipelineShaderStageCreateInfoList(pipelineShaderStageCreateInfoSize);
+
+	int specializationMapEntrySizeTotal = 0;
+	int specializationInfoTotal = 0;
+	for (int i = 0; i < pipelineShaderStageCreateInfoSize; ++i)
+	{
+		const auto& rhiPipelineShaderStageCreateInfoElement = pCreateInfo->m_pStages[i];
+		if (rhiPipelineShaderStageCreateInfoElement.m_pSpecializationInfo != nullptr)
+		{
+			specializationInfoTotal++;
+			specializationMapEntrySizeTotal += rhiPipelineShaderStageCreateInfoElement.m_pSpecializationInfo->m_mapEntryCount;
+		}
+	}
+	std::vector<VkSpecializationInfo> vkSpecializationInfoList(specializationInfoTotal);
+	std::vector<VkSpecializationMapEntry> vkSpecializationMapEntryList(specializationMapEntrySizeTotal);
+
+	int specializationMapEntryCurrent = 0;
+	int specializationInfoCurrent = 0;
+
+	// 着色器阶段创建信息
+	for (int i = 0; i < pipelineShaderStageCreateInfoSize; ++i)
+	{
+		const auto& rhiPipelineShaderStageCreateInfoElement = pCreateInfo->m_pStages[i];
+		auto& vkPipelineShaderStageCreateInfoElement = vkPipelineShaderStageCreateInfoList[i];
+
+		// 存在 特殊化信息
+		if (rhiPipelineShaderStageCreateInfoElement.m_pSpecializationInfo != nullptr)
+		{
+			vkPipelineShaderStageCreateInfoElement.pSpecializationInfo = &vkSpecializationInfoList[specializationInfoCurrent];
+
+			VkSpecializationInfo& vkSpecializationInfo = vkSpecializationInfoList[specializationInfoCurrent];
+			vkSpecializationInfo.mapEntryCount = rhiPipelineShaderStageCreateInfoElement.m_pSpecializationInfo->m_mapEntryCount;
+			vkSpecializationInfo.pMapEntries = &vkSpecializationMapEntryList[specializationMapEntryCurrent];
+			vkSpecializationInfo.dataSize = rhiPipelineShaderStageCreateInfoElement.m_pSpecializationInfo->m_dataSize;
+			vkSpecializationInfo.pData = (const void*)rhiPipelineShaderStageCreateInfoElement.m_pSpecializationInfo->m_pData;
+
+			// 特殊化映射条目
+			for (uint32_t i = 0; i < rhiPipelineShaderStageCreateInfoElement.m_pSpecializationInfo->m_mapEntryCount; ++i)
+			{
+				const auto& rhiSpecializationMapEntryElement = rhiPipelineShaderStageCreateInfoElement.m_pSpecializationInfo->m_pMapEntries[i];
+				auto& vkSpecializationMapEntryElement = vkSpecializationMapEntryList[specializationMapEntryCurrent];
+
+				vkSpecializationMapEntryElement.constantID = rhiSpecializationMapEntryElement->m_constantID;
+				vkSpecializationMapEntryElement.offset = rhiSpecializationMapEntryElement->m_offset;
+				vkSpecializationMapEntryElement.size = rhiSpecializationMapEntryElement->m_size;
+
+				specializationMapEntryCurrent++;
+			};
+
+			specializationInfoCurrent++;
+		}
+		else
+		{
+			vkPipelineShaderStageCreateInfoElement.pSpecializationInfo = nullptr;
+		}
+		vkPipelineShaderStageCreateInfoElement.sType = (VkStructureType)rhiPipelineShaderStageCreateInfoElement.m_sType;
+		vkPipelineShaderStageCreateInfoElement.pNext = (const void*)rhiPipelineShaderStageCreateInfoElement.m_pNext;
+		vkPipelineShaderStageCreateInfoElement.flags = (VkPipelineShaderStageCreateFlags)rhiPipelineShaderStageCreateInfoElement.m_flags;
+		vkPipelineShaderStageCreateInfoElement.stage = (VkShaderStageFlagBits)rhiPipelineShaderStageCreateInfoElement.m_stage;
+		vkPipelineShaderStageCreateInfoElement.module = ((VulkanShader*)rhiPipelineShaderStageCreateInfoElement.m_module)->GetResource();
+		vkPipelineShaderStageCreateInfoElement.pName = rhiPipelineShaderStageCreateInfoElement.m_pName;
+	};
+
+	// 检查遍历次数是否能对上
+	if (!((specializationMapEntrySizeTotal == specializationMapEntryCurrent) && (specializationInfoTotal == specializationInfoCurrent)))
+	{
+		LOG_ERROR("(specialization_map_entry_size_total == specialization_map_entry_current)&& (specialization_info_total == specialization_info_current)");
+		return false;
+	}
+
+	// 顶点输入绑定描述
+	int vertexInputBindingDescriptionSize = pCreateInfo->m_pVertexInputState->m_vertexBindingDescriptionCount;
+	std::vector<VkVertexInputBindingDescription> vkVertexInputBindingDescriptionList(vertexInputBindingDescriptionSize);
+	for (int i = 0; i < vertexInputBindingDescriptionSize; ++i)
+	{
+		const auto& rhiVertexInputBindingDescriptionElement = pCreateInfo->m_pVertexInputState->m_pVertexBindingDescriptions[i];
+		auto& vkVertexInputBindingDescriptionElement = vkVertexInputBindingDescriptionList[i];
+
+		vkVertexInputBindingDescriptionElement.binding = rhiVertexInputBindingDescriptionElement.m_binding;
+		vkVertexInputBindingDescriptionElement.stride = rhiVertexInputBindingDescriptionElement.m_stride;
+		vkVertexInputBindingDescriptionElement.inputRate = (VkVertexInputRate)rhiVertexInputBindingDescriptionElement.m_inputRate;
+	};
+
+	// 顶点输入属性描述
+	int vertexInputAttributeDescriptionSize = pCreateInfo->m_pVertexInputState->m_vertexAttributeDescriptionCount;
+	std::vector<VkVertexInputAttributeDescription> vkVertexInputAttributeDescriptionList(vertexInputAttributeDescriptionSize);
+	for (int i = 0; i < vertexInputAttributeDescriptionSize; ++i)
+	{
+		const auto& rhiVertexInputAttributeDescriptionElement = pCreateInfo->m_pVertexInputState->m_pVertexAttributeDescriptions[i];
+		auto& vkVertexInputAttributeDescriptionElement = vkVertexInputAttributeDescriptionList[i];
+
+		vkVertexInputAttributeDescriptionElement.location = rhiVertexInputAttributeDescriptionElement.m_location;
+		vkVertexInputAttributeDescriptionElement.binding = rhiVertexInputAttributeDescriptionElement.m_binding;
+		vkVertexInputAttributeDescriptionElement.format = (VkFormat)rhiVertexInputAttributeDescriptionElement.m_format;
+		vkVertexInputAttributeDescriptionElement.offset = rhiVertexInputAttributeDescriptionElement.m_offset;
+	};
+
+	// 顶点输入状态创建信息
+	VkPipelineVertexInputStateCreateInfo vkPipelineVertexInputStateCreateInfo{};
+	vkPipelineVertexInputStateCreateInfo.sType = (VkStructureType)pCreateInfo->m_pVertexInputState->m_sType;
+	vkPipelineVertexInputStateCreateInfo.pNext = (const void*)pCreateInfo->m_pVertexInputState->m_pNext;
+	vkPipelineVertexInputStateCreateInfo.flags = (VkPipelineVertexInputStateCreateFlags)pCreateInfo->m_pVertexInputState->m_flags;
+	vkPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = pCreateInfo->m_pVertexInputState->m_vertexBindingDescriptionCount;
+	vkPipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = vkVertexInputBindingDescriptionList.data();
+	vkPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = pCreateInfo->m_pVertexInputState->m_vertexAttributeDescriptionCount;
+	vkPipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = vkVertexInputAttributeDescriptionList.data();
+
+	// 输入装配状态创建信息
+	VkPipelineInputAssemblyStateCreateInfo vkPipelineInputAssemblyStateCreateInfo{};
+	vkPipelineInputAssemblyStateCreateInfo.sType = (VkStructureType)pCreateInfo->m_pInputAssemblyState->m_sType;
+	vkPipelineInputAssemblyStateCreateInfo.pNext = (const void*)pCreateInfo->m_pInputAssemblyState->m_pNext;
+	vkPipelineInputAssemblyStateCreateInfo.flags = (VkPipelineInputAssemblyStateCreateFlags)pCreateInfo->m_pInputAssemblyState->m_flags;
+	vkPipelineInputAssemblyStateCreateInfo.topology = (VkPrimitiveTopology)pCreateInfo->m_pInputAssemblyState->m_topology;
+	vkPipelineInputAssemblyStateCreateInfo.primitiveRestartEnable = (VkBool32)pCreateInfo->m_pInputAssemblyState->m_primitiveRestartEnable;
+
+	// 曲面细分状态创建信息
+	const VkPipelineTessellationStateCreateInfo* vkPipelineTessellationStateCreateInfoPtr = nullptr;
+	VkPipelineTessellationStateCreateInfo vkPipelineTessellationStateCreateInfo{};
+	if (pCreateInfo->m_pTessellationState != nullptr)
+	{
+		vkPipelineTessellationStateCreateInfo.sType = (VkStructureType)pCreateInfo->m_pTessellationState->m_sType;
+		vkPipelineTessellationStateCreateInfo.pNext = (const void*)pCreateInfo->m_pTessellationState->m_pNext;
+		vkPipelineTessellationStateCreateInfo.flags = (VkPipelineTessellationStateCreateFlags)pCreateInfo->m_pTessellationState->m_flags;
+		vkPipelineTessellationStateCreateInfo.patchControlPoints = pCreateInfo->m_pTessellationState->m_patchControlPoints;
+
+		vkPipelineTessellationStateCreateInfoPtr = &vkPipelineTessellationStateCreateInfo;
+	}
+
+	//viewport
+	int viewportSize = pCreateInfo->m_pViewportState->m_viewportCount;
+	std::vector<VkViewport> vkViewportList(viewportSize);
+	for (int i = 0; i < viewportSize; ++i)
+	{
+		const auto& rhiViewportElement = pCreateInfo->m_pViewportState->m_pViewports[i];
+		auto& vkViewportElement = vkViewportList[i];
+
+		vkViewportElement.x = rhiViewportElement.m_x;
+		vkViewportElement.y = rhiViewportElement.m_y;
+		vkViewportElement.width = rhiViewportElement.m_width;
+		vkViewportElement.height = rhiViewportElement.m_height;
+		vkViewportElement.minDepth = rhiViewportElement.m_minDepth;
+		vkViewportElement.maxDepth = rhiViewportElement.m_maxDepth;
+	};
+
+	//rect_2d
+	int rect2dSize = pCreateInfo->m_pViewportState->m_scissorCount;
+	std::vector<VkRect2D> vkRect2dList(rect2dSize);
+	for (int i = 0; i < rect2dSize; ++i)
+	{
+		const auto& rhiRect2dElement = pCreateInfo->m_pViewportState->m_pScissors[i];
+		auto& vkRect2dElement = vkRect2dList[i];
+
+		VkOffset2D offset2d{};
+		offset2d.x = rhiRect2dElement.m_offset.m_x;
+		offset2d.y = rhiRect2dElement.m_offset.m_y;
+
+		VkExtent2D extend2d{};
+		extend2d.width = rhiRect2dElement.m_extent.m_width;
+		extend2d.height = rhiRect2dElement.m_extent.m_height;
+
+		vkRect2dElement.offset = offset2d;
+		vkRect2dElement.extent = extend2d;
+	};
+
+	// 视口状态创建信息
+	VkPipelineViewportStateCreateInfo vkPipelineViewportStateCreateInfo{};
+	vkPipelineViewportStateCreateInfo.sType = (VkStructureType)pCreateInfo->m_pViewportState->m_sType;
+	vkPipelineViewportStateCreateInfo.pNext = (const void*)pCreateInfo->m_pViewportState->m_pNext;
+	vkPipelineViewportStateCreateInfo.flags = (VkPipelineViewportStateCreateFlags)pCreateInfo->m_pViewportState->m_flags;
+	vkPipelineViewportStateCreateInfo.viewportCount = pCreateInfo->m_pViewportState->m_viewportCount;
+	vkPipelineViewportStateCreateInfo.pViewports = vkViewportList.data();
+	vkPipelineViewportStateCreateInfo.scissorCount = pCreateInfo->m_pViewportState->m_scissorCount;
+	vkPipelineViewportStateCreateInfo.pScissors = vkRect2dList.data();
+
+	// 光栅化状态创建信息
+	VkPipelineRasterizationStateCreateInfo vkPipelineRasterizationStateCreateInfo{};
+	vkPipelineRasterizationStateCreateInfo.sType = (VkStructureType)pCreateInfo->m_pRasterizationState->m_sType;
+	vkPipelineRasterizationStateCreateInfo.pNext = (const void*)pCreateInfo->m_pRasterizationState->m_pNext;
+	vkPipelineRasterizationStateCreateInfo.flags = (VkPipelineRasterizationStateCreateFlags)pCreateInfo->m_pRasterizationState->m_flags;
+	vkPipelineRasterizationStateCreateInfo.depthClampEnable = (VkBool32)pCreateInfo->m_pRasterizationState->m_depthClampEnable;
+	vkPipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = (VkBool32)pCreateInfo->m_pRasterizationState->m_rasterizerDiscardEnable;
+	vkPipelineRasterizationStateCreateInfo.polygonMode = (VkPolygonMode)pCreateInfo->m_pRasterizationState->m_polygonMode;
+	vkPipelineRasterizationStateCreateInfo.cullMode = (VkCullModeFlags)pCreateInfo->m_pRasterizationState->m_cullMode;
+	vkPipelineRasterizationStateCreateInfo.frontFace = (VkFrontFace)pCreateInfo->m_pRasterizationState->m_frontFace;
+	vkPipelineRasterizationStateCreateInfo.depthBiasEnable = (VkBool32)pCreateInfo->m_pRasterizationState->m_depthBiasEnable;
+	vkPipelineRasterizationStateCreateInfo.depthBiasConstantFactor = pCreateInfo->m_pRasterizationState->m_depthBiasConstantFactor;
+	vkPipelineRasterizationStateCreateInfo.depthBiasClamp = pCreateInfo->m_pRasterizationState->m_depthBiasClamp;
+	vkPipelineRasterizationStateCreateInfo.depthBiasSlopeFactor = pCreateInfo->m_pRasterizationState->m_depthBiasSlopeFactor;
+	vkPipelineRasterizationStateCreateInfo.lineWidth = pCreateInfo->m_pRasterizationState->m_lineWidth;
+
+	// 多样本状态创建信息
+	VkPipelineMultisampleStateCreateInfo vkPipelineMultisampleStateCreateInfo{};
+	vkPipelineMultisampleStateCreateInfo.sType = (VkStructureType)pCreateInfo->m_pMultisampleState->m_sType;
+	vkPipelineMultisampleStateCreateInfo.pNext = (const void*)pCreateInfo->m_pMultisampleState->m_pNext;
+	vkPipelineMultisampleStateCreateInfo.flags = (VkPipelineMultisampleStateCreateFlags)pCreateInfo->m_pMultisampleState->m_flags;
+	vkPipelineMultisampleStateCreateInfo.rasterizationSamples = (VkSampleCountFlagBits)pCreateInfo->m_pMultisampleState->m_rasterizationSamples;	// 指定每个像素的采样数量
+	vkPipelineMultisampleStateCreateInfo.sampleShadingEnable = (VkBool32)pCreateInfo->m_pMultisampleState->m_sampleShadingEnable;
+	vkPipelineMultisampleStateCreateInfo.minSampleShading = pCreateInfo->m_pMultisampleState->m_minSampleShading;
+	vkPipelineMultisampleStateCreateInfo.pSampleMask = (const RHISampleMask*)pCreateInfo->m_pMultisampleState->m_pSampleMask;
+	vkPipelineMultisampleStateCreateInfo.alphaToCoverageEnable = (VkBool32)pCreateInfo->m_pMultisampleState->m_alphaToCoverageEnable;
+	vkPipelineMultisampleStateCreateInfo.alphaToOneEnable = (VkBool32)pCreateInfo->m_pMultisampleState->m_alphaToOneEnable;
+
+	// 深度模板状态创建信息
+	VkStencilOpState stencilOpStateFront{};
+	stencilOpStateFront.failOp = (VkStencilOp)pCreateInfo->m_pDepthStencilState->m_front.m_failOp;
+	stencilOpStateFront.passOp = (VkStencilOp)pCreateInfo->m_pDepthStencilState->m_front.m_passOp;
+	stencilOpStateFront.depthFailOp = (VkStencilOp)pCreateInfo->m_pDepthStencilState->m_front.m_depthFailOp;
+	stencilOpStateFront.compareOp = (VkCompareOp)pCreateInfo->m_pDepthStencilState->m_front.m_compareOp;
+	stencilOpStateFront.compareMask = pCreateInfo->m_pDepthStencilState->m_front.m_compareMask;
+	stencilOpStateFront.writeMask = pCreateInfo->m_pDepthStencilState->m_front.m_writeMask;
+	stencilOpStateFront.reference = pCreateInfo->m_pDepthStencilState->m_front.m_reference;
+
+	VkStencilOpState stencilOpStateBack{};
+	stencilOpStateBack.failOp = (VkStencilOp)pCreateInfo->m_pDepthStencilState->m_back.m_failOp;
+	stencilOpStateBack.passOp = (VkStencilOp)pCreateInfo->m_pDepthStencilState->m_back.m_passOp;
+	stencilOpStateBack.depthFailOp = (VkStencilOp)pCreateInfo->m_pDepthStencilState->m_back.m_depthFailOp;
+	stencilOpStateBack.compareOp = (VkCompareOp)pCreateInfo->m_pDepthStencilState->m_back.m_compareOp;
+	stencilOpStateBack.compareMask = pCreateInfo->m_pDepthStencilState->m_back.m_compareMask;
+	stencilOpStateBack.writeMask = pCreateInfo->m_pDepthStencilState->m_back.m_writeMask;
+	stencilOpStateBack.reference = pCreateInfo->m_pDepthStencilState->m_back.m_reference;
+
+	VkPipelineDepthStencilStateCreateInfo vkPipelineDepthStencilStateCreateInfo{};
+	vkPipelineDepthStencilStateCreateInfo.sType = (VkStructureType)pCreateInfo->m_pDepthStencilState->m_sType;
+	vkPipelineDepthStencilStateCreateInfo.pNext = (const void*)pCreateInfo->m_pDepthStencilState->m_pNext;
+	vkPipelineDepthStencilStateCreateInfo.flags = (VkPipelineDepthStencilStateCreateFlags)pCreateInfo->m_pDepthStencilState->m_flags;
+	vkPipelineDepthStencilStateCreateInfo.depthTestEnable = (VkBool32)pCreateInfo->m_pDepthStencilState->m_depthTestEnable;
+	vkPipelineDepthStencilStateCreateInfo.depthWriteEnable = (VkBool32)pCreateInfo->m_pDepthStencilState->m_depthWriteEnable;
+	vkPipelineDepthStencilStateCreateInfo.depthCompareOp = (VkCompareOp)pCreateInfo->m_pDepthStencilState->m_depthCompareOp;
+	vkPipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = (VkBool32)pCreateInfo->m_pDepthStencilState->m_depthBoundsTestEnable;
+	vkPipelineDepthStencilStateCreateInfo.stencilTestEnable = (VkBool32)pCreateInfo->m_pDepthStencilState->m_stencilTestEnable;
+	vkPipelineDepthStencilStateCreateInfo.front = stencilOpStateFront;
+	vkPipelineDepthStencilStateCreateInfo.back = stencilOpStateBack;
+	vkPipelineDepthStencilStateCreateInfo.minDepthBounds = pCreateInfo->m_pDepthStencilState->m_minDepthBounds;
+	vkPipelineDepthStencilStateCreateInfo.maxDepthBounds = pCreateInfo->m_pDepthStencilState->m_maxDepthBounds;
+
+	// 颜色混合状态创建信息
+	// 颜色混合附件状态
+	int pipelineColorBlendAttachmentStateSize = pCreateInfo->m_pColorBlendState->m_attachmentCount;
+	std::vector<VkPipelineColorBlendAttachmentState> vk_pipeline_color_blend_attachment_state_list(pipelineColorBlendAttachmentStateSize);
+	for (int i = 0; i < pipelineColorBlendAttachmentStateSize; ++i)
+	{
+		const auto& rhiPipelineColorBlendAttachmentStateElement = pCreateInfo->m_pColorBlendState->m_pAttachments[i];
+		auto& vkPipelineColorBlendAttachmentStateElement = vk_pipeline_color_blend_attachment_state_list[i];
+
+		vkPipelineColorBlendAttachmentStateElement.blendEnable = (VkBool32)rhiPipelineColorBlendAttachmentStateElement.m_blendEnable;
+		vkPipelineColorBlendAttachmentStateElement.srcColorBlendFactor = (VkBlendFactor)rhiPipelineColorBlendAttachmentStateElement.m_srcColorBlendFactor;
+		vkPipelineColorBlendAttachmentStateElement.dstColorBlendFactor = (VkBlendFactor)rhiPipelineColorBlendAttachmentStateElement.m_dstColorBlendFactor;
+		vkPipelineColorBlendAttachmentStateElement.colorBlendOp = (VkBlendOp)rhiPipelineColorBlendAttachmentStateElement.m_colorBlendOp;
+		vkPipelineColorBlendAttachmentStateElement.srcAlphaBlendFactor = (VkBlendFactor)rhiPipelineColorBlendAttachmentStateElement.m_srcAlphaBlendFactor;
+		vkPipelineColorBlendAttachmentStateElement.dstAlphaBlendFactor = (VkBlendFactor)rhiPipelineColorBlendAttachmentStateElement.m_dstAlphaBlendFactor;
+		vkPipelineColorBlendAttachmentStateElement.alphaBlendOp = (VkBlendOp)rhiPipelineColorBlendAttachmentStateElement.m_alphaBlendOp;
+		vkPipelineColorBlendAttachmentStateElement.colorWriteMask = (VkColorComponentFlags)rhiPipelineColorBlendAttachmentStateElement.m_colorWriteMask;
+	};
+
+	VkPipelineColorBlendStateCreateInfo vkPipelineColorBlendStateCreateInfo{};	
+	vkPipelineColorBlendStateCreateInfo.sType = (VkStructureType)pCreateInfo->m_pColorBlendState->m_sType;
+	vkPipelineColorBlendStateCreateInfo.pNext = pCreateInfo->m_pColorBlendState->m_pNext;
+	vkPipelineColorBlendStateCreateInfo.flags = pCreateInfo->m_pColorBlendState->m_flags;
+	vkPipelineColorBlendStateCreateInfo.logicOpEnable = pCreateInfo->m_pColorBlendState->m_logicOpEnable;
+	vkPipelineColorBlendStateCreateInfo.logicOp = (VkLogicOp)pCreateInfo->m_pColorBlendState->m_logicOp;
+	vkPipelineColorBlendStateCreateInfo.attachmentCount = pCreateInfo->m_pColorBlendState->m_attachmentCount;
+	vkPipelineColorBlendStateCreateInfo.pAttachments = vk_pipeline_color_blend_attachment_state_list.data();
+	for (int i = 0; i < 4; ++i)
+	{
+		vkPipelineColorBlendStateCreateInfo.blendConstants[i] = pCreateInfo->m_pColorBlendState->m_blendConstants[i];
+	};
+
+	// 管线动态状态创建信息
+	//dynamic_state
+	int dynamicStateSize = pCreateInfo->m_pDynamicState->m_dynamicStateCount;
+	std::vector<VkDynamicState> vkDynamicStateList(dynamicStateSize);
+	for (int i = 0; i < dynamicStateSize; ++i)
+	{
+		const auto& rhiDynamicStateElement = pCreateInfo->m_pDynamicState->m_pDynamicStates[i];
+		auto& vkDynamicStateElement = vkDynamicStateList[i];
+
+		vkDynamicStateElement = (VkDynamicState)rhiDynamicStateElement;
+	};
+
+	VkPipelineDynamicStateCreateInfo vkPipelineDynamicStateCreateInfo{};	
+	vkPipelineDynamicStateCreateInfo.sType = (VkStructureType)pCreateInfo->m_pDynamicState->m_sType;
+	vkPipelineDynamicStateCreateInfo.pNext = pCreateInfo->m_pDynamicState->m_pNext;
+	vkPipelineDynamicStateCreateInfo.flags = (VkPipelineDynamicStateCreateFlags)pCreateInfo->m_pDynamicState->m_flags;
+	vkPipelineDynamicStateCreateInfo.dynamicStateCount = pCreateInfo->m_pDynamicState->m_dynamicStateCount;
+	vkPipelineDynamicStateCreateInfo.pDynamicStates = vkDynamicStateList.data();
+
+	// 图形管线创建信息
+	VkGraphicsPipelineCreateInfo createInfo{};
+	createInfo.sType = (VkStructureType)pCreateInfo->m_sType;
+	createInfo.pNext = (const void*)pCreateInfo->m_pNext;
+	createInfo.flags = (VkPipelineCreateFlags)pCreateInfo->m_flags;
+	createInfo.stageCount = pCreateInfo->m_stageCount;
+	createInfo.pStages = vkPipelineShaderStageCreateInfoList.data();
+	createInfo.pVertexInputState = &vkPipelineVertexInputStateCreateInfo;
+	createInfo.pInputAssemblyState = &vkPipelineInputAssemblyStateCreateInfo;
+	createInfo.pTessellationState = vkPipelineTessellationStateCreateInfoPtr;
+	createInfo.pViewportState = &vkPipelineViewportStateCreateInfo;
+	createInfo.pRasterizationState = &vkPipelineRasterizationStateCreateInfo;
+	createInfo.pMultisampleState = &vkPipelineMultisampleStateCreateInfo;
+	createInfo.pDepthStencilState = &vkPipelineDepthStencilStateCreateInfo;
+	createInfo.pColorBlendState = &vkPipelineColorBlendStateCreateInfo;
+	createInfo.pDynamicState = &vkPipelineDynamicStateCreateInfo;
+	createInfo.layout = ((VulkanPipelineLayout*)pCreateInfo->m_pLayout)->GetResource();
+	createInfo.renderPass = ((VulkanRenderPass*)pCreateInfo->m_pRenderPass)->GetResource();
+	createInfo.subpass = pCreateInfo->m_subpass;
+	if (pCreateInfo->m_pBasePipelineHandle != nullptr)
+	{
+		createInfo.basePipelineHandle = ((VulkanPipeline*)pCreateInfo->m_pBasePipelineHandle)->GetResource();
+	}
+	else
+	{
+		createInfo.basePipelineHandle = VK_NULL_HANDLE;
+	}
+	createInfo.basePipelineIndex = pCreateInfo->m_basePipelineIndex;
+
+	// 创建图形管线
+	pPipelines = new VulkanPipeline();
+	VkPipeline vkPipelines;
+	VkPipelineCache vkPipelineCache = VK_NULL_HANDLE;	// 管线缓存
+	if (pipelineCache != nullptr)
+	{
+		vkPipelineCache = ((VulkanPipelineCache*)pipelineCache)->GetResource();
+	}
+	VkResult result = vkCreateGraphicsPipelines(m_device, vkPipelineCache, createInfoCount, &createInfo, nullptr, &vkPipelines);
+	((VulkanPipeline*)pPipelines)->SetResource(vkPipelines);
+
+	if (result == VK_SUCCESS)
+	{
+		return RHI_SUCCESS;
+	}
+	else
+	{
+		LOG_ERROR("vkCreateGraphicsPipelines failed!");
+		return false;
+	}
 }
 
-bool VulkanRHI::CreateComputePipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIComputePipelineCreateInfo* pCreateInfos, RHIPipeline*& pPipelines)
+bool VulkanRHI::CreateComputePipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIComputePipelineCreateInfo* pCreateInfo, RHIPipeline*& pPipelines)
 {
 	return false;
 }
