@@ -374,5 +374,11 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderMesh.h">
       <Filter>Engine\Source\Runtime\Function\Render</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Shader\Generated\Cpp\DeferredLightingVert.h">
+      <Filter>Engine\Shader\Generated\Cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Shader\Generated\Cpp\DeferredLightingFrag.h">
+      <Filter>Engine\Shader\Generated\Cpp</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
