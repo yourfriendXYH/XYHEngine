@@ -5,6 +5,10 @@
 #include <MeshGBufferFrag.h>
 #include <DeferredLightingVert.h>
 #include <DeferredLightingFrag.h>
+#include <SkyboxVert.h>
+#include <SkyboxFrag.h>
+#include <AxisVert.h>
+#include <AxisFrag.h>
 #include "Runtime/Function/Render/RenderMesh.h"
 
 NAMESPACE_XYH_BEGIN
@@ -963,7 +967,7 @@ void MainCameraPass::SetupPipelines()
 
 	// 延迟照明 图形管线
 	{
-		RHIDescriptorSetLayout* descriptorsetLayouts[3] = { 
+		RHIDescriptorSetLayout* descriptorsetLayouts[3] = {
 			m_descriptorInfos[_mesh_global].m_pDescriptorSetLayout,
 			m_descriptorInfos[_deferred_lighting].m_pDescriptorSetLayout,
 			m_descriptorInfos[_skybox].m_pDescriptorSetLayout
@@ -998,7 +1002,7 @@ void MainCameraPass::SetupPipelines()
 		fragPipelineShaderStageCreateInfo.m_pName = "main";
 
 		// 着色器阶段创建信息数组
-		ST_RHIPipelineShaderStageCreateInfo shader_stages[] = { 
+		ST_RHIPipelineShaderStageCreateInfo shader_stages[] = {
 			vertPipelineShaderStageCreateInfo,
 			fragPipelineShaderStageCreateInfo
 		};
@@ -1115,7 +1119,7 @@ void MainCameraPass::SetupPipelines()
 
 	// 网格光照 图形管线
 	{
-		RHIDescriptorSetLayout* descriptorsetLayouts[3] = { 
+		RHIDescriptorSetLayout* descriptorsetLayouts[3] = {
 			m_descriptorInfos[_mesh_global].m_pDescriptorSetLayout,
 			m_descriptorInfos[_per_mesh].m_pDescriptorSetLayout,
 			m_descriptorInfos[_mesh_per_material].m_pDescriptorSetLayout
@@ -1145,7 +1149,7 @@ void MainCameraPass::SetupPipelines()
 		fragPipelineShaderStageCreateInfo.m_module = pFragShaderModule;
 		fragPipelineShaderStageCreateInfo.m_pName = "main";
 
-		ST_RHIPipelineShaderStageCreateInfo shaderStages[] = { 
+		ST_RHIPipelineShaderStageCreateInfo shaderStages[] = {
 			vertPipelineShaderStageCreateInfo,
 			fragPipelineShaderStageCreateInfo
 		};
@@ -1252,7 +1256,283 @@ void MainCameraPass::SetupPipelines()
 
 	// 天空盒
 	{
+		// 创建 天空盒描述符集 布局
+		RHIDescriptorSetLayout* descriptorsetLayouts[1] = { m_descriptorInfos[_skybox].m_pDescriptorSetLayout };
+		ST_RHIPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+		pipelineLayoutCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutCreateInfo.m_setLayoutCount = 1;
+		pipelineLayoutCreateInfo.m_pSetLayouts = descriptorsetLayouts;
 
+		// 创建 渲染管线布局
+		if (m_pRHI->CreatePipelineLayout(&pipelineLayoutCreateInfo, m_renderPipelines[_render_pipeline_type_skybox].m_pipelineLayout) != RHI_SUCCESS)
+		{
+			throw std::runtime_error("create skybox pipeline layout");
+		}
+
+		// 着色器阶段 创建信息
+		RHIShader* pVertShaderModule = m_pRHI->CreateShaderModule(SKYBOX_VERT);
+		RHIShader* pFragShaderModule = m_pRHI->CreateShaderModule(SKYBOX_FRAG);
+
+		ST_RHIPipelineShaderStageCreateInfo vertPipelineShaderStageCreateInfo{};
+		vertPipelineShaderStageCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		vertPipelineShaderStageCreateInfo.m_stage = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT;
+		vertPipelineShaderStageCreateInfo.m_module = pVertShaderModule;
+		vertPipelineShaderStageCreateInfo.m_pName = "main";
+		// vert_pipeline_shader_stage_create_info.pSpecializationInfo
+
+		ST_RHIPipelineShaderStageCreateInfo fragPipelineShaderStageCreateInfo{};
+		fragPipelineShaderStageCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		fragPipelineShaderStageCreateInfo.m_stage = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_FRAGMENT_BIT;
+		fragPipelineShaderStageCreateInfo.m_module = pFragShaderModule;
+		fragPipelineShaderStageCreateInfo.m_pName = "main";
+
+		ST_RHIPipelineShaderStageCreateInfo shader_stages[] = {
+			vertPipelineShaderStageCreateInfo,
+			fragPipelineShaderStageCreateInfo
+		};
+
+		// 顶点输入状态创建信息
+		auto vertexBindingDescriptions = ST_MeshVertex::GetBindingDescriptions();
+		auto vertexAttributeDescriptions = ST_MeshVertex::GetAttributeDescriptions();
+		ST_RHIPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
+		vertexInputStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		vertexInputStateCreateInfo.m_vertexBindingDescriptionCount = 0;
+		vertexInputStateCreateInfo.m_pVertexBindingDescriptions = nullptr;
+		vertexInputStateCreateInfo.m_vertexAttributeDescriptionCount = 0;
+		vertexInputStateCreateInfo.m_pVertexAttributeDescriptions = nullptr;
+
+		// 输入汇编状态创建信息
+		ST_RHIPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo{};
+		inputAssemblyCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+		inputAssemblyCreateInfo.m_topology = ERHIPrimitiveTopology::RHI_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		inputAssemblyCreateInfo.m_primitiveRestartEnable = RHI_FALSE;
+
+		// 视口状态创建信息
+		ST_RHIPipelineViewportStateCreateInfo viewportStateCreateInfo{};
+		viewportStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+		viewportStateCreateInfo.m_viewportCount = 1;
+		viewportStateCreateInfo.m_pViewports = m_pRHI->GetSwapchainInfo().m_pViewport;
+		viewportStateCreateInfo.m_scissorCount = 1;
+		viewportStateCreateInfo.m_pScissors = m_pRHI->GetSwapchainInfo().m_pScissor;
+
+		// 光栅化状态创建信息
+		ST_RHIPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo{};
+		rasterizationStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+		rasterizationStateCreateInfo.m_depthClampEnable = RHI_FALSE;
+		rasterizationStateCreateInfo.m_rasterizerDiscardEnable = RHI_FALSE;
+		rasterizationStateCreateInfo.m_polygonMode = ERHIPolygonMode::RHI_POLYGON_MODE_FILL;
+		rasterizationStateCreateInfo.m_lineWidth = 1.0f;
+		rasterizationStateCreateInfo.m_cullMode = ERHICullModeFlagBits::RHI_CULL_MODE_BACK_BIT;
+		rasterizationStateCreateInfo.m_frontFace = ERHIFrontFace::RHI_FRONT_FACE_COUNTER_CLOCKWISE;
+		rasterizationStateCreateInfo.m_depthBiasEnable = RHI_FALSE;
+		rasterizationStateCreateInfo.m_depthBiasConstantFactor = 0.0f;
+		rasterizationStateCreateInfo.m_depthBiasClamp = 0.0f;
+		rasterizationStateCreateInfo.m_depthBiasSlopeFactor = 0.0f;
+
+		// 多重采样状态创建信息
+		ST_RHIPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{};
+		multisampleStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+		multisampleStateCreateInfo.m_sampleShadingEnable = RHI_FALSE;
+		multisampleStateCreateInfo.m_rasterizationSamples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;
+
+		// 颜色混合状态创建信息
+		ST_RHIPipelineColorBlendAttachmentState colorBlendAttachments[1] = {};
+		colorBlendAttachments[0].m_colorWriteMask = ERHIColorComponentFlagBits::RHI_COLOR_COMPONENT_R_BIT | RHI_COLOR_COMPONENT_G_BIT | RHI_COLOR_COMPONENT_B_BIT | RHI_COLOR_COMPONENT_A_BIT;
+		colorBlendAttachments[0].m_blendEnable = RHI_FALSE;
+		colorBlendAttachments[0].m_srcColorBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ONE;
+		colorBlendAttachments[0].m_dstColorBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ZERO;
+		colorBlendAttachments[0].m_colorBlendOp = ERHIBlendOp::RHI_BLEND_OP_ADD;
+		colorBlendAttachments[0].m_srcAlphaBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ONE;
+		colorBlendAttachments[0].m_dstAlphaBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ZERO;
+		colorBlendAttachments[0].m_alphaBlendOp = ERHIBlendOp::RHI_BLEND_OP_ADD;
+
+		ST_RHIPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = {};
+		colorBlendStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+		colorBlendStateCreateInfo.m_logicOpEnable = RHI_FALSE;
+		colorBlendStateCreateInfo.m_logicOp = RHI_LOGIC_OP_COPY;
+		colorBlendStateCreateInfo.m_attachmentCount = sizeof(colorBlendAttachments) / sizeof(colorBlendAttachments[0]);
+		colorBlendStateCreateInfo.m_pAttachments = &colorBlendAttachments[0];
+		colorBlendStateCreateInfo.m_blendConstants[0] = 0.0f;
+		colorBlendStateCreateInfo.m_blendConstants[1] = 0.0f;
+		colorBlendStateCreateInfo.m_blendConstants[2] = 0.0f;
+		colorBlendStateCreateInfo.m_blendConstants[3] = 0.0f;
+
+		// 深度模板状态创建信息
+		ST_RHIPipelineDepthStencilStateCreateInfo depthStencilCreateInfo{};
+		depthStencilCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depthStencilCreateInfo.m_depthTestEnable = RHI_TRUE;
+		depthStencilCreateInfo.m_depthWriteEnable = RHI_TRUE;
+		depthStencilCreateInfo.m_depthCompareOp = ERHICompareOp::RHI_COMPARE_OP_LESS;
+		depthStencilCreateInfo.m_depthBoundsTestEnable = RHI_FALSE;
+		depthStencilCreateInfo.m_stencilTestEnable = RHI_FALSE;
+
+		// 动态状态创建信息
+		ERHIDynamicState dynamicStates[] = { RHI_DYNAMIC_STATE_VIEWPORT, RHI_DYNAMIC_STATE_SCISSOR };
+		ST_RHIPipelineDynamicStateCreateInfo dynamicStateCreateInfo{};
+		dynamicStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+		dynamicStateCreateInfo.m_dynamicStateCount = 2;
+		dynamicStateCreateInfo.m_pDynamicStates = dynamicStates;
+
+		// 图形管线创建信息
+		ST_RHIGraphicsPipelineCreateInfo pipelineInfo{};
+		pipelineInfo.m_sType = RHI_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineInfo.m_stageCount = 2;
+		pipelineInfo.m_pStages = shader_stages;
+		pipelineInfo.m_pVertexInputState = &vertexInputStateCreateInfo;
+		pipelineInfo.m_pInputAssemblyState = &inputAssemblyCreateInfo;
+		pipelineInfo.m_pViewportState = &viewportStateCreateInfo;
+		pipelineInfo.m_pRasterizationState = &rasterizationStateCreateInfo;
+		pipelineInfo.m_pMultisampleState = &multisampleStateCreateInfo;
+		pipelineInfo.m_pColorBlendState = &colorBlendStateCreateInfo;
+		pipelineInfo.m_pDepthStencilState = &depthStencilCreateInfo;
+		pipelineInfo.m_pLayout = m_renderPipelines[_render_pipeline_type_skybox].m_pipelineLayout;
+		pipelineInfo.m_pRenderPass = m_framebuffer.m_pRenderPass;
+		pipelineInfo.m_subpass = _main_camera_subpass_forward_lighting;
+		pipelineInfo.m_pBasePipelineHandle = RHI_NULL_HANDLE;
+		pipelineInfo.m_pDynamicState = &dynamicStateCreateInfo;
+
+		// 创建 图形管线
+		if (RHI_SUCCESS != m_pRHI->CreateGraphicsPipelines(RHI_NULL_HANDLE, 1, &pipelineInfo, m_renderPipelines[_render_pipeline_type_skybox].m_pipeline))
+		{
+			throw std::runtime_error("create skybox graphics pipeline");
+		}
+
+		m_pRHI->DestroyShaderModule(pVertShaderModule);
+		m_pRHI->DestroyShaderModule(pFragShaderModule);
+	}
+
+	// 坐标轴
+	{
+		RHIDescriptorSetLayout* descriptorsetLayouts[1] = { m_descriptorInfos[_axis].m_pDescriptorSetLayout };
+		ST_RHIPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+		pipelineLayoutCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutCreateInfo.m_setLayoutCount = 1;
+		pipelineLayoutCreateInfo.m_pSetLayouts = descriptorsetLayouts;
+
+		if (m_pRHI->CreatePipelineLayout(&pipelineLayoutCreateInfo, m_renderPipelines[_render_pipeline_type_axis].m_pipelineLayout) != RHI_SUCCESS)
+		{
+			throw std::runtime_error("create axis pipeline layout");
+		}
+
+		RHIShader* pVertShaderModule = m_pRHI->CreateShaderModule(AXIS_VERT);
+		RHIShader* pFragShaderModule = m_pRHI->CreateShaderModule(AXIS_FRAG);
+
+		ST_RHIPipelineShaderStageCreateInfo vertPipelineShaderStageCreateInfo{};
+		vertPipelineShaderStageCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		vertPipelineShaderStageCreateInfo.m_stage = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT;
+		vertPipelineShaderStageCreateInfo.m_module = pVertShaderModule;
+		vertPipelineShaderStageCreateInfo.m_pName = "main";
+		// vert_pipeline_shader_stage_create_info.pSpecializationInfo
+
+		ST_RHIPipelineShaderStageCreateInfo fragPipelineShaderStageCreateInfo{};
+		fragPipelineShaderStageCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		fragPipelineShaderStageCreateInfo.m_stage = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_FRAGMENT_BIT;
+		fragPipelineShaderStageCreateInfo.m_module = pFragShaderModule;
+		fragPipelineShaderStageCreateInfo.m_pName = "main";
+
+		ST_RHIPipelineShaderStageCreateInfo shaderStages[] = {
+			vertPipelineShaderStageCreateInfo,
+			fragPipelineShaderStageCreateInfo
+		};
+
+		auto vertexBindingDescriptions = ST_MeshVertex::GetBindingDescriptions();
+		auto vertexAttributeDescriptions = ST_MeshVertex::GetAttributeDescriptions();
+		ST_RHIPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
+		vertexInputStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		vertexInputStateCreateInfo.m_vertexBindingDescriptionCount = vertexBindingDescriptions.size();
+		vertexInputStateCreateInfo.m_pVertexBindingDescriptions = &vertexBindingDescriptions[0];
+		vertexInputStateCreateInfo.m_vertexAttributeDescriptionCount = vertexAttributeDescriptions.size();
+		vertexInputStateCreateInfo.m_pVertexAttributeDescriptions = &vertexAttributeDescriptions[0];
+
+		ST_RHIPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo{};
+		inputAssemblyCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+		inputAssemblyCreateInfo.m_topology = ERHIPrimitiveTopology::RHI_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		inputAssemblyCreateInfo.m_primitiveRestartEnable = RHI_FALSE;
+
+		ST_RHIPipelineViewportStateCreateInfo viewportStateCreateInfo{};
+		viewportStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+		viewportStateCreateInfo.m_viewportCount = 1;
+		viewportStateCreateInfo.m_pViewports = m_pRHI->GetSwapchainInfo().m_pViewport;
+		viewportStateCreateInfo.m_scissorCount = 1;
+		viewportStateCreateInfo.m_pScissors = m_pRHI->GetSwapchainInfo().m_pScissor;
+
+		ST_RHIPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo{};
+		rasterizationStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+		rasterizationStateCreateInfo.m_depthClampEnable = RHI_FALSE;
+		rasterizationStateCreateInfo.m_rasterizerDiscardEnable = RHI_FALSE;
+		rasterizationStateCreateInfo.m_polygonMode = ERHIPolygonMode::RHI_POLYGON_MODE_FILL;
+		rasterizationStateCreateInfo.m_lineWidth = 1.0f;
+		rasterizationStateCreateInfo.m_cullMode = RHI_CULL_MODE_NONE;
+		rasterizationStateCreateInfo.m_frontFace = RHI_FRONT_FACE_COUNTER_CLOCKWISE;
+		rasterizationStateCreateInfo.m_depthBiasEnable = RHI_FALSE;
+		rasterizationStateCreateInfo.m_depthBiasConstantFactor = 0.0f;
+		rasterizationStateCreateInfo.m_depthBiasClamp = 0.0f;
+		rasterizationStateCreateInfo.m_depthBiasSlopeFactor = 0.0f;
+
+		ST_RHIPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{};
+		multisampleStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+		multisampleStateCreateInfo.m_sampleShadingEnable = RHI_FALSE;
+		multisampleStateCreateInfo.m_rasterizationSamples = RHI_SAMPLE_COUNT_1_BIT;
+
+		ST_RHIPipelineColorBlendAttachmentState colorBlendAttachmentState{};
+		colorBlendAttachmentState.m_colorWriteMask = RHI_COLOR_COMPONENT_R_BIT | RHI_COLOR_COMPONENT_G_BIT | RHI_COLOR_COMPONENT_B_BIT | RHI_COLOR_COMPONENT_A_BIT;
+		colorBlendAttachmentState.m_blendEnable = RHI_FALSE;
+		colorBlendAttachmentState.m_srcColorBlendFactor = RHI_BLEND_FACTOR_ONE;
+		colorBlendAttachmentState.m_dstColorBlendFactor = RHI_BLEND_FACTOR_ZERO;
+		colorBlendAttachmentState.m_colorBlendOp = RHI_BLEND_OP_ADD;
+		colorBlendAttachmentState.m_srcAlphaBlendFactor = RHI_BLEND_FACTOR_ONE;
+		colorBlendAttachmentState.m_dstAlphaBlendFactor = RHI_BLEND_FACTOR_ZERO;
+		colorBlendAttachmentState.m_alphaBlendOp = RHI_BLEND_OP_ADD;
+
+		ST_RHIPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo{};
+		colorBlendStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+		colorBlendStateCreateInfo.m_logicOpEnable = RHI_FALSE;
+		colorBlendStateCreateInfo.m_logicOp = RHI_LOGIC_OP_COPY;
+		colorBlendStateCreateInfo.m_attachmentCount = 1;
+		colorBlendStateCreateInfo.m_pAttachments = &colorBlendAttachmentState;
+		colorBlendStateCreateInfo.m_blendConstants[0] = 0.0f;
+		colorBlendStateCreateInfo.m_blendConstants[1] = 0.0f;
+		colorBlendStateCreateInfo.m_blendConstants[2] = 0.0f;
+		colorBlendStateCreateInfo.m_blendConstants[3] = 0.0f;
+
+		ST_RHIPipelineDepthStencilStateCreateInfo depthStencilCreateInfo{};
+		depthStencilCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depthStencilCreateInfo.m_depthTestEnable = RHI_FALSE;
+		depthStencilCreateInfo.m_depthWriteEnable = RHI_FALSE;
+		depthStencilCreateInfo.m_depthCompareOp = RHI_COMPARE_OP_LESS;
+		depthStencilCreateInfo.m_depthBoundsTestEnable = RHI_FALSE;
+		depthStencilCreateInfo.m_stencilTestEnable = RHI_FALSE;
+
+		ERHIDynamicState dynamicStates[] = { RHI_DYNAMIC_STATE_VIEWPORT, RHI_DYNAMIC_STATE_SCISSOR };
+		ST_RHIPipelineDynamicStateCreateInfo dynamicStateCreateInfo{};
+		dynamicStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+		dynamicStateCreateInfo.m_dynamicStateCount = 2;
+		dynamicStateCreateInfo.m_pDynamicStates = dynamicStates;
+
+		ST_RHIGraphicsPipelineCreateInfo pipelineInfo{};
+		pipelineInfo.m_sType = RHI_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineInfo.m_stageCount = 2;
+		pipelineInfo.m_pStages = shaderStages;
+		pipelineInfo.m_pVertexInputState = &vertexInputStateCreateInfo;
+		pipelineInfo.m_pInputAssemblyState = &inputAssemblyCreateInfo;
+		pipelineInfo.m_pViewportState = &viewportStateCreateInfo;
+		pipelineInfo.m_pRasterizationState = &rasterizationStateCreateInfo;
+		pipelineInfo.m_pMultisampleState = &multisampleStateCreateInfo;
+		pipelineInfo.m_pColorBlendState = &colorBlendStateCreateInfo;
+		pipelineInfo.m_pDepthStencilState = &depthStencilCreateInfo;
+		pipelineInfo.m_pLayout = m_renderPipelines[_render_pipeline_type_axis].m_pipelineLayout;
+		pipelineInfo.m_pRenderPass = m_framebuffer.m_pRenderPass;
+		pipelineInfo.m_subpass = _main_camera_subpass_ui;
+		pipelineInfo.m_pBasePipelineHandle = RHI_NULL_HANDLE;
+		pipelineInfo.m_pDynamicState = &dynamicStateCreateInfo;
+
+		if (RHI_SUCCESS != m_pRHI->CreateGraphicsPipelines(RHI_NULL_HANDLE, 1, &pipelineInfo, m_renderPipelines[_render_pipeline_type_axis].m_pipeline))
+		{
+			throw std::runtime_error("create axis graphics pipeline");
+		}
+
+		m_pRHI->DestroyShaderModule(pVertShaderModule);
+		m_pRHI->DestroyShaderModule(pFragShaderModule);
 	}
 }
 
