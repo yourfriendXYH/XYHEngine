@@ -541,4 +541,34 @@ struct ST_RHIGraphicsPipelineCreateInfo
 	int32_t m_basePipelineIndex;
 };
 
+// 描述符图像信息
+struct ST_RHIDescriptorImageInfo 
+{
+	RHISampler* m_pSampler;
+	RHIImageView* m_pImageView;
+	ERHIImageLayout m_imageLayout;
+};
+
+// 描述符缓冲区信息
+struct ST_RHIDescriptorBufferInfo 
+{
+	RHIBuffer* m_pBuffer;
+	RHIDeviceSize m_offset;
+	RHIDeviceSize m_range;
+};
+
+struct ST_RHIWriteDescriptorSet
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIDescriptorSet* m_pDstSet;
+	uint32_t m_dstBinding;
+	uint32_t m_dstArrayElement;
+	uint32_t m_descriptorCount;
+	ERHIDescriptorType m_descriptorType;
+	ST_RHIDescriptorImageInfo* m_pImageInfo = nullptr;
+	ST_RHIDescriptorBufferInfo* m_pBufferInfo = nullptr;
+	RHIBufferView* m_pTexelBufferView = nullptr;
+};
+
 NAMESPACE_XYH_END

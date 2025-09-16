@@ -1158,9 +1158,9 @@ void MainCameraPass::SetupPipelines()
 		auto vertexAttributeDescriptions = ST_MeshVertex::GetAttributeDescriptions();
 		ST_RHIPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
 		vertexInputStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputStateCreateInfo.m_vertexBindingDescriptionCount = vertexBindingDescriptions.size();
+		vertexInputStateCreateInfo.m_vertexBindingDescriptionCount = static_cast<uint32_t>(vertexBindingDescriptions.size());
 		vertexInputStateCreateInfo.m_pVertexBindingDescriptions = &vertexBindingDescriptions[0];
-		vertexInputStateCreateInfo.m_vertexAttributeDescriptionCount = vertexAttributeDescriptions.size();
+		vertexInputStateCreateInfo.m_vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttributeDescriptions.size());
 		vertexInputStateCreateInfo.m_pVertexAttributeDescriptions = &vertexAttributeDescriptions[0];
 
 		ST_RHIPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo{};
@@ -1439,9 +1439,9 @@ void MainCameraPass::SetupPipelines()
 		auto vertexAttributeDescriptions = ST_MeshVertex::GetAttributeDescriptions();
 		ST_RHIPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
 		vertexInputStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputStateCreateInfo.m_vertexBindingDescriptionCount = vertexBindingDescriptions.size();
+		vertexInputStateCreateInfo.m_vertexBindingDescriptionCount = static_cast<uint32_t>(vertexBindingDescriptions.size());
 		vertexInputStateCreateInfo.m_pVertexBindingDescriptions = &vertexBindingDescriptions[0];
-		vertexInputStateCreateInfo.m_vertexAttributeDescriptionCount = vertexAttributeDescriptions.size();
+		vertexInputStateCreateInfo.m_vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttributeDescriptions.size());
 		vertexInputStateCreateInfo.m_pVertexAttributeDescriptions = &vertexAttributeDescriptions[0];
 
 		ST_RHIPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo{};
@@ -1538,10 +1538,35 @@ void MainCameraPass::SetupPipelines()
 
 void MainCameraPass::SetupDescriptorSet()
 {
+	SetupModelGlobalDescriptorSet();
+	SetupSkyboxDescriptorSet();
+	SetupAxisDescriptorSet();
+	SetupGbufferLightingDescriptorSet();
 }
 
 void MainCameraPass::SetupFramebufferDescriptorSet()
 {
+	ST_RHIDescriptorImageInfo gbufferNormalInputAttachmentInfo = {};
+	gbufferNormalInputAttachmentInfo.m_pSampler = m_pRHI->GetOrCreateDefaultSampler(Default_Sampler_Nearest);
+	gbufferNormalInputAttachmentInfo.m_pImageView = m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_pView;
+	gbufferNormalInputAttachmentInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	ST_RHIDescriptorImageInfo gbufferMetallicRoughnessShadingmodeidInputAttachmentInfo = {};
+	gbufferMetallicRoughnessShadingmodeidInputAttachmentInfo.m_pSampler = m_pRHI->GetOrCreateDefaultSampler(Default_Sampler_Nearest);
+	gbufferMetallicRoughnessShadingmodeidInputAttachmentInfo.m_pImageView = m_framebuffer.m_attachments[_main_camera_pass_gbuffer_b].m_pView;
+	gbufferMetallicRoughnessShadingmodeidInputAttachmentInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	ST_RHIDescriptorImageInfo gbufferAlbedoInputAttachmentInfo = {};
+	gbufferAlbedoInputAttachmentInfo.m_pSampler = m_pRHI->GetOrCreateDefaultSampler(Default_Sampler_Nearest);
+	gbufferAlbedoInputAttachmentInfo.m_pImageView = m_framebuffer.m_attachments[_main_camera_pass_gbuffer_c].m_pView;
+	gbufferAlbedoInputAttachmentInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	ST_RHIDescriptorImageInfo depthInputAttachmentInfo = {};
+	depthInputAttachmentInfo.m_pSampler = m_pRHI->GetOrCreateDefaultSampler(Default_Sampler_Nearest);
+	depthInputAttachmentInfo.m_pImageView = m_pRHI->GetDepthImageInfo().m_depthImageView;
+	depthInputAttachmentInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	ST_RHIWriteDescriptorSet deferredLightingDescriptorWritesInfo[4];
 }
 
 void MainCameraPass::SetupSwapchainFramebuffers()
