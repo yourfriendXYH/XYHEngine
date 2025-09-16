@@ -380,5 +380,8 @@
     <ClInclude Include="Engine\Shader\Generated\Cpp\DeferredLightingFrag.h">
       <Filter>Engine\Shader\Generated\Cpp</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Shader\Generated\Cpp\MeshFrag.h">
+      <Filter>Engine\Shader\Generated\Cpp</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

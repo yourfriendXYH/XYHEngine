@@ -62,6 +62,7 @@
   <ItemGroup>
     <ClInclude Include="Engine\Shader\Generated\Cpp\DeferredLightingFrag.h" />
     <ClInclude Include="Engine\Shader\Generated\Cpp\DeferredLightingVert.h" />
+    <ClInclude Include="Engine\Shader\Generated\Cpp\MeshFrag.h" />
     <ClInclude Include="Engine\Shader\Generated\Cpp\MeshGBufferFrag.h" />
     <ClInclude Include="Engine\Shader\Generated\Cpp\MeshVert.h" />
     <ClInclude Include="Engine\Source\Common\Common.h" />
