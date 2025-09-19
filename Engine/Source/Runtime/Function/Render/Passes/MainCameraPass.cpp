@@ -1567,6 +1567,28 @@ void MainCameraPass::SetupFramebufferDescriptorSet()
 	depthInputAttachmentInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	ST_RHIWriteDescriptorSet deferredLightingDescriptorWritesInfo[4];
+
+	// 位置法线贴图 输入附件
+	ST_RHIWriteDescriptorSet& gbufferNormalDescriptorInputAttachmenWriteInfo = deferredLightingDescriptorWritesInfo[0];
+	gbufferNormalDescriptorInputAttachmenWriteInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	gbufferNormalDescriptorInputAttachmenWriteInfo.m_pNext = nullptr;
+	gbufferNormalDescriptorInputAttachmenWriteInfo.m_pDstSet = m_descriptorInfos[_deferred_lighting].m_pDescriptorSet;
+	gbufferNormalDescriptorInputAttachmenWriteInfo.m_dstBinding = 0;
+	gbufferNormalDescriptorInputAttachmenWriteInfo.m_dstArrayElement = 0;
+	gbufferNormalDescriptorInputAttachmenWriteInfo.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	gbufferNormalDescriptorInputAttachmenWriteInfo.m_descriptorCount = 1;
+	gbufferNormalDescriptorInputAttachmenWriteInfo.m_pImageInfo = &gbufferNormalInputAttachmentInfo;
+
+	// 金属度粗糙度阴影模式id贴图 输入附件
+	ST_RHIWriteDescriptorSet& gbufferMetallicRoughnessShadingmodeidDescriptorInputAttachmentWriteInfo = deferredLightingDescriptorWritesInfo[1];
+	gbufferMetallicRoughnessShadingmodeidDescriptorInputAttachmentWriteInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	gbufferMetallicRoughnessShadingmodeidDescriptorInputAttachmentWriteInfo.m_pNext = nullptr;
+	gbufferMetallicRoughnessShadingmodeidDescriptorInputAttachmentWriteInfo.m_pDstSet = m_descriptorInfos[_deferred_lighting].m_pDescriptorSet;
+	gbufferMetallicRoughnessShadingmodeidDescriptorInputAttachmentWriteInfo.m_dstBinding = 1;
+	gbufferMetallicRoughnessShadingmodeidDescriptorInputAttachmentWriteInfo.m_dstArrayElement = 0;
+	gbufferMetallicRoughnessShadingmodeidDescriptorInputAttachmentWriteInfo.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	gbufferMetallicRoughnessShadingmodeidDescriptorInputAttachmentWriteInfo.m_descriptorCount = 1;
+	gbufferMetallicRoughnessShadingmodeidDescriptorInputAttachmentWriteInfo.m_pImageInfo = &gbufferMetallicRoughnessShadingmodeidInputAttachmentInfo;
 }
 
 void MainCameraPass::SetupSwapchainFramebuffers()

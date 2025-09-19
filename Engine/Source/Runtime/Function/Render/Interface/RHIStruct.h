@@ -561,7 +561,7 @@ struct ST_RHIWriteDescriptorSet
 {
 	ERHIStructureType m_sType;
 	const void* m_pNext;
-	RHIDescriptorSet* m_pDstSet;
+	RHIDescriptorSet* m_pDstSet;	// Ä¿±êÃèÊö·û¼¯
 	uint32_t m_dstBinding;
 	uint32_t m_dstArrayElement;
 	uint32_t m_descriptorCount;
