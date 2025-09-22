@@ -1589,6 +1589,31 @@ void MainCameraPass::SetupFramebufferDescriptorSet()
 	gbufferMetallicRoughnessShadingmodeidDescriptorInputAttachmentWriteInfo.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
 	gbufferMetallicRoughnessShadingmodeidDescriptorInputAttachmentWriteInfo.m_descriptorCount = 1;
 	gbufferMetallicRoughnessShadingmodeidDescriptorInputAttachmentWriteInfo.m_pImageInfo = &gbufferMetallicRoughnessShadingmodeidInputAttachmentInfo;
+
+	// 反射率贴图 输入附件
+	ST_RHIWriteDescriptorSet& gbufferAlbedoDescriptorInputAttachmentWriteInfo = deferredLightingDescriptorWritesInfo[2];
+	gbufferAlbedoDescriptorInputAttachmentWriteInfo.m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	gbufferAlbedoDescriptorInputAttachmentWriteInfo.m_pNext = nullptr;
+	gbufferAlbedoDescriptorInputAttachmentWriteInfo.m_pDstSet = m_descriptorInfos[_deferred_lighting].m_pDescriptorSet;
+	gbufferAlbedoDescriptorInputAttachmentWriteInfo.m_dstBinding = 2;
+	gbufferAlbedoDescriptorInputAttachmentWriteInfo.m_dstArrayElement = 0;
+	gbufferAlbedoDescriptorInputAttachmentWriteInfo.m_descriptorType = RHI_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	gbufferAlbedoDescriptorInputAttachmentWriteInfo.m_descriptorCount = 1;
+	gbufferAlbedoDescriptorInputAttachmentWriteInfo.m_pImageInfo = &gbufferAlbedoInputAttachmentInfo;
+
+	// 深度贴图 输入附件
+	ST_RHIWriteDescriptorSet& depthDescriptorInputAttachmentWriteInfo = deferredLightingDescriptorWritesInfo[3];
+	depthDescriptorInputAttachmentWriteInfo.m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	depthDescriptorInputAttachmentWriteInfo.m_pNext = NULL;
+	depthDescriptorInputAttachmentWriteInfo.m_pDstSet = m_descriptorInfos[_deferred_lighting].m_pDescriptorSet;
+	depthDescriptorInputAttachmentWriteInfo.m_dstBinding = 3;
+	depthDescriptorInputAttachmentWriteInfo.m_dstArrayElement = 0;
+	depthDescriptorInputAttachmentWriteInfo.m_descriptorType = RHI_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	depthDescriptorInputAttachmentWriteInfo.m_descriptorCount = 1;
+	depthDescriptorInputAttachmentWriteInfo.m_pImageInfo = &depthInputAttachmentInfo;
+
+	// 更新描述符集
+	m_pRHI->UpdateDescriptorSets(sizeof(deferredLightingDescriptorWritesInfo) / sizeof(deferredLightingDescriptorWritesInfo[0]), deferredLightingDescriptorWritesInfo, 0, nullptr);
 }
 
 void MainCameraPass::SetupSwapchainFramebuffers()
