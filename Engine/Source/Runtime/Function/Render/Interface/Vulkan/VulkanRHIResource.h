@@ -5,6 +5,22 @@
 
 NAMESPACE_XYH_BEGIN
 
+// VulkanBuffer 类用于封装 Vulkan 缓冲区资源
+class VulkanBuffer : public RHIBuffer
+{
+public:
+	void SetResource(VkBuffer res)
+	{
+		m_resource = res;
+	}
+	VkBuffer GetResource() const
+	{
+		return m_resource;
+	}
+private:
+	VkBuffer m_resource;
+};
+
 // VulkanFence 类用于封装 Vulkan 栅栏资源
 class VulkanQueue : public RHIQueue
 {
@@ -261,6 +277,22 @@ public:
 	}
 private:
 	VkPipelineCache m_resource;
+};
+
+// 描述符集 封装
+class VulkanDescriptorSet : public RHIDescriptorSet
+{
+public:
+	void SetResource(VkDescriptorSet res)
+	{
+		m_resource = res;
+	}
+	VkDescriptorSet GetResource() const
+	{
+		return m_resource;
+	}
+private:
+	VkDescriptorSet m_resource;
 };
 
 NAMESPACE_XYH_END

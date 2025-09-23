@@ -396,6 +396,10 @@ private:
 
 	uint32_t m_maxVertexBlendingMeshCount = 256u;	// 最大顶点混合网格数量
 	uint32_t m_maxMaterialCount = 256u;	// 最大材质数量
+
+	// 默认采样器
+	RHISampler* m_pLinearSampler = nullptr;	// 线性采样器
+	RHISampler* m_pNearestSampler = nullptr;	// 最近点采样器
 };
 
 NAMESPACE_XYH_END

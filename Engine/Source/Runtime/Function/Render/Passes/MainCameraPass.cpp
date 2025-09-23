@@ -1604,7 +1604,7 @@ void MainCameraPass::SetupFramebufferDescriptorSet()
 	// 深度贴图 输入附件
 	ST_RHIWriteDescriptorSet& depthDescriptorInputAttachmentWriteInfo = deferredLightingDescriptorWritesInfo[3];
 	depthDescriptorInputAttachmentWriteInfo.m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	depthDescriptorInputAttachmentWriteInfo.m_pNext = NULL;
+	depthDescriptorInputAttachmentWriteInfo.m_pNext = nullptr;
 	depthDescriptorInputAttachmentWriteInfo.m_pDstSet = m_descriptorInfos[_deferred_lighting].m_pDescriptorSet;
 	depthDescriptorInputAttachmentWriteInfo.m_dstBinding = 3;
 	depthDescriptorInputAttachmentWriteInfo.m_dstArrayElement = 0;

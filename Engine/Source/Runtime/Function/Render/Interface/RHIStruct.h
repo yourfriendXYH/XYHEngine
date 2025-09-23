@@ -129,6 +129,19 @@ struct ST_RHIMemoryBarrier
 	RHIAccessFlags m_dstAccessMask;
 };
 
+struct ST_RHICopyDescriptorSet
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIDescriptorSet* m_pSrcSet;
+	uint32_t m_srcBinding;
+	uint32_t m_srcArrayElement;
+	RHIDescriptorSet* m_pDstSet;
+	uint32_t m_dstBinding;
+	uint32_t m_dstArrayElement;
+	uint32_t m_descriptorCount;
+};
+
 struct ST_RHIOffset2D
 {
 	int32_t m_x;

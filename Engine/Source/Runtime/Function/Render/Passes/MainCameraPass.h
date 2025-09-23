@@ -73,8 +73,11 @@ private:
 	void SetupDescriptorSetLayout();	// 设置描述符集布局
 
 	void SetupPipelines();	// 设置管线
+
 	void SetupDescriptorSet();	// 设置描述符集
+
 	void SetupFramebufferDescriptorSet();	// 设置帧缓冲描述符集
+
 	void SetupSwapchainFramebuffers();	// 设置交换链帧缓冲
 
 	void SetupModelGlobalDescriptorSet();	// 设置模型全局描述符集

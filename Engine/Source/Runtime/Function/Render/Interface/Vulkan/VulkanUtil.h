@@ -40,6 +40,15 @@ public:
 
 	static uint32_t FindMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags propertiesFlag);
 
+	// 获取或创建线性采样器
+	static VkSampler GetOrCreateLinearSampler(VkPhysicalDevice physicalDevice, VkDevice device);
+
+	// 获取或创建最近点采样器
+	static VkSampler GetOrCreateNearestSampler(VkPhysicalDevice physicalDevice, VkDevice device);
+
+private:
+	static VkSampler m_linearSampler;
+	static VkSampler m_nearestSampler;
 };
 
 NAMESPACE_XYH_END

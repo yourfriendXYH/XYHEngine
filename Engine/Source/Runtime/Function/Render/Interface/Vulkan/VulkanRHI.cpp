@@ -222,7 +222,30 @@ void VulkanRHI::CreateFramebufferImageAndViews()
 
 RHISampler* VulkanRHI::GetOrCreateDefaultSampler(ERHIDefaultSamplerType type)
 {
-	return nullptr;
+	switch (type)
+	{
+	case XYH::Default_Sampler_Linear:
+		if (m_pLinearSampler == nullptr)
+		{
+			m_pLinearSampler = new VulkanSampler();
+			((VulkanSampler*)m_pLinearSampler)->SetResource(VulkanUtil::GetOrCreateLinearSampler(m_physicalDevice, m_device));
+		}
+		return m_pLinearSampler;
+		break;
+
+	case XYH::Default_Sampler_Nearest:
+		if (m_pNearestSampler == nullptr)
+		{
+			m_pNearestSampler = new VulkanSampler();
+			((VulkanSampler*)m_pNearestSampler)->SetResource(VulkanUtil::GetOrCreateNearestSampler(m_physicalDevice, m_device));
+		}
+		return m_pNearestSampler;
+		break;
+
+	default:
+		return nullptr;
+		break;
+	}
 }
 
 RHISampler* VulkanRHI::GetOrCreateMipmapSampler(uint32_t width, uint32_t height)
@@ -1070,6 +1093,107 @@ bool VulkanRHI::EndCommandBuffer(RHICommandBuffer* commandBuffer)
 
 void VulkanRHI::UpdateDescriptorSets(uint32_t descriptorWriteCount, const ST_RHIWriteDescriptorSet* pDescriptorWrites, uint32_t descriptorCopyCount, const ST_RHICopyDescriptorSet* pDescriptorCopies)
 {
+	int writeDescriptorSetSize = descriptorWriteCount;	// 写入描述符集数量
+	std::vector<VkWriteDescriptorSet> vkWriteDescriptorSetList(writeDescriptorSetSize);
+
+	// 计算 imageInfo 和 bufferInfo 的数量
+	int imageInfoCount = 0;
+	int bufferInfoCount = 0;
+	for (int i = 0; i < writeDescriptorSetSize; ++i)
+	{
+		const auto& rhiWriteDescriptorSetElement = pDescriptorWrites[i];
+		if (rhiWriteDescriptorSetElement.m_pImageInfo != nullptr)
+		{
+			imageInfoCount++;
+		}
+		if (rhiWriteDescriptorSetElement.m_pBufferInfo != nullptr)
+		{
+			bufferInfoCount++;
+		}
+	}
+
+	std::vector<VkDescriptorImageInfo> vkDescriptorImageInfoList(imageInfoCount);
+	std::vector<VkDescriptorBufferInfo> vkDescriptorBufferInfoList(bufferInfoCount);
+	int imageInfoCurrent = 0;
+	int bufferInfoCurrent = 0;
+
+	// 填充 VkWriteDescriptorSet 结构体
+	for (int i = 0; i < writeDescriptorSetSize; ++i)
+	{
+		const auto& rhiWriteDescriptorSetElement = pDescriptorWrites[i];
+		auto& vkWriteDescriptorSetElement = vkWriteDescriptorSetList[i];
+
+		const VkDescriptorImageInfo* vkDescriptorImageInfoPtr = nullptr;
+		if (rhiWriteDescriptorSetElement.m_pImageInfo != nullptr)
+		{
+			auto& vkDescriptorImageInfo = vkDescriptorImageInfoList[imageInfoCurrent];
+			if (rhiWriteDescriptorSetElement.m_pImageInfo->m_pSampler == nullptr)
+			{
+				vkDescriptorImageInfo.sampler = nullptr;
+			}
+			else
+			{
+				vkDescriptorImageInfo.sampler = ((VulkanSampler*)rhiWriteDescriptorSetElement.m_pImageInfo->m_pSampler)->GetResource();
+			}
+			vkDescriptorImageInfo.imageView = ((VulkanImageView*)rhiWriteDescriptorSetElement.m_pImageInfo->m_pImageView)->GetResource();
+			vkDescriptorImageInfo.imageLayout = (VkImageLayout)rhiWriteDescriptorSetElement.m_pImageInfo->m_imageLayout;
+
+			vkDescriptorImageInfoPtr = &vkDescriptorImageInfo;
+			imageInfoCurrent++;
+		}
+
+		const VkDescriptorBufferInfo* vkDescriptorBufferInfoPtr = nullptr;
+		if (rhiWriteDescriptorSetElement.m_pBufferInfo != nullptr)
+		{
+			auto& vkDescriptorBufferInfo = vkDescriptorBufferInfoList[bufferInfoCurrent];
+			vkDescriptorBufferInfo.buffer = ((VulkanBuffer*)rhiWriteDescriptorSetElement.m_pBufferInfo->m_pBuffer)->GetResource();
+			vkDescriptorBufferInfo.offset = (VkDeviceSize)rhiWriteDescriptorSetElement.m_pBufferInfo->m_offset;
+			vkDescriptorBufferInfo.range = (VkDeviceSize)rhiWriteDescriptorSetElement.m_pBufferInfo->m_range;
+
+			vkDescriptorBufferInfoPtr = &vkDescriptorBufferInfo;
+			bufferInfoCurrent++;
+		}
+
+		vkWriteDescriptorSetElement.sType = (VkStructureType)rhiWriteDescriptorSetElement.m_sType;
+		vkWriteDescriptorSetElement.pNext = (const void*)rhiWriteDescriptorSetElement.m_pNext;
+		vkWriteDescriptorSetElement.dstSet = ((VulkanDescriptorSet*)rhiWriteDescriptorSetElement.m_pDstSet)->GetResource();
+		vkWriteDescriptorSetElement.dstBinding = rhiWriteDescriptorSetElement.m_dstBinding;
+		vkWriteDescriptorSetElement.dstArrayElement = rhiWriteDescriptorSetElement.m_dstArrayElement;
+		vkWriteDescriptorSetElement.descriptorCount = rhiWriteDescriptorSetElement.m_descriptorCount;
+		vkWriteDescriptorSetElement.descriptorType = (VkDescriptorType)rhiWriteDescriptorSetElement.m_descriptorType;
+		vkWriteDescriptorSetElement.pImageInfo = vkDescriptorImageInfoPtr;
+		vkWriteDescriptorSetElement.pBufferInfo = vkDescriptorBufferInfoPtr;
+		//vk_write_descriptor_set_element.pTexelBufferView = &((VulkanBufferView*)rhi_write_descriptor_set_element.pTexelBufferView)->getResource();
+	};
+
+	// 检查 imageInfo 和 bufferInfo 的数量是否正确
+	if (imageInfoCurrent != imageInfoCount || bufferInfoCurrent != bufferInfoCount)
+	{
+		LOG_ERROR("image_info_current != image_info_count || buffer_info_current != buffer_info_count");
+		return;
+	}
+
+	// 填充 VkCopyDescriptorSet 结构体
+	int copyDescriptorSetSize = descriptorCopyCount;
+	std::vector<VkCopyDescriptorSet> vkCopyDescriptorSetList(copyDescriptorSetSize);
+	for (int i = 0; i < copyDescriptorSetSize; ++i)
+	{
+		const auto& rhiCopyDescriptorSetElement = pDescriptorCopies[i];
+		auto& vkCopyDescriptorSetElement = vkCopyDescriptorSetList[i];
+
+		vkCopyDescriptorSetElement.sType = (VkStructureType)rhiCopyDescriptorSetElement.m_sType;
+		vkCopyDescriptorSetElement.pNext = (const void*)rhiCopyDescriptorSetElement.m_pNext;
+		vkCopyDescriptorSetElement.srcSet = ((VulkanDescriptorSet*)rhiCopyDescriptorSetElement.m_pSrcSet)->GetResource();
+		vkCopyDescriptorSetElement.srcBinding = rhiCopyDescriptorSetElement.m_srcBinding;
+		vkCopyDescriptorSetElement.srcArrayElement = rhiCopyDescriptorSetElement.m_srcArrayElement;
+		vkCopyDescriptorSetElement.dstSet = ((VulkanDescriptorSet*)rhiCopyDescriptorSetElement.m_pDstSet)->GetResource();
+		vkCopyDescriptorSetElement.dstBinding = rhiCopyDescriptorSetElement.m_dstBinding;
+		vkCopyDescriptorSetElement.dstArrayElement = rhiCopyDescriptorSetElement.m_dstArrayElement;
+		vkCopyDescriptorSetElement.descriptorCount = rhiCopyDescriptorSetElement.m_descriptorCount;
+	};
+
+	// 更新描述符集
+	vkUpdateDescriptorSets(m_device, descriptorWriteCount, vkWriteDescriptorSetList.data(), descriptorCopyCount, vkCopyDescriptorSetList.data());
 }
 
 bool VulkanRHI::QueueSubmit(RHIQueue* queue, uint32_t submitCount, const ST_RHISubmitInfo* pSubmits, RHIFence* fence)
