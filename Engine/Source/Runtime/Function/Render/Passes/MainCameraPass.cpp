@@ -10,6 +10,7 @@
 #include <AxisVert.h>
 #include <AxisFrag.h>
 #include "Runtime/Function/Render/RenderMesh.h"
+#include "Runtime/Function/Render/Interface/Vulkan/VulkanRHIResource.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -30,11 +31,11 @@ void MainCameraPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 	SetupDescriptorSet();	// 设置描述符集
 
-	SetupFramebufferDescriptorSet();
+	SetupFramebufferDescriptorSet();	// 创建帧缓冲描述符集
 
-	SetupSwapchainFramebuffers();
+	SetupSwapchainFramebuffers();	// 创建交换链帧缓冲
 
-	SetupParticlePass();
+	SetupParticlePass();	// 设置粒子渲染通道
 }
 
 void MainCameraPass::PreparePassData(std::shared_ptr<RenderResourceBase> renderResource)
@@ -67,7 +68,9 @@ void MainCameraPass::UpdateAfterFramebufferRecreate()
 
 void MainCameraPass::SetupParticlePass()
 {
+	//m_pParticlePass->SetDepthAndNormalImage(m_pRHI->GetDepthImageInfo().m_depthImage, m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_pImage);
 
+	//m_pParticlePass->SetRenderPassHandle(m_framebuffer.m_pRenderPass);
 }
 
 void MainCameraPass::SetupAttachments()
@@ -1618,10 +1621,54 @@ void MainCameraPass::SetupFramebufferDescriptorSet()
 
 void MainCameraPass::SetupSwapchainFramebuffers()
 {
+	m_swapchainFramebuffers.resize(m_pRHI->GetSwapchainInfo().m_imageViews.size());
+
+	// 为交换链的每个图像视图创建一个帧缓冲区
+	for (size_t i = 0; i < m_pRHI->GetSwapchainInfo().m_imageViews.size(); i++)
+	{
+		RHIImageView* framebufferAttachmentsForImageView[_main_camera_pass_attachment_count] = {
+			m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_pView,
+			m_framebuffer.m_attachments[_main_camera_pass_gbuffer_b].m_pView,
+			m_framebuffer.m_attachments[_main_camera_pass_gbuffer_c].m_pView,
+			m_framebuffer.m_attachments[_main_camera_pass_backup_buffer_odd].m_pView,
+			m_framebuffer.m_attachments[_main_camera_pass_backup_buffer_even].m_pView,
+			m_framebuffer.m_attachments[_main_camera_pass_post_process_buffer_odd].m_pView,
+			m_framebuffer.m_attachments[_main_camera_pass_post_process_buffer_even].m_pView,
+			m_pRHI->GetDepthImageInfo().m_depthImageView,
+			m_pRHI->GetSwapchainInfo().m_imageViews[i]
+		};
+
+		ST_RHIFramebufferCreateInfo framebufferCreateInfo{};
+		framebufferCreateInfo.m_sType = RHI_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferCreateInfo.m_flags = 0U;
+		framebufferCreateInfo.m_pRenderPass = m_framebuffer.m_pRenderPass;
+		framebufferCreateInfo.m_attachmentCount = (sizeof(framebufferAttachmentsForImageView) / sizeof(framebufferAttachmentsForImageView[0]));
+		framebufferCreateInfo.m_pAttachments = framebufferAttachmentsForImageView;
+		framebufferCreateInfo.m_width = m_pRHI->GetSwapchainInfo().m_extent.m_width;
+		framebufferCreateInfo.m_height = m_pRHI->GetSwapchainInfo().m_extent.m_height;
+		framebufferCreateInfo.m_layers = 1;
+
+		m_swapchainFramebuffers[i] = new VulkanFramebuffer();
+		if (RHI_SUCCESS != m_pRHI->CreateFramebuffer(&framebufferCreateInfo, m_swapchainFramebuffers[i]))
+		{
+			throw std::runtime_error("create main camera framebuffer");
+		}
+	}
 }
 
 void MainCameraPass::SetupModelGlobalDescriptorSet()
 {
+	ST_RHIDescriptorSetAllocateInfo meshGlobalDescriptorSetAllocInfo;
+	meshGlobalDescriptorSetAllocInfo.m_sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	meshGlobalDescriptorSetAllocInfo.m_pNext = NULL;
+	meshGlobalDescriptorSetAllocInfo.m_pDescriptorPool = m_pRHI->GetDescriptorPoor();
+	meshGlobalDescriptorSetAllocInfo.m_descriptorSetCount = 1;
+	meshGlobalDescriptorSetAllocInfo.m_pSetLayouts = &m_descriptorInfos[_mesh_global].m_pDescriptorSetLayout;
+	// 分配 描述符集
+	if (RHI_SUCCESS != m_pRHI->AllocateDescriptorSets(&meshGlobalDescriptorSetAllocInfo, m_descriptorInfos[_mesh_global].m_pDescriptorSet))
+	{
+		throw std::runtime_error("allocate mesh global descriptor set");
+	}
 }
 
 void MainCameraPass::SetupSkyboxDescriptorSet()
@@ -1629,10 +1676,6 @@ void MainCameraPass::SetupSkyboxDescriptorSet()
 }
 
 void MainCameraPass::SetupAxisDescriptorSet()
-{
-}
-
-void MainCameraPass::SetupParticleDescriptorSet()
 {
 }
 

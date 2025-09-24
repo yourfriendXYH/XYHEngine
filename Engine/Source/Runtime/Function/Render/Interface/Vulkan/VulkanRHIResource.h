@@ -295,4 +295,20 @@ private:
 	VkDescriptorSet m_resource;
 };
 
+// Ö¡»º³åÇø ·â×°
+class VulkanFramebuffer : public RHIFramebuffer
+{
+public:
+	void SetResource(VkFramebuffer res)
+	{
+		m_resource = res;
+	}
+	VkFramebuffer GetResource() const
+	{
+		return m_resource;
+	}
+private:
+	VkFramebuffer m_resource;
+};
+
 NAMESPACE_XYH_END

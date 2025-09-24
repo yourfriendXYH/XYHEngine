@@ -584,4 +584,35 @@ struct ST_RHIWriteDescriptorSet
 	RHIBufferView* m_pTexelBufferView = nullptr;
 };
 
+struct ST_RHIFramebufferCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIFramebufferCreateFlags m_flags;
+	RHIRenderPass* m_pRenderPass;
+	uint32_t m_attachmentCount;
+	RHIImageView* const* m_pAttachments;
+	uint32_t m_width;
+	uint32_t m_height;
+	uint32_t m_layers;
+};
+
+struct ST_RHICommandBufferAllocateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHICommandPool* m_pCommandPool;	// 命令池
+	ERHICommandBufferLevel level;	// 命令缓冲区级别
+	uint32_t commandBufferCount;	// 命令缓冲区数量
+};
+
+struct ST_RHIDescriptorSetAllocateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIDescriptorPool* m_pDescriptorPool;	// 描述符池
+	uint32_t m_descriptorSetCount;	// 描述符集数量
+	const RHIDescriptorSetLayout* const* m_pSetLayouts;	// 描述符集布局
+};
+
 NAMESPACE_XYH_END

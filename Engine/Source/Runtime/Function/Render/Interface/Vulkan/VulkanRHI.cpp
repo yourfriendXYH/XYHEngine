@@ -91,12 +91,12 @@ bool VulkanRHI::IsPointLightShadowEnabled()
 	return false;
 }
 
-bool VulkanRHI::AllocateCommandBuffer()
+bool VulkanRHI::AllocateCommandBuffers(const ST_RHICommandBufferAllocateInfo* pAllocateInfo, RHICommandBuffer*& pCommandBuffers)
 {
 	return false;
 }
 
-bool VulkanRHI::AllocateDescriptorSet()
+bool VulkanRHI::AllocateDescriptorSets(const ST_RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet*& pDescriptorSets)
 {
 	return false;
 }
@@ -1245,7 +1245,7 @@ RHICommandPool* VulkanRHI::GetCommandPoor() const
 
 RHIDescriptorPool* VulkanRHI::GetDescriptorPoor() const
 {
-	return nullptr;
+	return m_rhiDescriptorPool;
 }
 
 RHIFence* const* VulkanRHI::GetFenceList() const

@@ -26,9 +26,8 @@ public:
 	virtual bool IsPointLightShadowEnabled() = 0;	// 是否启用点光源阴影
 
 	// 分配和创建
-	virtual bool AllocateCommandBuffer() = 0;	// 配置命令缓冲区
-
-	virtual bool AllocateDescriptorSet() = 0;	// 配置描述符集
+	virtual bool AllocateCommandBuffers(const ST_RHICommandBufferAllocateInfo* pAllocateInfo, RHICommandBuffer* &pCommandBuffers) = 0;	// 配置命令缓冲区
+	virtual bool AllocateDescriptorSets(const ST_RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet* &pDescriptorSets) = 0;	// 配置描述符集
 
 	virtual void CreateSwapChain() = 0;	// 创建交换链
 

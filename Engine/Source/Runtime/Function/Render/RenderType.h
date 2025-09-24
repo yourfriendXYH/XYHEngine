@@ -1368,6 +1368,14 @@ enum ERHIDynamicState : int
 	RHI_DYNAMIC_STATE_MAX_ENUM = 0x7FFFFFFF
 };
 
+// 命令缓冲区级别
+enum ERHICommandBufferLevel : int
+{
+	RHI_COMMAND_BUFFER_LEVEL_PRIMARY = 0,	// 主命令缓冲区级别，通常用于直接提交到队列执行
+	RHI_COMMAND_BUFFER_LEVEL_SECONDARY = 1,	// 次级命令缓冲区级别，通常用于嵌套在主命令缓冲区中
+	RHI_COMMAND_BUFFER_LEVEL_MAX_ENUM = 0x7FFFFFFF	// 最大枚举值
+};
+
 // 混合因子
 enum ERHIBlendFactor
 {

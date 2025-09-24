@@ -75,16 +75,15 @@ private:
 	void SetupPipelines();	// 设置管线
 
 	void SetupDescriptorSet();	// 设置描述符集
+	void SetupModelGlobalDescriptorSet();	// 设置模型全局描述符集
+	void SetupSkyboxDescriptorSet();	// 设置天空盒描述符集
+	void SetupAxisDescriptorSet();	// 设置坐标轴描述符集
+	//void SetupParticleDescriptorSet();	// 设置粒子描述符集
+	void SetupGbufferLightingDescriptorSet();	// 设置GBuffer光照描述符集
 
 	void SetupFramebufferDescriptorSet();	// 设置帧缓冲描述符集
 
 	void SetupSwapchainFramebuffers();	// 设置交换链帧缓冲
-
-	void SetupModelGlobalDescriptorSet();	// 设置模型全局描述符集
-	void SetupSkyboxDescriptorSet();	// 设置天空盒描述符集
-	void SetupAxisDescriptorSet();	// 设置坐标轴描述符集
-	void SetupParticleDescriptorSet();	// 设置粒子描述符集
-	void SetupGbufferLightingDescriptorSet();	// 设置GBuffer光照描述符集
 
 	void DrawMeshGbuffer();	// 绘制网格GBuffer
 	void DrawDeferredLighting();	// 绘制延迟光照
@@ -106,6 +105,7 @@ public:
 private:
 	std::shared_ptr<ParticlePass> m_pParticlePass;
 
+	std::vector<RHIFramebuffer*> m_swapchainFramebuffers;	// 交换链帧缓冲
 };
 
 NAMESPACE_XYH_END
