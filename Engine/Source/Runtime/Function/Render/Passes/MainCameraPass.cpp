@@ -1669,6 +1669,18 @@ void MainCameraPass::SetupModelGlobalDescriptorSet()
 	{
 		throw std::runtime_error("allocate mesh global descriptor set");
 	}
+
+	ST_RHIDescriptorBufferInfo meshPerframeStorageBufferInfo = {};
+	meshPerframeStorageBufferInfo.m_offset = 0;	// 这个偏移量加上dynamic_offset不应该大于缓冲区的大小
+	meshPerframeStorageBufferInfo.m_range = sizeof(ST_MeshPerframeStorageBufferObject);	// 范围是指每次绘制调用时着色器实际使用的大小
+	//meshPerframeStorageBufferInfo.m_pBuffer = m_pGlobalRenderResource->_storage_buffer._global_upload_ringbuffer;
+	//assert(mesh_perframe_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
+
+	ST_RHIDescriptorBufferInfo meshPerdrawcallStorageBufferInfo = {};
+	meshPerdrawcallStorageBufferInfo.m_offset = 0;
+	meshPerdrawcallStorageBufferInfo.m_range = sizeof(ST_MeshPerdrawcallStorageBufferObject);
+	//meshPerdrawcallStorageBufferInfo.m_pBuffer = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+	//assert(mesh_perdrawcall_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
 }
 
 void MainCameraPass::SetupSkyboxDescriptorSet()

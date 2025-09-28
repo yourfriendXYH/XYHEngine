@@ -80,4 +80,53 @@ struct ST_RenderAxisNode
 	bool m_enableVertexBlending = false;
 };
 
+static uint32_t const s_maxPointLightCount = 15u;
+static uint32_t const s_meshPerDrawcallMaxInstanceCount = 64;
+
+struct ST_VulkanSceneDirectionalLight
+{
+    Vector3 m_direction;
+    float paddingDirection;
+    Vector3 m_color;
+    float paddingColor;
+};
+
+struct ST_VulkanScenePointLight
+{
+    Vector3 m_position;
+    float m_radius;
+    Vector3 m_intensity;
+    float paddingIntensity;
+};
+
+struct ST_MeshPerframeStorageBufferObject
+{
+    Matrix4x4 m_projViewMatrix;
+    Vector3 m_cameraPosition;
+    float paddingCameraPosition;
+    Vector3 m_ambientLight;
+    float paddingAmbientLight;
+    uint32_t m_pointLightNum;
+    uint32_t paddingPointLightNum1;
+    uint32_t paddingPointLightNum2;
+    uint32_t paddingPointLightNum3;
+    ST_VulkanScenePointLight m_scenePointLights[s_maxPointLightCount];
+    ST_VulkanSceneDirectionalLight m_sceneDirectionalLight;
+    Matrix4x4 m_directionalLightProjView;
+};
+
+struct ST_VulkanMeshInstance
+{
+    float m_enableVertexBlending;
+    float paddingEnableVertexBlending1;
+    float paddingEnableVertexBlending2;
+    float paddingEnableVertexBlending3;
+    Matrix4x4 m_modelMatrix;
+};
+
+struct ST_MeshPerdrawcallStorageBufferObject
+{
+    ST_VulkanMeshInstance m_meshInstances[s_meshPerDrawcallMaxInstanceCount];
+};
+
 NAMESPACE_XYH_END

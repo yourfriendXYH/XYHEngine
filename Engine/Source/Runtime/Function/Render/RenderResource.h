@@ -4,6 +4,14 @@
 
 NAMESPACE_XYH_BEGIN
 
+
+//struct ST_GlobalRenderResource
+//{
+//	IBLResource          _ibl_resource;
+//	ColorGradingResource _color_grading_resource;
+//	StorageBuffer        _storage_buffer;
+//};
+
 class RenderResource : public RenderResourceBase
 {
 public:

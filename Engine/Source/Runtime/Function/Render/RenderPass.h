@@ -95,6 +95,8 @@ public:
 	ST_Framebuffer m_framebuffer;	// 帧缓冲区
 
 	static ST_VisibleNodes s_visibleNodes;	// 可见节点
+
+	ST_GlobalRenderResource* m_pGlobalRenderResource{ nullptr };
 };
 
 NAMESPACE_XYH_END
