@@ -96,7 +96,7 @@ public:
 
 	static ST_VisibleNodes s_visibleNodes;	// 可见节点
 
-	ST_GlobalRenderResource* m_pGlobalRenderResource{ nullptr };
+	//ST_GlobalRenderResource* m_pGlobalRenderResource{ nullptr };
 };
 
 NAMESPACE_XYH_END

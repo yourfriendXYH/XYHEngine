@@ -40,6 +40,12 @@ void MainCameraPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 void MainCameraPass::PreparePassData(std::shared_ptr<RenderResourceBase> renderResource)
 {
+	//const RenderResource* vulkan_resource = static_cast<const RenderResource*>(render_resource.get());
+	//if (vulkan_resource)
+	//{
+	//	m_mesh_perframe_storage_buffer_object = vulkan_resource->m_mesh_perframe_storage_buffer_object;
+	//	m_axis_storage_buffer_object = vulkan_resource->m_axis_storage_buffer_object;
+	//}
 }
 
 void MainCameraPass::DrawForward(ColorGradingPass& colorGradingPass, FXAAPass& fxaaPass, ToneMappingPass& toneMappingPass, UIPass& uiPass, CombineUIPass& combineUIPass, ParticlePass& particlePass, uint32_t currentSwapchainImageIndex)
@@ -59,11 +65,33 @@ void MainCameraPass::SetParticlePass(std::shared_ptr<ParticlePass> pParticlePass
 
 RHICommandBuffer* MainCameraPass::GetRenderCommandBuffer()
 {
-	return nullptr;
+	return m_pRHI->GetCurrentCommandBuffer();
 }
 
 void MainCameraPass::UpdateAfterFramebufferRecreate()
 {
+	for (size_t i = 0; i < m_framebuffer.m_attachments.size(); i++)
+	{
+		m_pRHI->DestroyImage(m_framebuffer.m_attachments[i].m_pImage);
+		m_pRHI->DestroyImageView(m_framebuffer.m_attachments[i].m_pView);
+		m_pRHI->FreeMemory(m_framebuffer.m_attachments[i].m_pMemory);
+	}
+
+	for (auto framebuffer : m_swapchainFramebuffers)
+	{
+		m_pRHI->DestroyFramebuffer(framebuffer);
+	}
+
+	// 设置附件
+	SetupAttachments();
+
+	// 设置帧缓冲描述符集
+	SetupFramebufferDescriptorSet();	
+
+	// 设置交换链帧缓冲
+	SetupSwapchainFramebuffers();
+
+	SetupParticlePass();
 }
 
 void MainCameraPass::SetupParticlePass()
@@ -1681,18 +1709,206 @@ void MainCameraPass::SetupModelGlobalDescriptorSet()
 	meshPerdrawcallStorageBufferInfo.m_range = sizeof(ST_MeshPerdrawcallStorageBufferObject);
 	//meshPerdrawcallStorageBufferInfo.m_pBuffer = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
 	//assert(mesh_perdrawcall_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
+
+	ST_RHIDescriptorBufferInfo meshPerDrawcallVertexBlendingStorageBufferInfo = {};
+	meshPerDrawcallVertexBlendingStorageBufferInfo.m_offset = 0;
+	meshPerDrawcallVertexBlendingStorageBufferInfo.m_range = sizeof(ST_MeshPerdrawcallVertexBlendingStorageBufferObject);
+	//meshPerDrawcallVertexBlendingStorageBufferInfo.m_pBuffer = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+	//assert(mesh_per_drawcall_vertex_blending_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
+
+	ST_RHIDescriptorImageInfo brdfTextureImageInfo = {};
+	//brdfTextureImageInfo.m_pSampler = m_global_render_resource->_ibl_resource._brdfLUT_texture_sampler;
+	//brdfTextureImageInfo.m_pImageView = m_global_render_resource->_ibl_resource._brdfLUT_texture_image_view;
+	brdfTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	ST_RHIDescriptorImageInfo irradianceTextureImageInfo = {};
+	//irradianceTextureImageInfo.m_pSampler = m_global_render_resource->_ibl_resource._irradiance_texture_sampler;
+	//irradianceTextureImageInfo.m_pImageView = m_global_render_resource->_ibl_resource._irradiance_texture_image_view;
+	irradianceTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	ST_RHIDescriptorImageInfo specularTextureImageInfo{};
+	//specularTextureImageInfo.m_pSampler = m_global_render_resource->_ibl_resource._specular_texture_sampler;
+	//specularTextureImageInfo.m_pImageView = m_global_render_resource->_ibl_resource._specular_texture_image_view;
+	specularTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	ST_RHIDescriptorImageInfo pointLightShadowTextureImageInfo{};
+	pointLightShadowTextureImageInfo.m_pSampler = m_pRHI->GetOrCreateDefaultSampler(Default_Sampler_Nearest);
+	//pointLightShadowTextureImageInfo.m_pImageView = m_point_light_shadow_color_image_view;
+	pointLightShadowTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	ST_RHIDescriptorImageInfo directionalLightShadowTextureImageInfo{};
+	directionalLightShadowTextureImageInfo.m_pSampler = m_pRHI->GetOrCreateDefaultSampler(Default_Sampler_Nearest);
+	//directionalLightShadowTextureImageInfo.m_pImageView = m_directional_light_shadow_color_image_view;
+	directionalLightShadowTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	
+	ST_RHIWriteDescriptorSet meshDescriptorWritesInfo[8];
+
+	meshDescriptorWritesInfo[0].m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	meshDescriptorWritesInfo[0].m_pNext = NULL;
+	meshDescriptorWritesInfo[0].m_pDstSet = m_descriptorInfos[_mesh_global].m_pDescriptorSet;
+	meshDescriptorWritesInfo[0].m_dstBinding = 0;
+	meshDescriptorWritesInfo[0].m_dstArrayElement = 0;
+	meshDescriptorWritesInfo[0].m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+	meshDescriptorWritesInfo[0].m_descriptorCount = 1;
+	meshDescriptorWritesInfo[0].m_pBufferInfo = &meshPerframeStorageBufferInfo;
+
+	meshDescriptorWritesInfo[1].m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	meshDescriptorWritesInfo[1].m_pNext = NULL;
+	meshDescriptorWritesInfo[1].m_pDstSet = m_descriptorInfos[_mesh_global].m_pDescriptorSet;
+	meshDescriptorWritesInfo[1].m_dstBinding = 1;
+	meshDescriptorWritesInfo[1].m_dstArrayElement = 0;
+	meshDescriptorWritesInfo[1].m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+	meshDescriptorWritesInfo[1].m_descriptorCount = 1;
+	meshDescriptorWritesInfo[1].m_pBufferInfo = &meshPerdrawcallStorageBufferInfo;
+
+	meshDescriptorWritesInfo[2].m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	meshDescriptorWritesInfo[2].m_pNext = NULL;
+	meshDescriptorWritesInfo[2].m_pDstSet = m_descriptorInfos[_mesh_global].m_pDescriptorSet;
+	meshDescriptorWritesInfo[2].m_dstBinding = 2;
+	meshDescriptorWritesInfo[2].m_dstArrayElement = 0;
+	meshDescriptorWritesInfo[2].m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+	meshDescriptorWritesInfo[2].m_descriptorCount = 1;
+	meshDescriptorWritesInfo[2].m_pBufferInfo = &meshPerDrawcallVertexBlendingStorageBufferInfo;
+
+	meshDescriptorWritesInfo[3].m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	meshDescriptorWritesInfo[3].m_pNext = NULL;
+	meshDescriptorWritesInfo[3].m_pDstSet = m_descriptorInfos[_mesh_global].m_pDescriptorSet;
+	meshDescriptorWritesInfo[3].m_dstBinding = 3;
+	meshDescriptorWritesInfo[3].m_dstArrayElement = 0;
+	meshDescriptorWritesInfo[3].m_descriptorType = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	meshDescriptorWritesInfo[3].m_descriptorCount = 1;
+	meshDescriptorWritesInfo[3].m_pImageInfo = &brdfTextureImageInfo;
+
+	meshDescriptorWritesInfo[4] = meshDescriptorWritesInfo[3];
+	meshDescriptorWritesInfo[4].m_dstBinding = 4;
+	meshDescriptorWritesInfo[4].m_pImageInfo = &irradianceTextureImageInfo;
+
+	meshDescriptorWritesInfo[5] = meshDescriptorWritesInfo[3];
+	meshDescriptorWritesInfo[5].m_dstBinding = 5;
+	meshDescriptorWritesInfo[5].m_pImageInfo = &specularTextureImageInfo;
+
+	meshDescriptorWritesInfo[6] = meshDescriptorWritesInfo[3];
+	meshDescriptorWritesInfo[6].m_dstBinding = 6;
+	meshDescriptorWritesInfo[6].m_pImageInfo = &pointLightShadowTextureImageInfo;
+
+	meshDescriptorWritesInfo[7] = meshDescriptorWritesInfo[3];
+	meshDescriptorWritesInfo[7].m_dstBinding = 7;
+	meshDescriptorWritesInfo[7].m_pImageInfo = &directionalLightShadowTextureImageInfo;
+
+	m_pRHI->UpdateDescriptorSets(sizeof(meshDescriptorWritesInfo) / sizeof(meshDescriptorWritesInfo[0]), meshDescriptorWritesInfo, 0, nullptr);
 }
 
 void MainCameraPass::SetupSkyboxDescriptorSet()
 {
+	ST_RHIDescriptorSetAllocateInfo skyboxDescriptorSetAllocInfo;
+	skyboxDescriptorSetAllocInfo.m_sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	skyboxDescriptorSetAllocInfo.m_pNext = NULL;
+	skyboxDescriptorSetAllocInfo.m_pDescriptorPool = m_pRHI->GetDescriptorPoor();
+	skyboxDescriptorSetAllocInfo.m_descriptorSetCount = 1;
+	skyboxDescriptorSetAllocInfo.m_pSetLayouts = &m_descriptorInfos[_skybox].m_pDescriptorSetLayout;
+
+	if (RHI_SUCCESS != m_pRHI->AllocateDescriptorSets(&skyboxDescriptorSetAllocInfo, m_descriptorInfos[_skybox].m_pDescriptorSet))
+	{
+		throw std::runtime_error("allocate skybox descriptor set");
+	}
+
+	ST_RHIDescriptorBufferInfo meshPerframeStorageBufferInfo = {};
+	meshPerframeStorageBufferInfo.m_offset = 0;
+	meshPerframeStorageBufferInfo.m_range = sizeof(ST_MeshPerframeStorageBufferObject);
+	//meshPerframeStorageBufferInfo.m_pBuffer = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+	//assert(mesh_perframe_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
+
+	ST_RHIDescriptorImageInfo specularTextureImageInfo = {};
+	//specularTextureImageInfo.m_pSampler = m_global_render_resource->_ibl_resource._specular_texture_sampler;
+	//specularTextureImageInfo.m_pImageView = m_global_render_resource->_ibl_resource._specular_texture_image_view;
+	specularTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+
+	ST_RHIWriteDescriptorSet skyboxDescriptorWritesInfo[2];
+
+	skyboxDescriptorWritesInfo[0].m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	skyboxDescriptorWritesInfo[0].m_pNext = NULL;
+	skyboxDescriptorWritesInfo[0].m_pDstSet = m_descriptorInfos[_skybox].m_pDescriptorSet;
+	skyboxDescriptorWritesInfo[0].m_dstBinding = 0;
+	skyboxDescriptorWritesInfo[0].m_dstArrayElement = 0;
+	skyboxDescriptorWritesInfo[0].m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+	skyboxDescriptorWritesInfo[0].m_descriptorCount = 1;
+	skyboxDescriptorWritesInfo[0].m_pBufferInfo = &meshPerframeStorageBufferInfo;
+
+	skyboxDescriptorWritesInfo[1].m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	skyboxDescriptorWritesInfo[1].m_pNext = NULL;
+	skyboxDescriptorWritesInfo[1].m_pDstSet = m_descriptorInfos[_skybox].m_pDescriptorSet;
+	skyboxDescriptorWritesInfo[1].m_dstBinding = 1;
+	skyboxDescriptorWritesInfo[1].m_dstArrayElement = 0;
+	skyboxDescriptorWritesInfo[1].m_descriptorType = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	skyboxDescriptorWritesInfo[1].m_descriptorCount = 1;
+	skyboxDescriptorWritesInfo[1].m_pImageInfo = &specularTextureImageInfo;
+
+	m_pRHI->UpdateDescriptorSets(2, skyboxDescriptorWritesInfo, 0, nullptr);
 }
 
 void MainCameraPass::SetupAxisDescriptorSet()
 {
+	ST_RHIDescriptorSetAllocateInfo axisDescriptorSetAllocInfo;
+	axisDescriptorSetAllocInfo.m_sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	axisDescriptorSetAllocInfo.m_pNext = NULL;
+	axisDescriptorSetAllocInfo.m_pDescriptorPool = m_pRHI->GetDescriptorPoor();
+	axisDescriptorSetAllocInfo.m_descriptorSetCount = 1;
+	axisDescriptorSetAllocInfo.m_pSetLayouts = &m_descriptorInfos[_axis].m_pDescriptorSetLayout;
+
+	if (RHI_SUCCESS != m_pRHI->AllocateDescriptorSets(&axisDescriptorSetAllocInfo, m_descriptorInfos[_axis].m_pDescriptorSet))
+	{
+		throw std::runtime_error("allocate axis descriptor set");
+	}
+
+	ST_RHIDescriptorBufferInfo meshPerframeStorageBufferInfo = {};
+	meshPerframeStorageBufferInfo.m_offset = 0;
+	meshPerframeStorageBufferInfo.m_range = sizeof(ST_MeshPerframeStorageBufferObject);
+	//meshPerframeStorageBufferInfo.m_pBuffer = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+	//assert(mesh_perframe_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
+
+	ST_RHIDescriptorBufferInfo axisStorageBufferInfo = {};
+	axisStorageBufferInfo.m_offset = 0;
+	axisStorageBufferInfo.m_range = sizeof(ST_AxisStorageBufferObject);
+	//axis_storage_buffer_info.m_pBuffer = m_global_render_resource->_storage_buffer._axis_inefficient_storage_buffer;
+
+	ST_RHIWriteDescriptorSet axisDescriptorWritesInfo[2];
+
+	axisDescriptorWritesInfo[0].m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	axisDescriptorWritesInfo[0].m_pNext = nullptr;
+	axisDescriptorWritesInfo[0].m_pDstSet = m_descriptorInfos[_axis].m_pDescriptorSet;
+	axisDescriptorWritesInfo[0].m_dstBinding = 0;
+	axisDescriptorWritesInfo[0].m_dstArrayElement = 0;
+	axisDescriptorWritesInfo[0].m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+	axisDescriptorWritesInfo[0].m_descriptorCount = 1;
+	axisDescriptorWritesInfo[0].m_pBufferInfo = &meshPerframeStorageBufferInfo;
+
+	axisDescriptorWritesInfo[1].m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	axisDescriptorWritesInfo[1].m_pNext = nullptr;
+	axisDescriptorWritesInfo[1].m_pDstSet = m_descriptorInfos[_axis].m_pDescriptorSet;
+	axisDescriptorWritesInfo[1].m_dstBinding = 1;
+	axisDescriptorWritesInfo[1].m_dstArrayElement = 0;
+	axisDescriptorWritesInfo[1].m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	axisDescriptorWritesInfo[1].m_descriptorCount = 1;
+	axisDescriptorWritesInfo[1].m_pBufferInfo = &axisStorageBufferInfo;
+
+	m_pRHI->UpdateDescriptorSets((uint32_t)(sizeof(axisDescriptorWritesInfo) / sizeof(axisDescriptorWritesInfo[0])), axisDescriptorWritesInfo, 0, nullptr);
 }
 
 void MainCameraPass::SetupGbufferLightingDescriptorSet()
 {
+	ST_RHIDescriptorSetAllocateInfo gbufferLightGlobalDescriptorSetAllocInfo;
+	gbufferLightGlobalDescriptorSetAllocInfo.m_sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	gbufferLightGlobalDescriptorSetAllocInfo.m_pNext = NULL;
+	gbufferLightGlobalDescriptorSetAllocInfo.m_pDescriptorPool = m_pRHI->GetDescriptorPoor();
+	gbufferLightGlobalDescriptorSetAllocInfo.m_descriptorSetCount = 1;
+	gbufferLightGlobalDescriptorSetAllocInfo.m_pSetLayouts = &m_descriptorInfos[_deferred_lighting].m_pDescriptorSetLayout;
+
+	if (RHI_SUCCESS != m_pRHI->AllocateDescriptorSets(&gbufferLightGlobalDescriptorSetAllocInfo, m_descriptorInfos[_deferred_lighting].m_pDescriptorSet))
+	{
+		throw std::runtime_error("allocate gbuffer light global descriptor set");
+	}
 }
 
 void MainCameraPass::DrawMeshGbuffer()

@@ -82,6 +82,7 @@ struct ST_RenderAxisNode
 
 static uint32_t const s_maxPointLightCount = 15u;
 static uint32_t const s_meshPerDrawcallMaxInstanceCount = 64;
+static uint32_t const s_meshVertexBlendingMaxJointCount = 1024; // 每个网格顶点混合的最大关节数量
 
 struct ST_VulkanSceneDirectionalLight
 {
@@ -124,9 +125,22 @@ struct ST_VulkanMeshInstance
     Matrix4x4 m_modelMatrix;
 };
 
+// 每个网格每次绘制调用的存储缓冲区对象
 struct ST_MeshPerdrawcallStorageBufferObject
 {
     ST_VulkanMeshInstance m_meshInstances[s_meshPerDrawcallMaxInstanceCount];
+};
+
+// 每个网格顶点混合的存储缓冲区对象
+struct ST_MeshPerdrawcallVertexBlendingStorageBufferObject
+{
+    Matrix4x4 m_jointMatrices[s_meshVertexBlendingMaxJointCount * s_meshPerDrawcallMaxInstanceCount];
+};
+
+struct ST_AxisStorageBufferObject
+{
+    Matrix4x4 m_modelMatrix = Matrix4x4::IDENTITY;
+    uint32_t m_selectedAxis = 3;
 };
 
 NAMESPACE_XYH_END

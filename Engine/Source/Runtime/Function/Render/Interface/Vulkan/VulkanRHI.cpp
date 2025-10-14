@@ -1230,7 +1230,7 @@ void VulkanRHI::GetPhysicalDeviceProperties(ST_RHIPhysicalDeviceProperties* pPro
 
 RHICommandBuffer* VulkanRHI::GetCurrentCommandBuffer() const
 {
-	return nullptr;
+	return m_pCurrentCommandBuffer;
 }
 
 RHICommandBuffer* const* VulkanRHI::GetCommandBufferList() const

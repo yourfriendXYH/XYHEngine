@@ -2,6 +2,7 @@
 #include "../RHI.h"
 #include <GLFW/glfw3.h>
 #include <vk_mem_alloc.h>
+#include "VulkanRHIResource.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -335,6 +336,7 @@ public:
 	// 3个临时命令缓冲区
 	VkCommandBuffer m_vkCommandBuffers[s_maxFramesInFlight];	// 命令缓冲区列表
 	RHICommandBuffer* m_commandBuffers[s_maxFramesInFlight];	// RHI命令缓冲区列表
+	RHICommandBuffer* m_pCurrentCommandBuffer = new VulkanCommandBuffer();
 
 	VkDescriptorPool m_vkDescriptorPool;	// 全局描述符池
 	RHIDescriptorPool* m_rhiDescriptorPool;	// RHI描述符池
