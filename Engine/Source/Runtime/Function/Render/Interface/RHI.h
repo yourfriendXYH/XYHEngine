@@ -218,9 +218,9 @@ public:
 
 	virtual void SubmitRendering(std::function<void()> passUpdateAfterRecreateSwapchain) = 0;	// 提交渲染操作
 
-	virtual void PushEvent(RHICommandBuffer* commond_buffer, const char* name, const float* color) = 0;	// 推送事件到命令缓冲区
+	virtual void PushEvent(RHICommandBuffer* commond_buffer, const char* name, const float* color) = 0;	// 开启调试标签
 
-	virtual void PopEvent(RHICommandBuffer* commond_buffer) = 0;	// 弹出事件从命令缓冲区
+	virtual void PopEvent(RHICommandBuffer* commond_buffer) = 0;	// 结束调试标签
 
 
 	// 销毁

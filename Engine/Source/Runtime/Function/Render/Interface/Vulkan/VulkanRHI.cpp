@@ -84,6 +84,9 @@ void VulkanRHI::Initialize(ST_RHIInitInfo initInfo)
 
 void VulkanRHI::PrepareContext()
 {
+	// 设置当前命令缓冲区
+	m_vkCurrentCommandBuffer = m_vkCommandBuffers[m_currentFrameIndex];
+	((VulkanCommandBuffer*)m_pCurrentCommandBuffer)->SetResource(m_vkCurrentCommandBuffer);
 }
 
 bool VulkanRHI::IsPointLightShadowEnabled()
@@ -1011,14 +1014,72 @@ bool VulkanRHI::EndCommandBufferPFN(RHICommandBuffer* commandBuffer)
 
 void VulkanRHI::CmdBeginRenderPassPFN(RHICommandBuffer* commandBuffer, const ST_RHIRenderPassBeginInfo* pRenderPassBegin, ERHISubpassContents contents)
 {
+	VkOffset2D offset2d{};
+	offset2d.x = pRenderPassBegin->m_renderArea.m_offset.m_x;
+	offset2d.y = pRenderPassBegin->m_renderArea.m_offset.m_y;
+
+	VkExtent2D extent2d{};
+	extent2d.width = pRenderPassBegin->m_renderArea.m_extent.m_width;
+	extent2d.height = pRenderPassBegin->m_renderArea.m_extent.m_height;
+
+	VkRect2D rect2d{};
+	rect2d.offset = offset2d;
+	rect2d.extent = extent2d;
+
+	//clear_values
+	int clearValueSize = pRenderPassBegin->m_clearValueCount;
+	std::vector<VkClearValue> vkClearValueList(clearValueSize);
+	for (int i = 0; i < clearValueSize; ++i)
+	{
+		const auto& rhiClearValueElement = pRenderPassBegin->m_pClearValues[i];
+		auto& vkClearValueElement = vkClearValueList[i];
+
+		VkClearColorValue vkClearColorValue;
+		vkClearColorValue.float32[0] = rhiClearValueElement.m_color.m_float32[0];
+		vkClearColorValue.float32[1] = rhiClearValueElement.m_color.m_float32[1];
+		vkClearColorValue.float32[2] = rhiClearValueElement.m_color.m_float32[2];
+		vkClearColorValue.float32[3] = rhiClearValueElement.m_color.m_float32[3];
+		vkClearColorValue.int32[0] = rhiClearValueElement.m_color.m_int32[0];
+		vkClearColorValue.int32[1] = rhiClearValueElement.m_color.m_int32[1];
+		vkClearColorValue.int32[2] = rhiClearValueElement.m_color.m_int32[2];
+		vkClearColorValue.int32[3] = rhiClearValueElement.m_color.m_int32[3];
+		vkClearColorValue.uint32[0] = rhiClearValueElement.m_color.m_uint32[0];
+		vkClearColorValue.uint32[1] = rhiClearValueElement.m_color.m_uint32[1];
+		vkClearColorValue.uint32[2] = rhiClearValueElement.m_color.m_uint32[2];
+		vkClearColorValue.uint32[3] = rhiClearValueElement.m_color.m_uint32[3];
+
+		VkClearDepthStencilValue vkClearDepthStencilValue;
+		vkClearDepthStencilValue.depth = rhiClearValueElement.m_depthStencil.m_depth;
+		vkClearDepthStencilValue.stencil = rhiClearValueElement.m_depthStencil.m_stencil;
+
+		vkClearValueElement.color = vkClearColorValue;
+		vkClearValueElement.depthStencil = vkClearDepthStencilValue;
+
+	};
+
+	VkRenderPassBeginInfo vkRenderPassBeginInfo{};
+	vkRenderPassBeginInfo.sType = (VkStructureType)pRenderPassBegin->m_sType;
+	vkRenderPassBeginInfo.pNext = pRenderPassBegin->m_pNext;
+	vkRenderPassBeginInfo.renderPass = ((VulkanRenderPass*)pRenderPassBegin->m_pRenderPass)->GetResource();
+	vkRenderPassBeginInfo.framebuffer = ((VulkanFramebuffer*)pRenderPassBegin->m_pFramebuffer)->GetResource();
+	vkRenderPassBeginInfo.renderArea = rect2d;
+	vkRenderPassBeginInfo.clearValueCount = pRenderPassBegin->m_clearValueCount;
+	vkRenderPassBeginInfo.pClearValues = vkClearValueList.data();
+
+	return _vkCmdBeginRenderPass(((VulkanCommandBuffer*)commandBuffer)->GetResource(), &vkRenderPassBeginInfo, (VkSubpassContents)contents);
 }
 
 void VulkanRHI::CmdNextSubpassPFN(RHICommandBuffer* commandBuffer, ERHISubpassContents contents)
 {
+	// 用于在渲染通道内切换到下一个子通道的命令。它只能在渲染通道内部调用，并且只能在命令缓冲区录制期间使用。
+	// 实现渲染通道优化（如延迟渲染、Tile-Based Rendering）的关键机制，允许在单个渲染通道内组织多个渲染阶段，避免昂贵的渲染目标回写内存操作。
+	return _vkCmdNextSubpass(((VulkanCommandBuffer*)commandBuffer)->GetResource(), ((VkSubpassContents)contents));
 }
 
 void VulkanRHI::CmdEndRenderPassPFN(RHICommandBuffer* commandBuffer)
 {
+	// 用于结束当前渲染通道的命令。它标志着渲染通道的结束，与 vkCmdBeginRenderPass 成对使用，形成一个完整的渲染作用域。
+	return _vkCmdEndRenderPass(((VulkanCommandBuffer*)commandBuffer)->GetResource());
 }
 
 void VulkanRHI::CmdBindPipelinePFN(RHICommandBuffer* commandBuffer, ERHIPipelineBindPoint pipelineBindPoint, RHIPipeline* pipeline)
@@ -1051,6 +1112,61 @@ void VulkanRHI::CmdDrawIndexedPFN(RHICommandBuffer* commandBuffer, uint32_t inde
 
 void VulkanRHI::CmdClearAttachmentsPFN(RHICommandBuffer* commandBuffer, uint32_t attachmentCount, const ST_RHIClearAttachment* pAttachments, uint32_t rectCount, const ST_RHIClearRect* pRects)
 {
+	//clear_attachment
+	int clearAttachmentSize = attachmentCount;
+	std::vector<VkClearAttachment> vkClearAttachmentList(clearAttachmentSize);
+	for (int i = 0; i < clearAttachmentSize; ++i)
+	{
+		const auto& rhiClearAttachmentElement = pAttachments[i];
+		auto& vkClearAttachmentElement = vkClearAttachmentList[i];
+
+		VkClearColorValue vkClearColorValue;
+		vkClearColorValue.float32[0] = rhiClearAttachmentElement.m_clearValue.m_color.m_float32[0];
+		vkClearColorValue.float32[1] = rhiClearAttachmentElement.m_clearValue.m_color.m_float32[1];
+		vkClearColorValue.float32[2] = rhiClearAttachmentElement.m_clearValue.m_color.m_float32[2];
+		vkClearColorValue.float32[3] = rhiClearAttachmentElement.m_clearValue.m_color.m_float32[3];
+		vkClearColorValue.int32[0] = rhiClearAttachmentElement.m_clearValue.m_color.m_int32[0];
+		vkClearColorValue.int32[1] = rhiClearAttachmentElement.m_clearValue.m_color.m_int32[1];
+		vkClearColorValue.int32[2] = rhiClearAttachmentElement.m_clearValue.m_color.m_int32[2];
+		vkClearColorValue.int32[3] = rhiClearAttachmentElement.m_clearValue.m_color.m_int32[3];
+		vkClearColorValue.uint32[0] = rhiClearAttachmentElement.m_clearValue.m_color.m_uint32[0];
+		vkClearColorValue.uint32[1] = rhiClearAttachmentElement.m_clearValue.m_color.m_uint32[1];
+		vkClearColorValue.uint32[2] = rhiClearAttachmentElement.m_clearValue.m_color.m_uint32[2];
+		vkClearColorValue.uint32[3] = rhiClearAttachmentElement.m_clearValue.m_color.m_uint32[3];
+
+		VkClearDepthStencilValue vkClearDepthStencilValue;
+		vkClearDepthStencilValue.depth = rhiClearAttachmentElement.m_clearValue.m_depthStencil.m_depth;
+		vkClearDepthStencilValue.stencil = rhiClearAttachmentElement.m_clearValue.m_depthStencil.m_stencil;
+
+		vkClearAttachmentElement.clearValue.color = vkClearColorValue;
+		vkClearAttachmentElement.clearValue.depthStencil = vkClearDepthStencilValue;
+		vkClearAttachmentElement.aspectMask = rhiClearAttachmentElement.m_aspectMask;
+		vkClearAttachmentElement.colorAttachment = rhiClearAttachmentElement.m_colorAttachment;
+	};
+
+	//clear_rect
+	int clearRectSize = rectCount;
+	std::vector<VkClearRect> vkClearRectList(clearRectSize);
+	for (int i = 0; i < clearRectSize; ++i)
+	{
+		const auto& rhiClearRectElement = pRects[i];
+		auto& vkClearRectElement = vkClearRectList[i];
+
+		VkOffset2D offset2d{};
+		offset2d.x = rhiClearRectElement.m_rect.m_offset.m_x;
+		offset2d.y = rhiClearRectElement.m_rect.m_offset.m_y;
+
+		VkExtent2D extent2d{};
+		extent2d.width = rhiClearRectElement.m_rect.m_extent.m_width;
+		extent2d.height = rhiClearRectElement.m_rect.m_extent.m_height;
+
+		vkClearRectElement.rect.offset = (VkOffset2D)offset2d;
+		vkClearRectElement.rect.extent = (VkExtent2D)extent2d;
+		vkClearRectElement.baseArrayLayer = rhiClearRectElement.m_baseArrayLayer;
+		vkClearRectElement.layerCount = rhiClearRectElement.m_layerCount;
+	};
+
+	return _vkCmdClearAttachments(((VulkanCommandBuffer*)commandBuffer)->GetResource(), attachmentCount, vkClearAttachmentList.data(), rectCount, vkClearRectList.data());
 }
 
 bool VulkanRHI::BeginCommandBuffer(RHICommandBuffer* commandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo)
@@ -1386,10 +1502,28 @@ void VulkanRHI::SubmitRendering(std::function<void()> passUpdateAfterRecreateSwa
 
 void VulkanRHI::PushEvent(RHICommandBuffer* commond_buffer, const char* name, const float* color)
 {
+	if (m_enableDebugUtilsLabel)	// 如果启用调试工具标签
+	{
+		VkDebugUtilsLabelEXT labelInfo;
+		labelInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+		labelInfo.pNext = nullptr;
+		labelInfo.pLabelName = name;
+		for (int i = 0; i < 4; ++i)
+		{
+			labelInfo.color[i] = color[i];
+		}
+		// 用于调试和性能分析的命令。它的核心功能是在命令缓冲区中开始一个带标签的区域。(用于图形调试和性能分析)
+		_vkCmdBeginDebugUtilsLabelEXT(((VulkanCommandBuffer*)commond_buffer)->GetResource(), &labelInfo);
+	}
 }
 
 void VulkanRHI::PopEvent(RHICommandBuffer* commond_buffer)
 {
+	if (m_enableDebugUtilsLabel)
+	{
+		// 用于结束一个调试标签区域。
+		_vkCmdEndDebugUtilsLabelEXT(((VulkanCommandBuffer*)commond_buffer)->GetResource());
+	}
 }
 
 VulkanRHI::~VulkanRHI()

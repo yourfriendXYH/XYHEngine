@@ -54,8 +54,87 @@ void MainCameraPass::DrawForward(ColorGradingPass& colorGradingPass, FXAAPass& f
 
 void MainCameraPass::Draw(ColorGradingPass& colorGradingPass, FXAAPass& fxaaPass, ToneMappingPass& toneMappingPass, UIPass& uiPass, CombineUIPass& combineUIPass, ParticlePass& particlePass, uint32_t currentSwapchainImageIndex)
 {
-	ST_RHIRenderPassBeginInfo renderPassBeginInfo;
-	renderPassBeginInfo.m_sType = RHI_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	// 延迟渲染流程
+
+	// 开始渲染通道
+	{
+		ST_RHIRenderPassBeginInfo renderPassBeginInfo;
+		renderPassBeginInfo.m_sType = RHI_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.m_pRenderPass = m_framebuffer.m_pRenderPass;
+		renderPassBeginInfo.m_pFramebuffer = m_swapchainFramebuffers[currentSwapchainImageIndex];
+		renderPassBeginInfo.m_renderArea.m_offset = { 0, 0 };
+		renderPassBeginInfo.m_renderArea.m_extent = m_pRHI->GetSwapchainInfo().m_extent;
+
+		UN_RHIClearValue clearValues[_main_camera_pass_attachment_count];
+		clearValues[_main_camera_pass_gbuffer_a].m_color = { {0.0f, 0.0f, 0.0f, 0.0f} };
+		clearValues[_main_camera_pass_gbuffer_b].m_color = { {0.0f, 0.0f, 0.0f, 0.0f} };
+		clearValues[_main_camera_pass_gbuffer_c].m_color = { {0.0f, 0.0f, 0.0f, 0.0f} };
+		clearValues[_main_camera_pass_backup_buffer_odd].m_color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+		clearValues[_main_camera_pass_backup_buffer_even].m_color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+		clearValues[_main_camera_pass_post_process_buffer_odd].m_color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+		clearValues[_main_camera_pass_post_process_buffer_even].m_color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+		clearValues[_main_camera_pass_depth].m_depthStencil = { 1.0f, 0 };
+		clearValues[_main_camera_pass_swap_chain_image].m_color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+		renderPassBeginInfo.m_clearValueCount = (sizeof(clearValues) / sizeof(clearValues[0]));
+		renderPassBeginInfo.m_pClearValues = clearValues;
+
+		m_pRHI->CmdBeginRenderPassPFN(m_pRHI->GetCurrentCommandBuffer(), &renderPassBeginInfo, RHI_SUBPASS_CONTENTS_INLINE);
+	}
+
+	float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	m_pRHI->PushEvent(m_pRHI->GetCurrentCommandBuffer(), "BasePass", color);	// 开启调试标签
+	DrawMeshGbuffer();	// 绘制网格GBuffer
+	m_pRHI->PopEvent(m_pRHI->GetCurrentCommandBuffer());	// 结束调试标签
+
+	m_pRHI->CmdNextSubpassPFN(m_pRHI->GetCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);	// 切换到下一个子通道
+	m_pRHI->PushEvent(m_pRHI->GetCurrentCommandBuffer(), "Deferred Lighting", color);
+	DrawDeferredLighting();	// 绘制延迟光照
+	m_pRHI->PopEvent(m_pRHI->GetCurrentCommandBuffer());
+
+	m_pRHI->CmdNextSubpassPFN(m_pRHI->GetCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
+	m_pRHI->PushEvent(m_pRHI->GetCurrentCommandBuffer(), "Forward Lighting", color);
+	particlePass.Draw();	// 绘制粒子
+	m_pRHI->PopEvent(m_pRHI->GetCurrentCommandBuffer());
+
+	m_pRHI->CmdNextSubpassPFN(m_pRHI->GetCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
+	toneMappingPass.Draw();	// 色调映射
+
+	m_pRHI->CmdNextSubpassPFN(m_pRHI->GetCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
+	colorGradingPass.Draw();	// 颜色分级
+
+	m_pRHI->CmdNextSubpassPFN(m_pRHI->GetCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
+	if (m_enableFXAA)
+		fxaaPass.Draw();	// FXAA抗锯齿
+
+	m_pRHI->CmdNextSubpassPFN(m_pRHI->GetCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
+	ST_RHIClearAttachment clearAttachments[1];
+	clearAttachments[0].m_aspectMask = RHI_IMAGE_ASPECT_COLOR_BIT;	// 清除颜色附件
+	clearAttachments[0].m_colorAttachment = 0;	// 第0个颜色附件
+	clearAttachments[0].m_clearValue.m_color.m_float32[0] = 0.0;
+	clearAttachments[0].m_clearValue.m_color.m_float32[1] = 0.0;
+	clearAttachments[0].m_clearValue.m_color.m_float32[2] = 0.0;
+	clearAttachments[0].m_clearValue.m_color.m_float32[3] = 0.0;
+	ST_RHIClearRect clearRects[1];
+	clearRects[0].m_baseArrayLayer = 0;
+	clearRects[0].m_layerCount = 1;
+	clearRects[0].m_rect.m_offset.m_x = 0;
+	clearRects[0].m_rect.m_offset.m_y = 0;
+	clearRects[0].m_rect.m_extent.m_width = m_pRHI->GetSwapchainInfo().m_extent.m_width;
+	clearRects[0].m_rect.m_extent.m_height = m_pRHI->GetSwapchainInfo().m_extent.m_height;
+	// 清除为 (0, 0, 0, 0) 表示完全透明的黑色
+	// 目的：在已有3D场景上创建透明层，用于绘制Axis和UI
+	// [已有的3D场景内容]  // ← 保持可见
+	// [透明清除区域]      // ← RGBA(0,0,0,0) - 完全透明
+	// [Axis和UI绘制]      // ← 在透明背景上绘制
+	m_pRHI->CmdClearAttachmentsPFN(m_pRHI->GetCurrentCommandBuffer(), sizeof(clearAttachments) / sizeof(clearAttachments[0]), clearAttachments, sizeof(clearRects) / sizeof(clearRects[0]), clearRects);
+	DrawAxis();	// 绘制坐标轴
+	uiPass.Draw();	// 绘制UI
+
+	m_pRHI->CmdNextSubpassPFN(m_pRHI->GetCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);
+	combineUIPass.Draw();	// 合并UI
+
+	m_pRHI->CmdEndRenderPassPFN(m_pRHI->GetCurrentCommandBuffer());
+
 }
 
 void MainCameraPass::SetParticlePass(std::shared_ptr<ParticlePass> pParticlePass)

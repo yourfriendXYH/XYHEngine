@@ -247,9 +247,9 @@ struct ST_RHIVertexInputAttributeDescription
 
 struct ST_RHIClearRect
 {
-	ST_RHIRect2D rect;
-	uint32_t baseArrayLayer;
-	uint32_t layerCount;
+	ST_RHIRect2D m_rect;
+	uint32_t m_baseArrayLayer;
+	uint32_t m_layerCount;
 };
 
 struct ST_QueueFamilyIndices    // 队列族索引
@@ -345,8 +345,8 @@ struct ST_RHIRenderPassBeginInfo
 {
 	ERHIStructureType m_sType;
 	const void* m_pNext;
-	RHIRenderPass* m_renderPass;
-	RHIFramebuffer* m_framebuffer;
+	RHIRenderPass* m_pRenderPass;
+	RHIFramebuffer* m_pFramebuffer;
 	ST_RHIRect2D m_renderArea;
 	uint32_t m_clearValueCount;
 	const UN_RHIClearValue* m_pClearValues;

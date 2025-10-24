@@ -206,9 +206,9 @@ public:
 
 	virtual void SubmitRendering(std::function<void()> passUpdateAfterRecreateSwapchain);	// 提交渲染操作
 
-	virtual void PushEvent(RHICommandBuffer* commond_buffer, const char* name, const float* color);	// 推送事件到命令缓冲区
+	virtual void PushEvent(RHICommandBuffer* commond_buffer, const char* name, const float* color);	// 开启调试标签
 
-	virtual void PopEvent(RHICommandBuffer* commond_buffer);	// 弹出事件从命令缓冲区
+	virtual void PopEvent(RHICommandBuffer* commond_buffer);	// 结束调试标签
 
 
 	// 销毁
@@ -335,6 +335,8 @@ public:
 	VkCommandPool m_commandPools[s_maxFramesInFlight];	// 其他命令池
 	// 3个临时命令缓冲区
 	VkCommandBuffer m_vkCommandBuffers[s_maxFramesInFlight];	// 命令缓冲区列表
+	// TODO: set
+	VkCommandBuffer m_vkCurrentCommandBuffer;	// 当前命令缓冲区
 	RHICommandBuffer* m_commandBuffers[s_maxFramesInFlight];	// RHI命令缓冲区列表
 	RHICommandBuffer* m_pCurrentCommandBuffer = new VulkanCommandBuffer();
 
