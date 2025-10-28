@@ -1498,6 +1498,70 @@ bool VulkanRHI::PrepareBeforePass(std::function<void()> passUpdateAfterRecreateS
 
 void VulkanRHI::SubmitRendering(std::function<void()> passUpdateAfterRecreateSwapchain)
 {
+	// 结束命令缓冲区的记录
+	VkResult resEndCommandBuffer = _vkEndCommandBuffer(m_vkCommandBuffers[m_currentFrameIndex]);
+	if (VK_SUCCESS != resEndCommandBuffer)
+	{
+		LOG_ERROR("_vkEndCommandBuffer failed!");
+		return;
+	}
+
+	VkSemaphore semaphores[2] = { 
+		((VulkanSemaphore*)m_imageAvailableForTexturescopySemaphores[m_currentFrameIndex])->GetResource(),
+		m_imageFinishedForPresentationSemaphores[m_currentFrameIndex]
+	};
+
+	// 提交信息
+	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = &m_imageAvailableForRenderSemaphores[m_currentFrameIndex];
+	submitInfo.pWaitDstStageMask = waitStages;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &m_vkCommandBuffers[m_currentFrameIndex];
+	submitInfo.signalSemaphoreCount = 2;
+	submitInfo.pSignalSemaphores = semaphores;
+
+	VkResult resResetFences = _vkResetFences(m_device, 1, &m_isFrameInFlightFences[m_currentFrameIndex]);
+	if (VK_SUCCESS != resResetFences)
+	{
+		LOG_ERROR("_vkResetFences failed!");
+		return;
+	}
+
+	VkResult resQueueSubmit = vkQueueSubmit(((VulkanQueue*)m_graphicsQueue)->GetResource(), 1, &submitInfo, m_isFrameInFlightFences[m_currentFrameIndex]);
+	if (VK_SUCCESS != resQueueSubmit)
+	{
+		LOG_ERROR("vkQueueSubmit failed!");
+		return;
+	}
+
+	// 提交呈现请求
+	VkPresentInfoKHR presentInfo = {};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = &m_imageFinishedForPresentationSemaphores[m_currentFrameIndex];
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = &m_swapchain;
+	presentInfo.pImageIndices = &m_currentSwapchainImageIndex;
+
+	VkResult presentResult = vkQueuePresentKHR(m_presentQueue, &presentInfo);
+	if (VK_ERROR_OUT_OF_DATE_KHR == presentResult || VK_SUBOPTIMAL_KHR == presentResult)
+	{
+		RecreateSwapChain();
+		passUpdateAfterRecreateSwapchain();
+	}
+	else
+	{
+		if (VK_SUCCESS != presentResult)
+		{
+			LOG_ERROR("vkQueuePresentKHR failed!");
+			return;
+		}
+	}
+
+	m_currentFrameIndex = (m_currentFrameIndex + 1) % s_maxFramesInFlight;
 }
 
 void VulkanRHI::PushEvent(RHICommandBuffer* commond_buffer, const char* name, const float* color)

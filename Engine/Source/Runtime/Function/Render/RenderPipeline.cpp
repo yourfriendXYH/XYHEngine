@@ -199,6 +199,8 @@ void RenderPipeline::PassUpdateAfterRecreateSwapchain()
 	PickPass& pickPass = *(static_cast<PickPass*>(m_pPickPass.get()));
 	ParticlePass& particlePass = *(static_cast<ParticlePass*>(m_pParticlePass.get()));
 
+	mainCameraPass.UpdateAfterFramebufferRecreate();	// 主摄像机渲染通道更新
+
 	pickPass.RecreateFramebuffer();	// 重建拾取渲染通道的帧缓冲
 }
 

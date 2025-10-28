@@ -134,7 +134,6 @@ void MainCameraPass::Draw(ColorGradingPass& colorGradingPass, FXAAPass& fxaaPass
 	combineUIPass.Draw();	// 合并UI
 
 	m_pRHI->CmdEndRenderPassPFN(m_pRHI->GetCurrentCommandBuffer());
-
 }
 
 void MainCameraPass::SetParticlePass(std::shared_ptr<ParticlePass> pParticlePass)
