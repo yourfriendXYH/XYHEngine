@@ -812,7 +812,7 @@ bool VulkanRHI::CreatePipelineLayout(const ST_RHIPipelineLayoutCreateInfo* pCrea
 
 bool VulkanRHI::CreateRenderPass(const ST_RHIRenderPassCreateInfo* pCreateInfo, RHIRenderPass*& pRenderPass)
 {
-	// 附件转换
+	// 渲染通道中的附件
 	std::vector<VkAttachmentDescription> vkAttachments(pCreateInfo->m_attachmentCount);
 	for (uint32_t i = 0; i < pCreateInfo->m_attachmentCount; ++i)
 	{
@@ -922,58 +922,56 @@ bool VulkanRHI::CreateRenderPass(const ST_RHIRenderPassCreateInfo* pCreateInfo, 
 				currentAttachmentReference += 1;
 			};
 		};
-
-		// 判断附件数量是否对应
-		if (currentAttachmentReference != totalAttachmentRefenrence)
-		{
-			LOG_ERROR("currentAttachmentRefence != totalAttachmentRefenrence");
-			return false;
-		}
-
-		// 通道依赖转换
-		std::vector<VkSubpassDependency> vkSubpassDepandencies(pCreateInfo->m_dependencyCount);
-		for (uint32_t i = 0; i < pCreateInfo->m_dependencyCount; ++i)
-		{
-			const auto& rhiDesc = pCreateInfo->m_pDependencies[i];
-			auto& vkDesc = vkSubpassDepandencies[i];
-
-			vkDesc.srcSubpass = rhiDesc.m_srcSubpass;
-			vkDesc.dstSubpass = rhiDesc.m_dstSubpass;
-			vkDesc.srcStageMask = (VkPipelineStageFlags)(rhiDesc).m_srcStageMask;
-			vkDesc.dstStageMask = (VkPipelineStageFlags)(rhiDesc).m_dstStageMask;
-			vkDesc.srcAccessMask = (VkAccessFlags)(rhiDesc).m_srcAccessMask;
-			vkDesc.dstAccessMask = (VkAccessFlags)(rhiDesc).m_dstAccessMask;
-			vkDesc.dependencyFlags = (VkDependencyFlags)(rhiDesc).m_dependencyFlags;
-		};
-
-		// 创建渲染通道
-		VkRenderPassCreateInfo createInfo{};
-		createInfo.sType = (VkStructureType)pCreateInfo->m_sType;
-		createInfo.pNext = (const void*)pCreateInfo->m_pNext;
-		createInfo.flags = (VkRenderPassCreateFlags)pCreateInfo->m_flags;
-		createInfo.attachmentCount = pCreateInfo->m_attachmentCount;
-		createInfo.pAttachments = vkAttachments.data();
-		createInfo.subpassCount = pCreateInfo->m_subpassCount;
-		createInfo.pSubpasses = vkSubpassDescription.data();
-		createInfo.dependencyCount = pCreateInfo->m_dependencyCount;
-		createInfo.pDependencies = vkSubpassDepandencies.data();
-
-		pRenderPass = new VulkanRenderPass();
-		VkRenderPass vkRenderPass;
-		VkResult result = vkCreateRenderPass(m_device, &createInfo, nullptr, &vkRenderPass);
-		((VulkanRenderPass*)pRenderPass)->SetResource(vkRenderPass);
-
-		if (result == VK_SUCCESS)
-		{
-			return RHI_SUCCESS;
-		}
-		else
-		{
-			LOG_ERROR("vkCreateRenderPass failed!");
-			return false;
-		}
+	}
+	// 判断附件数量是否对应
+	if (currentAttachmentReference != totalAttachmentRefenrence)
+	{
+		LOG_ERROR("currentAttachmentRefence != totalAttachmentRefenrence");
+		return false;
 	}
 
+	// 通道依赖转换
+	std::vector<VkSubpassDependency> vkSubpassDepandencies(pCreateInfo->m_dependencyCount);
+	for (uint32_t i = 0; i < pCreateInfo->m_dependencyCount; ++i)
+	{
+		const auto& rhiDesc = pCreateInfo->m_pDependencies[i];
+		auto& vkDesc = vkSubpassDepandencies[i];
+
+		vkDesc.srcSubpass = rhiDesc.m_srcSubpass;
+		vkDesc.dstSubpass = rhiDesc.m_dstSubpass;
+		vkDesc.srcStageMask = (VkPipelineStageFlags)(rhiDesc).m_srcStageMask;
+		vkDesc.dstStageMask = (VkPipelineStageFlags)(rhiDesc).m_dstStageMask;
+		vkDesc.srcAccessMask = (VkAccessFlags)(rhiDesc).m_srcAccessMask;
+		vkDesc.dstAccessMask = (VkAccessFlags)(rhiDesc).m_dstAccessMask;
+		vkDesc.dependencyFlags = (VkDependencyFlags)(rhiDesc).m_dependencyFlags;
+	};
+
+	// 创建渲染通道
+	VkRenderPassCreateInfo createInfo{};
+	createInfo.sType = (VkStructureType)pCreateInfo->m_sType;
+	createInfo.pNext = (const void*)pCreateInfo->m_pNext;
+	createInfo.flags = (VkRenderPassCreateFlags)pCreateInfo->m_flags;
+	createInfo.attachmentCount = pCreateInfo->m_attachmentCount;
+	createInfo.pAttachments = vkAttachments.data();
+	createInfo.subpassCount = pCreateInfo->m_subpassCount;
+	createInfo.pSubpasses = vkSubpassDescription.data();
+	createInfo.dependencyCount = pCreateInfo->m_dependencyCount;
+	createInfo.pDependencies = vkSubpassDepandencies.data();
+
+	pRenderPass = new VulkanRenderPass();
+	VkRenderPass vkRenderPass;
+	VkResult result = vkCreateRenderPass(m_device, &createInfo, nullptr, &vkRenderPass);
+	((VulkanRenderPass*)pRenderPass)->SetResource(vkRenderPass);
+
+	if (result == VK_SUCCESS)
+	{
+		return RHI_SUCCESS;
+	}
+	else
+	{
+		LOG_ERROR("vkCreateRenderPass failed!");
+		return false;
+	}
 	return false;
 }
 
