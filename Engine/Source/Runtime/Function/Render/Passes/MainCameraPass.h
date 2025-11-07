@@ -85,11 +85,19 @@ private:
 
 	void SetupSwapchainFramebuffers();	// 设置交换链帧缓冲
 
-	void DrawMeshGbuffer();	// 绘制网格GBuffer
-	void DrawDeferredLighting();	// 绘制延迟光照
+
+	/// <summary>
+	/// 绘制
+	/// </summary>
+	void DrawMeshGbuffer();	// 绘制网格GBuffer（延迟渲染使用）
+
+	void DrawDeferredLighting();	// 绘制延迟光照（延迟渲染使用）
+
 	void DrawMeshLighting();	// 绘制网格光照
+
 	void DrawSkybox();	// 绘制天空盒
-	void DrawAxis();	// 绘制坐标轴
+
+	void DrawAxis();	// 绘制坐标轴（延迟渲染使用）
 
 public:
 

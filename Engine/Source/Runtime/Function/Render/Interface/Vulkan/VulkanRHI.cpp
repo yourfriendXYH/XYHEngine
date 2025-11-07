@@ -426,7 +426,42 @@ bool VulkanRHI::CreateFence(const ST_RHIFenceCreateInfo* pCreateInfo, RHIFence*&
 
 bool VulkanRHI::CreateFramebuffer(const ST_RHIFramebufferCreateInfo* pCreateInfo, RHIFramebuffer*& pFramebuffer)
 {
-	return false;
+	// 创建帧缓冲
+	int imageViewSize = pCreateInfo->m_attachmentCount;
+	std::vector<VkImageView> vkImageViewList(imageViewSize);
+	for (int i = 0; i < imageViewSize; ++i)
+	{
+		const auto& rhiImageViewElement = pCreateInfo->m_pAttachments[i];
+		auto& vkImageViewElement = vkImageViewList[i];
+
+		vkImageViewElement = ((VulkanImageView*)rhiImageViewElement)->GetResource();
+	};
+
+	VkFramebufferCreateInfo createInfo{};
+	createInfo.sType = (VkStructureType)pCreateInfo->m_sType;
+	createInfo.pNext = (const void*)pCreateInfo->m_pNext;
+	createInfo.flags = (VkFramebufferCreateFlags)pCreateInfo->m_flags;
+	createInfo.renderPass = ((VulkanRenderPass*)pCreateInfo->m_pRenderPass)->GetResource();
+	createInfo.attachmentCount = pCreateInfo->m_attachmentCount;
+	createInfo.pAttachments = vkImageViewList.data();
+	createInfo.width = pCreateInfo->m_width;
+	createInfo.height = pCreateInfo->m_height;
+	createInfo.layers = pCreateInfo->m_layers;
+
+	pFramebuffer = new VulkanFramebuffer();
+	VkFramebuffer vkFramebuffer;
+	VkResult result = vkCreateFramebuffer(m_device, &createInfo, nullptr, &vkFramebuffer);
+	((VulkanFramebuffer*)pFramebuffer)->SetResource(vkFramebuffer);
+
+	if (result == VK_SUCCESS)
+	{
+		return RHI_SUCCESS;
+	}
+	else
+	{
+		LOG_ERROR("vkCreateFramebuffer failed!");
+		return false;
+	}
 }
 
 bool VulkanRHI::CreateGraphicsPipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIGraphicsPipelineCreateInfo* pCreateInfo, RHIPipeline*& pPipelines)
@@ -670,11 +705,11 @@ bool VulkanRHI::CreateGraphicsPipelines(RHIPipelineCache* pipelineCache, uint32_
 	// 颜色混合状态创建信息
 	// 颜色混合附件状态
 	int pipelineColorBlendAttachmentStateSize = pCreateInfo->m_pColorBlendState->m_attachmentCount;
-	std::vector<VkPipelineColorBlendAttachmentState> vk_pipeline_color_blend_attachment_state_list(pipelineColorBlendAttachmentStateSize);
+	std::vector<VkPipelineColorBlendAttachmentState> vkPipelineColorBlendAttachmentStateList(pipelineColorBlendAttachmentStateSize);
 	for (int i = 0; i < pipelineColorBlendAttachmentStateSize; ++i)
 	{
 		const auto& rhiPipelineColorBlendAttachmentStateElement = pCreateInfo->m_pColorBlendState->m_pAttachments[i];
-		auto& vkPipelineColorBlendAttachmentStateElement = vk_pipeline_color_blend_attachment_state_list[i];
+		auto& vkPipelineColorBlendAttachmentStateElement = vkPipelineColorBlendAttachmentStateList[i];
 
 		vkPipelineColorBlendAttachmentStateElement.blendEnable = (VkBool32)rhiPipelineColorBlendAttachmentStateElement.m_blendEnable;
 		vkPipelineColorBlendAttachmentStateElement.srcColorBlendFactor = (VkBlendFactor)rhiPipelineColorBlendAttachmentStateElement.m_srcColorBlendFactor;
@@ -693,7 +728,7 @@ bool VulkanRHI::CreateGraphicsPipelines(RHIPipelineCache* pipelineCache, uint32_
 	vkPipelineColorBlendStateCreateInfo.logicOpEnable = pCreateInfo->m_pColorBlendState->m_logicOpEnable;
 	vkPipelineColorBlendStateCreateInfo.logicOp = (VkLogicOp)pCreateInfo->m_pColorBlendState->m_logicOp;
 	vkPipelineColorBlendStateCreateInfo.attachmentCount = pCreateInfo->m_pColorBlendState->m_attachmentCount;
-	vkPipelineColorBlendStateCreateInfo.pAttachments = vk_pipeline_color_blend_attachment_state_list.data();
+	vkPipelineColorBlendStateCreateInfo.pAttachments = vkPipelineColorBlendAttachmentStateList.data();
 	for (int i = 0; i < 4; ++i)
 	{
 		vkPipelineColorBlendStateCreateInfo.blendConstants[i] = pCreateInfo->m_pColorBlendState->m_blendConstants[i];
@@ -1082,14 +1117,58 @@ void VulkanRHI::CmdEndRenderPassPFN(RHICommandBuffer* commandBuffer)
 
 void VulkanRHI::CmdBindPipelinePFN(RHICommandBuffer* commandBuffer, ERHIPipelineBindPoint pipelineBindPoint, RHIPipeline* pipeline)
 {
+	// 使用哪一个管线状态
+	return _vkCmdBindPipeline(((VulkanCommandBuffer*)commandBuffer)->GetResource(), (VkPipelineBindPoint)pipelineBindPoint, ((VulkanPipeline*)pipeline)->GetResource());
 }
 
 void VulkanRHI::CmdSetViewportPFN(RHICommandBuffer* commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const ST_RHIViewport* pViewports)
-{
+{        
+	//viewport
+	int viewportSize = viewportCount;
+	std::vector<VkViewport> vkViewportList(viewportSize);
+	for (int i = 0; i < viewportSize; ++i)
+	{
+		const auto& rhiViewportElement = pViewports[i];
+		auto& vkViewportElement = vkViewportList[i];
+
+		vkViewportElement.x = rhiViewportElement.m_x;
+		vkViewportElement.y = rhiViewportElement.m_y;
+		vkViewportElement.width = rhiViewportElement.m_width;
+		vkViewportElement.height = rhiViewportElement.m_height;
+		vkViewportElement.minDepth = rhiViewportElement.m_minDepth;
+		vkViewportElement.maxDepth = rhiViewportElement.m_maxDepth;
+	};
+
+	// 必须先在管线创建时启用动态状态
+	// 告诉 GPU："渲染出来的图像应该映射到帧缓冲区的哪个矩形区域"。
+	return _vkCmdSetViewport(((VulkanCommandBuffer*)commandBuffer)->GetResource(), firstViewport, viewportCount, vkViewportList.data());
 }
 
 void VulkanRHI::CmdSetScissorPFN(RHICommandBuffer* commandBuffer, uint32_t firstScissor, uint32_t scissorCount, const ST_RHIRect2D* pScissors)
-{
+{        
+	//rect_2d
+	int rect2dSize = scissorCount;
+	std::vector<VkRect2D> vkRect2dList(rect2dSize);
+	for (int i = 0; i < rect2dSize; ++i)
+	{
+		const auto& rhiRect2dElement = pScissors[i];
+		auto& vkRect2dElement = vkRect2dList[i];
+
+		VkOffset2D offset2d{};
+		offset2d.x = rhiRect2dElement.m_offset.m_x;
+		offset2d.y = rhiRect2dElement.m_offset.m_y;
+
+		VkExtent2D extent2d{};
+		extent2d.width = rhiRect2dElement.m_extent.m_width;
+		extent2d.height = rhiRect2dElement.m_extent.m_height;
+
+		vkRect2dElement.offset = (VkOffset2D)offset2d;
+		vkRect2dElement.extent = (VkExtent2D)extent2d;
+
+	};
+	// 必须先在管线创建时启用动态状态
+	// 设置图形管线的裁剪矩形，限制像素的最终输出区域。
+	return _vkCmdSetScissor(((VulkanCommandBuffer*)commandBuffer)->GetResource(), firstScissor, scissorCount, vkRect2dList.data());
 }
 
 void VulkanRHI::CmdBindVertexBuffersPFN(RHICommandBuffer* commandBuffer, uint32_t firstBinding, uint32_t bindingCount, RHIBuffer* const* pBuffers, const RHIDeviceSize* pOffsets)

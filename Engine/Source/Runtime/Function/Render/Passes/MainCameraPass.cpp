@@ -1,5 +1,6 @@
 ﻿#include "MainCameraPass.h"
 
+#include <map>
 #include <MeshVert.h>
 #include <MeshFrag.h>
 #include <MeshGBufferFrag.h>
@@ -183,8 +184,8 @@ void MainCameraPass::SetupAttachments()
 {
 	m_framebuffer.m_attachments.resize(_main_camera_pass_custom_attachment_count + _main_camera_pass_post_process_attachment_count);	// 5 + 2 = 7
 
-	m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_format = ERHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;	// GBuffer A: 位置
-	m_framebuffer.m_attachments[_main_camera_pass_gbuffer_b].m_format = ERHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;	// GBuffer B: 法线
+	m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_format = ERHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;	// GBuffer A: 法线
+	m_framebuffer.m_attachments[_main_camera_pass_gbuffer_b].m_format = ERHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;	// GBuffer B: 金属粗糙度
 	m_framebuffer.m_attachments[_main_camera_pass_gbuffer_c].m_format = ERHIFormat::RHI_FORMAT_R8G8B8A8_SRGB;	// GBuffer C: 颜色
 	m_framebuffer.m_attachments[_main_camera_pass_backup_buffer_odd].m_format = ERHIFormat::RHI_FORMAT_R16G16B16A16_SFLOAT;	// 备用缓冲区 奇数
 	m_framebuffer.m_attachments[_main_camera_pass_backup_buffer_even].m_format = ERHIFormat::RHI_FORMAT_R16G16B16A16_SFLOAT;	// 备用缓冲区 偶数
@@ -663,12 +664,12 @@ void MainCameraPass::SetupDescriptorSetLayout()
 		ST_RHIDescriptorSetLayoutBinding meshGlobalLayoutBindings[8];
 
 		// 每帧存储缓冲区绑定 赋值
-		ST_RHIDescriptorSetLayoutBinding& meshGlobalLayoutPerframeStorageBufferBinding = meshGlobalLayoutBindings[0];
-		meshGlobalLayoutPerframeStorageBufferBinding.m_binding = 0;
-		meshGlobalLayoutPerframeStorageBufferBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-		meshGlobalLayoutPerframeStorageBufferBinding.m_descriptorCount = 1;
-		meshGlobalLayoutPerframeStorageBufferBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT | RHI_SHADER_STAGE_FRAGMENT_BIT;
-		meshGlobalLayoutPerframeStorageBufferBinding.m_pImmutableSamplers = nullptr;
+		ST_RHIDescriptorSetLayoutBinding& meshGlobalLayoutPerFrameStorageBufferBinding = meshGlobalLayoutBindings[0];
+		meshGlobalLayoutPerFrameStorageBufferBinding.m_binding = 0;
+		meshGlobalLayoutPerFrameStorageBufferBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+		meshGlobalLayoutPerFrameStorageBufferBinding.m_descriptorCount = 1;
+		meshGlobalLayoutPerFrameStorageBufferBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT | RHI_SHADER_STAGE_FRAGMENT_BIT;
+		meshGlobalLayoutPerFrameStorageBufferBinding.m_pImmutableSamplers = nullptr;
 
 		// 每次绘制存储缓冲区绑定 赋值
 		ST_RHIDescriptorSetLayoutBinding& meshGlobalLayoutPerDrawcallStorageBufferBinding = meshGlobalLayoutBindings[1];
@@ -1730,7 +1731,8 @@ void MainCameraPass::SetupSwapchainFramebuffers()
 	m_swapchainFramebuffers.resize(m_pRHI->GetSwapchainInfo().m_imageViews.size());
 
 	// 为交换链的每个图像视图创建一个帧缓冲区
-	for (size_t i = 0; i < m_pRHI->GetSwapchainInfo().m_imageViews.size(); i++)
+	// 3缓冲渲染
+	for (size_t i = 0; i < m_pRHI->GetSwapchainInfo().m_imageViews.size(); i++)	// 目前是3个帧缓冲
 	{
 		RHIImageView* framebufferAttachmentsForImageView[_main_camera_pass_attachment_count] = {
 			m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_pView,
@@ -1991,6 +1993,62 @@ void MainCameraPass::SetupGbufferLightingDescriptorSet()
 
 void MainCameraPass::DrawMeshGbuffer()
 {
+	struct ST_MeshNode	// 网格节点
+	{
+		const Matrix4x4* m_modelMatrix{ nullptr };	// 模型矩阵
+		const Matrix4x4* m_jointMatrices{ nullptr };	// 骨骼矩阵
+		uint32_t m_jointCount{ 0 };	// 骨骼数量
+	};
+
+	std::map<ST_VulkanPBRMaterial*, std::map<ST_VulkanMesh*, std::vector<ST_MeshNode>>> mainCameraMeshDrawcallBatch;	// 主摄像机网格绘制调用批次
+
+	for (ST_RenderMeshNode& node : *(s_visibleNodes.m_pMainCameraVisibleMeshNodes))	// 读取相机可见的网格节点
+	{
+		auto& meshInstanced = mainCameraMeshDrawcallBatch[node.m_refMaterial];
+		auto& meshNodes = meshInstanced[node.m_refMesh];
+
+		ST_MeshNode temp;
+		temp.m_modelMatrix = node.m_modelMatrix;
+		if (node.m_enableVertexBlending)
+		{
+			temp.m_jointMatrices = node.m_jointMatrices;
+			temp.m_jointCount = node.m_jointCount;
+		}
+
+		meshNodes.push_back(temp);
+	}
+
+	float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	m_pRHI->PushEvent(m_pRHI->GetCurrentCommandBuffer(), "Mesh GBuffer", color);	// 开始
+
+	m_pRHI->CmdBindPipelinePFN(m_pRHI->GetCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipelines[_render_pipeline_type_mesh_gbuffer].m_pipeline);
+	m_pRHI->CmdSetViewportPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pViewport);
+	m_pRHI->CmdSetScissorPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pScissor);
+
+	//uint32_t perframeDynamicOffset = roundUp(
+	//	m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
+	//	m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment
+	//);
+
+	//m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_pRHI->GetCurrentFrameIndex()] = perframeDynamicOffset + sizeof(ST_MeshPerframeStorageBufferObject);
+
+	//assert(m_global_render_resource->_storage_buffer
+	//	._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
+	//	(m_global_render_resource->_storage_buffer
+	//		._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
+	//		m_global_render_resource->_storage_buffer
+	//		._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
+
+	//(*reinterpret_cast<MeshPerframeStorageBufferObject*>(
+	//	reinterpret_cast<uintptr_t>(
+	//		m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+	//	perframe_dynamic_offset)) = m_mesh_perframe_storage_buffer_object;
+
+	for (auto& pair1 : mainCameraMeshDrawcallBatch)	// 根据材质遍历
+	{
+	}
+
+	m_pRHI->PopEvent(m_pRHI->GetCurrentCommandBuffer());	// 结束
 }
 
 void MainCameraPass::DrawDeferredLighting()

@@ -16,7 +16,7 @@ struct ST_MeshVertex
 		Vector3 m_position;
 	};
 
-	struct ST_VulkanMeshVertexVaryingEnableBlending
+	struct ST_VulkanMeshVertexVaryingEnableBlending	// 启用蒙皮的可变顶点属性
 	{
 		Vector3 m_normal;
 		Vector3 m_tangent;
