@@ -5,6 +5,7 @@
 #include "Interface/RHIStruct.h"
 #include "RenderPassBase.h"
 #include "RenderCommon.h"
+#include "RenderResource.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -88,7 +89,7 @@ public:
 	virtual std::vector<RHIDescriptorSetLayout*> GetDescriptorSetLayouts() const;	// 获取描述符集布局列表
 
 public:
-	//GlobalRenderResource* m_global_render_resource{ nullptr };
+	ST_GlobalRenderResource* m_pGlobalRenderResource{ nullptr };
 
 	std::vector<ST_Descriptor> m_descriptorInfos;	// 描述符列表
 	std::vector<ST_RenderPipelineBase> m_renderPipelines;	// 渲染管线列表

@@ -721,7 +721,7 @@ bool VulkanRHI::CreateGraphicsPipelines(RHIPipelineCache* pipelineCache, uint32_
 		vkPipelineColorBlendAttachmentStateElement.colorWriteMask = (VkColorComponentFlags)rhiPipelineColorBlendAttachmentStateElement.m_colorWriteMask;
 	};
 
-	VkPipelineColorBlendStateCreateInfo vkPipelineColorBlendStateCreateInfo{};	
+	VkPipelineColorBlendStateCreateInfo vkPipelineColorBlendStateCreateInfo{};
 	vkPipelineColorBlendStateCreateInfo.sType = (VkStructureType)pCreateInfo->m_pColorBlendState->m_sType;
 	vkPipelineColorBlendStateCreateInfo.pNext = pCreateInfo->m_pColorBlendState->m_pNext;
 	vkPipelineColorBlendStateCreateInfo.flags = pCreateInfo->m_pColorBlendState->m_flags;
@@ -746,7 +746,7 @@ bool VulkanRHI::CreateGraphicsPipelines(RHIPipelineCache* pipelineCache, uint32_
 		vkDynamicStateElement = (VkDynamicState)rhiDynamicStateElement;
 	};
 
-	VkPipelineDynamicStateCreateInfo vkPipelineDynamicStateCreateInfo{};	
+	VkPipelineDynamicStateCreateInfo vkPipelineDynamicStateCreateInfo{};
 	vkPipelineDynamicStateCreateInfo.sType = (VkStructureType)pCreateInfo->m_pDynamicState->m_sType;
 	vkPipelineDynamicStateCreateInfo.pNext = pCreateInfo->m_pDynamicState->m_pNext;
 	vkPipelineDynamicStateCreateInfo.flags = (VkPipelineDynamicStateCreateFlags)pCreateInfo->m_pDynamicState->m_flags;
@@ -1122,7 +1122,7 @@ void VulkanRHI::CmdBindPipelinePFN(RHICommandBuffer* commandBuffer, ERHIPipeline
 }
 
 void VulkanRHI::CmdSetViewportPFN(RHICommandBuffer* commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const ST_RHIViewport* pViewports)
-{        
+{
 	//viewport
 	int viewportSize = viewportCount;
 	std::vector<VkViewport> vkViewportList(viewportSize);
@@ -1145,7 +1145,7 @@ void VulkanRHI::CmdSetViewportPFN(RHICommandBuffer* commandBuffer, uint32_t firs
 }
 
 void VulkanRHI::CmdSetScissorPFN(RHICommandBuffer* commandBuffer, uint32_t firstScissor, uint32_t scissorCount, const ST_RHIRect2D* pScissors)
-{        
+{
 	//rect_2d
 	int rect2dSize = scissorCount;
 	std::vector<VkRect2D> vkRect2dList(rect2dSize);
@@ -1181,6 +1181,38 @@ void VulkanRHI::CmdBindIndexBufferPFN(RHICommandBuffer* commandBuffer, RHIBuffer
 
 void VulkanRHI::CmdBindDescriptorSetsPFN(RHICommandBuffer* commandBuffer, ERHIPipelineBindPoint pipelineBindPoint, RHIPipelineLayout* layout, uint32_t firstSet, uint32_t descriptorSetCount, const RHIDescriptorSet* const* pDescriptorSets, uint32_t dynamicOffsetCount, const uint32_t* pDynamicOffsets)
 {
+	//RHI转vk
+	int descriptorSetSize = descriptorSetCount;
+	std::vector<VkDescriptorSet> vkDescriptorSetList(descriptorSetSize);
+	for (int i = 0; i < descriptorSetSize; ++i)
+	{
+		const auto& rhiDescriptorSetElement = pDescriptorSets[i];
+		auto& vkDescriptorSetElement = vkDescriptorSetList[i];
+
+		vkDescriptorSetElement = ((VulkanDescriptorSet*)rhiDescriptorSetElement)->GetResource();
+	};
+
+	//offset
+	int offsetSize = dynamicOffsetCount;
+	std::vector<uint32_t> vkOffsetList(offsetSize);
+	for (int i = 0; i < offsetSize; ++i)
+	{
+		const auto& rhiOffsetElement = pDynamicOffsets[i];
+		auto& vkOffsetElement = vkOffsetList[i];
+
+		vkOffsetElement = rhiOffsetElement;
+	};
+
+	// 绑定创建好的描述符集
+	return _vkCmdBindDescriptorSets(
+		((VulkanCommandBuffer*)commandBuffer)->GetResource(),
+		(VkPipelineBindPoint)pipelineBindPoint,
+		((VulkanPipelineLayout*)layout)->GetResource(),
+		firstSet,
+		descriptorSetCount,
+		vkDescriptorSetList.data(),
+		dynamicOffsetCount,
+		vkOffsetList.data());
 }
 
 void VulkanRHI::CmdDrawIndexedPFN(RHICommandBuffer* commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
@@ -1583,7 +1615,7 @@ void VulkanRHI::SubmitRendering(std::function<void()> passUpdateAfterRecreateSwa
 		return;
 	}
 
-	VkSemaphore semaphores[2] = { 
+	VkSemaphore semaphores[2] = {
 		((VulkanSemaphore*)m_imageAvailableForTexturescopySemaphores[m_currentFrameIndex])->GetResource(),
 		m_imageFinishedForPresentationSemaphores[m_currentFrameIndex]
 	};

@@ -1,6 +1,7 @@
 ﻿#include "MainCameraPass.h"
 
 #include <map>
+#include <assert.h>
 #include <MeshVert.h>
 #include <MeshFrag.h>
 #include <MeshGBufferFrag.h>
@@ -10,6 +11,7 @@
 #include <SkyboxFrag.h>
 #include <AxisVert.h>
 #include <AxisFrag.h>
+#include "Runtime/Function/Render/RenderHelper.h"
 #include "Runtime/Function/Render/RenderMesh.h"
 #include "Runtime/Function/Render/Interface/Vulkan/VulkanRHIResource.h"
 
@@ -165,7 +167,7 @@ void MainCameraPass::UpdateAfterFramebufferRecreate()
 	SetupAttachments();
 
 	// 设置帧缓冲描述符集
-	SetupFramebufferDescriptorSet();	
+	SetupFramebufferDescriptorSet();
 
 	// 设置交换链帧缓冲
 	SetupSwapchainFramebuffers();
@@ -1821,7 +1823,7 @@ void MainCameraPass::SetupModelGlobalDescriptorSet()
 	//directionalLightShadowTextureImageInfo.m_pImageView = m_directional_light_shadow_color_image_view;
 	directionalLightShadowTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	
+
 	ST_RHIWriteDescriptorSet meshDescriptorWritesInfo[8];
 
 	meshDescriptorWritesInfo[0].m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -2025,27 +2027,165 @@ void MainCameraPass::DrawMeshGbuffer()
 	m_pRHI->CmdSetViewportPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pViewport);
 	m_pRHI->CmdSetScissorPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pScissor);
 
-	//uint32_t perframeDynamicOffset = roundUp(
-	//	m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
-	//	m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment
-	//);
+	uint32_t perframeDynamicOffset = RoundUp(
+		m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()],
+		m_pGlobalRenderResource->m_storageBuffer.m_minStorageBufferOffsetAlignment
+	);
 
-	//m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_pRHI->GetCurrentFrameIndex()] = perframeDynamicOffset + sizeof(ST_MeshPerframeStorageBufferObject);
+	m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()] = perframeDynamicOffset + sizeof(ST_MeshPerframeStorageBufferObject);
 
-	//assert(m_global_render_resource->_storage_buffer
-	//	._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
-	//	(m_global_render_resource->_storage_buffer
-	//		._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
-	//		m_global_render_resource->_storage_buffer
-	//		._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
+	assert(m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()] <=
+		(m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersBegin[m_pRHI->GetCurrentFrameIndex()] +
+			m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersSize[m_pRHI->GetCurrentFrameIndex()]));
 
-	//(*reinterpret_cast<MeshPerframeStorageBufferObject*>(
-	//	reinterpret_cast<uintptr_t>(
-	//		m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
-	//	perframe_dynamic_offset)) = m_mesh_perframe_storage_buffer_object;
+	(*reinterpret_cast<ST_MeshPerframeStorageBufferObject*>(reinterpret_cast<uintptr_t>(m_pGlobalRenderResource->m_storageBuffer.m_pGlobalUploadRingbufferMemoryPointer) + perframeDynamicOffset)) = m_meshPerframeStorageBufferObject;
 
 	for (auto& pair1 : mainCameraMeshDrawcallBatch)	// 根据材质遍历
 	{
+		ST_VulkanPBRMaterial& material = (*pair1.first);
+		auto& meshInstanced = pair1.second;
+
+		// 绑定材质的描述符集
+		m_pRHI->CmdBindDescriptorSetsPFN(
+			m_pRHI->GetCurrentCommandBuffer(),
+			RHI_PIPELINE_BIND_POINT_GRAPHICS,
+			m_renderPipelines[_render_pipeline_type_mesh_gbuffer].m_pipelineLayout,	// 管线布局
+			2,	// 绑定到哪一个描述符集布局上（例如_render_pipeline_type_mesh_gbuffer有3个描述符集布局）
+			1,	// 描述符集数量
+			&material.m_materialDescriptorSet,	// 材质 描述符集
+			0,
+			NULL);
+
+		for (auto& pair2 : meshInstanced)	// 根据网格数据遍历
+		{
+			ST_VulkanMesh& mesh = (*pair2.first);
+			auto& meshNodes = pair2.second;
+
+			uint32_t totalInstanceCount = static_cast<uint32_t>(meshNodes.size());	// 所有网格节点数量
+			if (totalInstanceCount > 0)
+			{
+				// bind per mesh
+				m_pRHI->CmdBindDescriptorSetsPFN(
+					m_pRHI->GetCurrentCommandBuffer(),
+					RHI_PIPELINE_BIND_POINT_GRAPHICS,
+					m_renderPipelines[_render_pipeline_type_mesh_gbuffer].m_pipelineLayout,
+					1,
+					1,
+					&mesh.m_meshVertexBlendingDescriptorSet,
+					0,
+					NULL);
+
+				// 顶点缓存数据
+				RHIBuffer* pVertexBuffers[] = {
+						mesh.m_meshVertexPositionBuffer,	// 顶点位置
+						mesh.m_meshVertexVaryingEnableBlendingBuffer,	// 法线和切线方向
+						mesh.m_meshVertexVaryingBuffer	// 纹理坐标
+				};
+				RHIDeviceSize offsets[] = { 0, 0, 0 };
+				// 绑定顶线缓存
+				m_pRHI->CmdBindVertexBuffersPFN(
+					m_pRHI->GetCurrentCommandBuffer(),
+					0,
+					(sizeof(pVertexBuffers) / sizeof(pVertexBuffers[0])),
+					pVertexBuffers,
+					offsets);
+				// 绑定索引缓存
+				m_pRHI->CmdBindIndexBufferPFN(m_pRHI->GetCurrentCommandBuffer(), mesh.m_meshIndexBuffer, 0, RHI_INDEX_TYPE_UINT16);
+
+				uint32_t drawcallMaxInstanceCount = (sizeof(ST_MeshPerdrawcallStorageBufferObject::m_meshInstances) / sizeof(ST_MeshPerdrawcallStorageBufferObject::m_meshInstances[0]));
+				uint32_t drawcallCount = RoundUp(totalInstanceCount, drawcallMaxInstanceCount) / drawcallMaxInstanceCount;
+
+				for (uint32_t drawcallIndex = 0; drawcallIndex < drawcallCount; ++drawcallIndex)
+				{
+					// 当前要绘制的node数量
+					uint32_t currentInstanceCount = ((totalInstanceCount - drawcallMaxInstanceCount * drawcallIndex) < drawcallMaxInstanceCount) ?
+						(totalInstanceCount - drawcallMaxInstanceCount * drawcallIndex) :
+						drawcallMaxInstanceCount;
+
+					uint32_t perdrawcallDynamicOffset = RoundUp(
+						m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()],
+						m_pGlobalRenderResource->m_storageBuffer.m_minStorageBufferOffsetAlignment
+					);
+
+					m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()] = perdrawcallDynamicOffset + sizeof(ST_MeshPerdrawcallStorageBufferObject);
+
+					assert(m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()] <=
+						(m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersBegin[m_pRHI->GetCurrentFrameIndex()] +
+							m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersSize[m_pRHI->GetCurrentFrameIndex()]));
+
+					ST_MeshPerdrawcallStorageBufferObject& perdrawcallStorageBufferObject = (*reinterpret_cast<ST_MeshPerdrawcallStorageBufferObject*>(reinterpret_cast<uintptr_t>(m_pGlobalRenderResource->m_storageBuffer.m_pGlobalUploadRingbufferMemoryPointer) + perdrawcallDynamicOffset));
+
+					for (uint32_t i = 0; i < currentInstanceCount; ++i)
+					{
+						perdrawcallStorageBufferObject.m_meshInstances[i].m_modelMatrix = *meshNodes[drawcallMaxInstanceCount * drawcallIndex + i].m_modelMatrix;
+						perdrawcallStorageBufferObject.m_meshInstances[i].m_enableVertexBlending = meshNodes[drawcallMaxInstanceCount * drawcallIndex + i].m_jointMatrices ? 1.0 : -1.0;
+					}
+
+					// 每个drawcall顶点混合存储缓冲区
+					uint32_t perDrawcallVertexBlendingDynamicOffset;
+					bool leastOneEnableVertexBlending = true;	// 
+					for (uint32_t i = 0; i < currentInstanceCount; ++i)
+					{
+						if (!meshNodes[drawcallMaxInstanceCount * drawcallIndex + i].m_jointMatrices)
+						{
+							leastOneEnableVertexBlending = false;
+							break;
+						}
+					}
+
+					if (leastOneEnableVertexBlending)
+					{
+						perDrawcallVertexBlendingDynamicOffset = RoundUp(
+							m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()],
+							m_pGlobalRenderResource->m_storageBuffer.m_minStorageBufferOffsetAlignment
+						);
+
+						m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()] =
+							perDrawcallVertexBlendingDynamicOffset + sizeof(ST_MeshPerdrawcallVertexBlendingStorageBufferObject);
+
+						assert(m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()] <=
+							(m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersBegin[m_pRHI->GetCurrentFrameIndex()] +
+								m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersSize[m_pRHI->GetCurrentFrameIndex()]));
+
+						ST_MeshPerdrawcallVertexBlendingStorageBufferObject& perDrawcallVertexBlendingStorageBufferObject = (*reinterpret_cast<ST_MeshPerdrawcallVertexBlendingStorageBufferObject*>(reinterpret_cast<uintptr_t>(m_pGlobalRenderResource->m_storageBuffer.m_pGlobalUploadRingbufferMemoryPointer) + perDrawcallVertexBlendingDynamicOffset));
+
+						for (uint32_t i = 0; i < currentInstanceCount; ++i)
+						{
+							if (meshNodes[drawcallMaxInstanceCount * drawcallIndex + i].m_jointMatrices)
+							{
+								for (uint32_t j = 0; j < meshNodes[drawcallMaxInstanceCount * drawcallIndex + i].m_jointCount; ++j)
+								{
+									perDrawcallVertexBlendingStorageBufferObject.m_jointMatrices[s_meshVertexBlendingMaxJointCount * i + j] = meshNodes[drawcallMaxInstanceCount * drawcallIndex + i].m_jointMatrices[j];
+								}
+							}
+						}
+
+					}
+					else
+					{
+						perDrawcallVertexBlendingDynamicOffset = 0;
+					}
+
+					uint32_t dynamicOffsets[3] = {
+						perframeDynamicOffset,
+						perdrawcallDynamicOffset,
+						perDrawcallVertexBlendingDynamicOffset
+					};
+
+					m_pRHI->CmdBindDescriptorSetsPFN(
+						m_pRHI->GetCurrentCommandBuffer(),
+						RHI_PIPELINE_BIND_POINT_GRAPHICS,
+						m_renderPipelines[_render_pipeline_type_mesh_gbuffer].m_pipelineLayout,
+						0,
+						1,
+						&m_descriptorInfos[_mesh_global].m_pDescriptorSet,
+						3,
+						dynamicOffsets);
+
+					m_pRHI->CmdDrawIndexedPFN(m_pRHI->GetCurrentCommandBuffer(), mesh.m_meshIndexCount, currentInstanceCount, 0, 0, 0);
+				}
+			}
+		}
 	}
 
 	m_pRHI->PopEvent(m_pRHI->GetCurrentCommandBuffer());	// 结束

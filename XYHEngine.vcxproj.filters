@@ -198,6 +198,9 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\UIPass.cpp">
       <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderHelper.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Runtime\Engine.h">
@@ -382,6 +385,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Shader\Generated\Cpp\MeshFrag.h">
       <Filter>Engine\Shader\Generated\Cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderHelper.h">
+      <Filter>Engine\Source\Runtime\Function\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

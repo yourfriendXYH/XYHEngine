@@ -46,6 +46,7 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\ToneMappingPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\UIPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderCamera.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderHelper.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderPassBase.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderPipeline.cpp" />
@@ -104,6 +105,7 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderCommon.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderEntity.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderGuidAllocator.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderHelper.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderMesh.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderObject.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderPass.h" />

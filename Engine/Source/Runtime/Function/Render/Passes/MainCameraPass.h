@@ -110,6 +110,8 @@ public:
 
 	bool m_enableFXAA = false;	// 是否启用FXAA
 
+	ST_MeshPerframeStorageBufferObject m_meshPerframeStorageBufferObject;	// 网格每帧存储缓冲区对象
+
 private:
 	std::shared_ptr<ParticlePass> m_pParticlePass;
 
