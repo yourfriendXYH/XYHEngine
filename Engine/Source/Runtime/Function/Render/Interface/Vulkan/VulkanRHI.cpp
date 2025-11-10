@@ -1172,11 +1172,37 @@ void VulkanRHI::CmdSetScissorPFN(RHICommandBuffer* commandBuffer, uint32_t first
 }
 
 void VulkanRHI::CmdBindVertexBuffersPFN(RHICommandBuffer* commandBuffer, uint32_t firstBinding, uint32_t bindingCount, RHIBuffer* const* pBuffers, const RHIDeviceSize* pOffsets)
-{
+{        
+	//buffer
+	int bufferSize = bindingCount;
+	std::vector<VkBuffer> vkBufferList(bufferSize);
+	for (int i = 0; i < bufferSize; ++i)
+	{
+		const auto& rhiBufferElement = pBuffers[i];
+		auto& vkBufferElement = vkBufferList[i];
+
+		vkBufferElement = ((VulkanBuffer*)rhiBufferElement)->GetResource();
+	};
+
+	//offset
+	int offsetSize = bindingCount;
+	std::vector<VkDeviceSize> vkDeviceSizeList(offsetSize);
+	for (int i = 0; i < offsetSize; ++i)
+	{
+		const auto& rhiOffsetElement = pOffsets[i];
+		auto& vkOffsetElement = vkDeviceSizeList[i];
+
+		vkOffsetElement = rhiOffsetElement;
+	};
+
+	// 顶点缓冲区绑定
+	return _vkCmdBindVertexBuffers(((VulkanCommandBuffer*)commandBuffer)->GetResource(), firstBinding, bindingCount, vkBufferList.data(), vkDeviceSizeList.data());
 }
 
 void VulkanRHI::CmdBindIndexBufferPFN(RHICommandBuffer* commandBuffer, RHIBuffer* buffer, RHIDeviceSize offset, ERHIIndexType indexType)
 {
+	// 索引缓冲区绑定
+	return _vkCmdBindIndexBuffer(((VulkanCommandBuffer*)commandBuffer)->GetResource(), ((VulkanBuffer*)buffer)->GetResource(), (VkDeviceSize)offset, (VkIndexType)indexType);
 }
 
 void VulkanRHI::CmdBindDescriptorSetsPFN(RHICommandBuffer* commandBuffer, ERHIPipelineBindPoint pipelineBindPoint, RHIPipelineLayout* layout, uint32_t firstSet, uint32_t descriptorSetCount, const RHIDescriptorSet* const* pDescriptorSets, uint32_t dynamicOffsetCount, const uint32_t* pDynamicOffsets)
@@ -1217,6 +1243,8 @@ void VulkanRHI::CmdBindDescriptorSetsPFN(RHICommandBuffer* commandBuffer, ERHIPi
 
 void VulkanRHI::CmdDrawIndexedPFN(RHICommandBuffer* commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
 {
+	// 实例化绘制
+	return _vkCmdDrawIndexed(((VulkanCommandBuffer*)commandBuffer)->GetResource(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }
 
 void VulkanRHI::CmdClearAttachmentsPFN(RHICommandBuffer* commandBuffer, uint32_t attachmentCount, const ST_RHIClearAttachment* pAttachments, uint32_t rectCount, const ST_RHIClearRect* pRects)

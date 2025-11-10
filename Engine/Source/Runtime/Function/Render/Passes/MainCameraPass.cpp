@@ -86,6 +86,8 @@ void MainCameraPass::Draw(ColorGradingPass& colorGradingPass, FXAAPass& fxaaPass
 
 	float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	m_pRHI->PushEvent(m_pRHI->GetCurrentCommandBuffer(), "BasePass", color);	// 开启调试标签
+	// 绘制网格的GBuffer数据，绘制到帧缓冲的前三个颜色附件上（a、b、c）
+	// 对应到第一个子通道_main_camera_subpass_basepass的颜色附件
 	DrawMeshGbuffer();	// 绘制网格GBuffer
 	m_pRHI->PopEvent(m_pRHI->GetCurrentCommandBuffer());	// 结束调试标签
 
@@ -2081,14 +2083,11 @@ void MainCameraPass::DrawMeshGbuffer()
 						mesh.m_meshVertexVaryingEnableBlendingBuffer,	// 法线和切线方向
 						mesh.m_meshVertexVaryingBuffer	// 纹理坐标
 				};
+
+				// 每一块顶点缓冲区的偏移量，从哪开始读取数据
 				RHIDeviceSize offsets[] = { 0, 0, 0 };
 				// 绑定顶线缓存
-				m_pRHI->CmdBindVertexBuffersPFN(
-					m_pRHI->GetCurrentCommandBuffer(),
-					0,
-					(sizeof(pVertexBuffers) / sizeof(pVertexBuffers[0])),
-					pVertexBuffers,
-					offsets);
+				m_pRHI->CmdBindVertexBuffersPFN(m_pRHI->GetCurrentCommandBuffer(), 0, (sizeof(pVertexBuffers) / sizeof(pVertexBuffers[0])), pVertexBuffers, offsets);
 				// 绑定索引缓存
 				m_pRHI->CmdBindIndexBufferPFN(m_pRHI->GetCurrentCommandBuffer(), mesh.m_meshIndexBuffer, 0, RHI_INDEX_TYPE_UINT16);
 
@@ -2182,6 +2181,7 @@ void MainCameraPass::DrawMeshGbuffer()
 						3,
 						dynamicOffsets);
 
+					// 实例化绘制，一次绘制多个实例
 					m_pRHI->CmdDrawIndexedPFN(m_pRHI->GetCurrentCommandBuffer(), mesh.m_meshIndexCount, currentInstanceCount, 0, 0, 0);
 				}
 			}

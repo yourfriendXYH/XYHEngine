@@ -108,9 +108,9 @@ struct ST_MeshPerframeStorageBufferObject
 	Vector3 m_ambientLight;
 	float paddingAmbientLight;
 	uint32_t m_pointLightNum;
-	uint32_t paddingPointLightNum1;
-	uint32_t paddingPointLightNum2;
-	uint32_t paddingPointLightNum3;
+	uint32_t m_paddingPointLightNum1;
+	uint32_t m_paddingPointLightNum2;
+	uint32_t m_paddingPointLightNum3;
 	ST_VulkanScenePointLight m_scenePointLights[s_maxPointLightCount];
 	ST_VulkanSceneDirectionalLight m_sceneDirectionalLight;
 	Matrix4x4 m_directionalLightProjView;
