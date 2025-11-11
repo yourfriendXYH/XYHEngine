@@ -1216,13 +1216,13 @@ void MainCameraPass::SetupPipelines()
 		pipelineInfo.m_pMultisampleState = &multisampleStateCreateInfo;
 		pipelineInfo.m_pColorBlendState = &colorBlendStateCreateInfo;
 		pipelineInfo.m_pDepthStencilState = &depthStencilCreateInfo;
-		pipelineInfo.m_pLayout = m_renderPipelines[_render_pipeline_type_mesh_lighting].m_pipelineLayout;
+		pipelineInfo.m_pLayout = m_renderPipelines[_render_pipeline_type_deferred_lighting].m_pipelineLayout;
 		pipelineInfo.m_pRenderPass = m_framebuffer.m_pRenderPass;
-		pipelineInfo.m_subpass = _main_camera_subpass_forward_lighting;
+		pipelineInfo.m_subpass = _main_camera_subpass_deferred_lighting;
 		pipelineInfo.m_pBasePipelineHandle = RHI_NULL_HANDLE;
 		pipelineInfo.m_pDynamicState = &dynamicStateCreateInfo;
 
-		if (m_pRHI->CreateGraphicsPipelines(RHI_NULL_HANDLE, 1, &pipelineInfo, m_renderPipelines[_render_pipeline_type_mesh_lighting].m_pipeline) != RHI_SUCCESS)
+		if (m_pRHI->CreateGraphicsPipelines(RHI_NULL_HANDLE, 1, &pipelineInfo, m_renderPipelines[_render_pipeline_type_deferred_lighting].m_pipeline) != RHI_SUCCESS)
 		{
 			throw std::runtime_error("create mesh lighting graphics pipeline");
 		}
@@ -2193,6 +2193,42 @@ void MainCameraPass::DrawMeshGbuffer()
 
 void MainCameraPass::DrawDeferredLighting()
 {
+	m_pRHI->CmdBindPipelinePFN(m_pRHI->GetCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipelines[_render_pipeline_type_deferred_lighting].m_pipeline);
+	m_pRHI->CmdSetViewportPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pViewport);
+	m_pRHI->CmdSetScissorPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pScissor);
+
+	uint32_t perframeDynamicOffset = RoundUp(
+		m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()],
+		m_pGlobalRenderResource->m_storageBuffer.m_minStorageBufferOffsetAlignment
+	);
+
+	m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()] = perframeDynamicOffset + sizeof(ST_MeshPerframeStorageBufferObject);
+
+	assert(m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()] <=
+		(m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersBegin[m_pRHI->GetCurrentFrameIndex()] +
+			m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersSize[m_pRHI->GetCurrentFrameIndex()]));
+
+	(*reinterpret_cast<ST_MeshPerframeStorageBufferObject*>(reinterpret_cast<uintptr_t>(m_pGlobalRenderResource->m_storageBuffer.m_pGlobalUploadRingbufferMemoryPointer) + perframeDynamicOffset)) = m_meshPerframeStorageBufferObject;
+
+	RHIDescriptorSet* descriptorSets[3] = { 
+		m_descriptorInfos[_mesh_global].m_pDescriptorSet,
+		m_descriptorInfos[_deferred_lighting].m_pDescriptorSet,
+		m_descriptorInfos[_skybox].m_pDescriptorSet
+	};
+	// 4个动态偏移量，_mesh_global有1个，skybox有1个
+	uint32_t dynamicOffsets[4] = { perframeDynamicOffset, perframeDynamicOffset, 0, 0 };
+
+	m_pRHI->CmdBindDescriptorSetsPFN(
+		m_pRHI->GetCurrentCommandBuffer(),
+		RHI_PIPELINE_BIND_POINT_GRAPHICS,
+		m_renderPipelines[_render_pipeline_type_deferred_lighting].m_pipelineLayout,
+		0,
+		3,
+		descriptorSets,
+		4,
+		dynamicOffsets);
+
+	m_pRHI->CmdDraw(m_pRHI->GetCurrentCommandBuffer(), 3, 1, 0, 0);
 }
 
 void MainCameraPass::DrawMeshLighting()
