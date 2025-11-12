@@ -56,7 +56,7 @@ struct ST_StorageBuffer
 	RHIDeviceMemory* m_pGlobalNullDescriptorStorageBufferMemory;
 
 	// axis
-	RHIBuffer* m_pAxisInefficientStorageBuffer;
+	RHIBuffer* m_pAxisInefficientStorageBuffer;	// 坐标轴低效存储缓冲区
 	RHIDeviceMemory* m_pAxisInefficientStorageBufferMemory;
 	void* m_pAxisInefficientStorageBufferMemoryPointer;
 };
@@ -86,6 +86,10 @@ public:
 	void ResetRingBufferOffset(uint8_t currentFrameIndex);	// 重置环形缓冲区偏移
 
 private:
+
+public:
+	ST_MeshPerframeStorageBufferObject m_meshPerframeStorageBufferObject;	// 网格每帧存储缓冲区对象
+	ST_AxisStorageBufferObject m_axisStorageBufferObject;	// 坐标轴存储缓冲区对象
 
 };
 

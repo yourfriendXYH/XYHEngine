@@ -93,7 +93,7 @@ private:
 
 	void DrawDeferredLighting();	// 绘制延迟光照（延迟渲染使用）
 
-	void DrawMeshLighting();	// 绘制网格光照
+	void DrawMeshLighting();	// 绘制网格光照（前向渲染使用）
 
 	void DrawSkybox();	// 绘制天空盒
 
@@ -101,8 +101,8 @@ private:
 
 public:
 
-	RHIImageView* m_pPointLightShadowColorImageView;
-	RHIImageView* m_pDirectionalLightShadowColorImageView;
+	RHIImageView* m_pPointLightShadowColorImageView;	// 点光源阴影图像视图
+	RHIImageView* m_pDirectionalLightShadowColorImageView;	// 方向光阴影图像视图
 
 	bool m_isShowAxis = false;  // 是否显示坐标轴
 
@@ -112,8 +112,10 @@ public:
 
 	ST_MeshPerframeStorageBufferObject m_meshPerframeStorageBufferObject;	// 网格每帧存储缓冲区对象
 
+	ST_AxisStorageBufferObject m_axisStorageBufferObject;	// 坐标轴存储缓冲区对象
+
 private:
-	std::shared_ptr<ParticlePass> m_pParticlePass;
+	std::shared_ptr<ParticlePass> m_pParticlePass;	// 粒子渲染通道
 
 	std::vector<RHIFramebuffer*> m_swapchainFramebuffers;	// 交换链帧缓冲
 };

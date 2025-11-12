@@ -17,7 +17,15 @@ void ParticlePass::CopyNormalAndDepthImage()
 {
 }
 
+void ParticlePass::SetDepthAndNormalImage(RHIImage* pDepthImage, RHIImage* pNormalImage)
+{
+}
+
 void ParticlePass::Simulate()
+{
+}
+
+void ParticlePass::SetRenderPassHandle(RHIRenderPass* pRenderPass)
 {
 }
 

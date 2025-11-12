@@ -1534,7 +1534,11 @@ ST_RHISwapChainDesc VulkanRHI::GetSwapchainInfo()
 
 ST_RHIDepthImageDesc VulkanRHI::GetDepthImageInfo() const
 {
-	return ST_RHIDepthImageDesc();
+	ST_RHIDepthImageDesc desc;
+	desc.m_depthImageFormat = m_depthImageFormat;
+	desc.m_depthImageView = m_depthImageView;
+	desc.m_depthImage = m_depthImage;
+	return desc;
 }
 
 uint8_t VulkanRHI::GetMaxFramesInFlight() const

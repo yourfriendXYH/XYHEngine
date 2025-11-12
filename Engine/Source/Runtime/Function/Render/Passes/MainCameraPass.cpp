@@ -38,17 +38,17 @@ void MainCameraPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 	SetupSwapchainFramebuffers();	// 创建交换链帧缓冲
 
-	SetupParticlePass();	// 设置粒子渲染通道
+	SetupParticlePass();	// 给粒子渲染通道设置需要用到的资源
 }
 
 void MainCameraPass::PreparePassData(std::shared_ptr<RenderResourceBase> renderResource)
 {
-	//const RenderResource* vulkan_resource = static_cast<const RenderResource*>(render_resource.get());
-	//if (vulkan_resource)
-	//{
-	//	m_mesh_perframe_storage_buffer_object = vulkan_resource->m_mesh_perframe_storage_buffer_object;
-	//	m_axis_storage_buffer_object = vulkan_resource->m_axis_storage_buffer_object;
-	//}
+	const RenderResource* vulkanResource = static_cast<const RenderResource*>(renderResource.get());
+	if (nullptr != vulkanResource)
+	{
+		m_meshPerframeStorageBufferObject = vulkanResource->m_meshPerframeStorageBufferObject;
+		m_axisStorageBufferObject = vulkanResource->m_axisStorageBufferObject;
+	}
 }
 
 void MainCameraPass::DrawForward(ColorGradingPass& colorGradingPass, FXAAPass& fxaaPass, ToneMappingPass& toneMappingPass, UIPass& uiPass, CombineUIPass& combineUIPass, ParticlePass& particlePass, uint32_t currentSwapchainImageIndex)
@@ -179,9 +179,10 @@ void MainCameraPass::UpdateAfterFramebufferRecreate()
 
 void MainCameraPass::SetupParticlePass()
 {
-	//m_pParticlePass->SetDepthAndNormalImage(m_pRHI->GetDepthImageInfo().m_depthImage, m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_pImage);
-
-	//m_pParticlePass->SetRenderPassHandle(m_framebuffer.m_pRenderPass);
+	// 需要深度图像和法线图像
+	m_pParticlePass->SetDepthAndNormalImage(m_pRHI->GetDepthImageInfo().m_depthImage, m_framebuffer.m_attachments[_main_camera_pass_gbuffer_a].m_pImage);
+	// 需要RenderPass
+	m_pParticlePass->SetRenderPassHandle(m_framebuffer.m_pRenderPass);
 }
 
 void MainCameraPass::SetupAttachments()
@@ -1785,44 +1786,44 @@ void MainCameraPass::SetupModelGlobalDescriptorSet()
 	ST_RHIDescriptorBufferInfo meshPerframeStorageBufferInfo = {};
 	meshPerframeStorageBufferInfo.m_offset = 0;	// 这个偏移量加上dynamic_offset不应该大于缓冲区的大小
 	meshPerframeStorageBufferInfo.m_range = sizeof(ST_MeshPerframeStorageBufferObject);	// 范围是指每次绘制调用时着色器实际使用的大小
-	//meshPerframeStorageBufferInfo.m_pBuffer = m_pGlobalRenderResource->_storage_buffer._global_upload_ringbuffer;
-	//assert(mesh_perframe_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
+	meshPerframeStorageBufferInfo.m_pBuffer = m_pGlobalRenderResource->m_storageBuffer.m_pGlobalUploadRingbuffer;
+	assert(meshPerframeStorageBufferInfo.m_range < m_pGlobalRenderResource->m_storageBuffer.m_maxStorageBufferRange);
 
 	ST_RHIDescriptorBufferInfo meshPerdrawcallStorageBufferInfo = {};
 	meshPerdrawcallStorageBufferInfo.m_offset = 0;
 	meshPerdrawcallStorageBufferInfo.m_range = sizeof(ST_MeshPerdrawcallStorageBufferObject);
-	//meshPerdrawcallStorageBufferInfo.m_pBuffer = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-	//assert(mesh_perdrawcall_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
+	meshPerdrawcallStorageBufferInfo.m_pBuffer = m_pGlobalRenderResource->m_storageBuffer.m_pGlobalUploadRingbuffer;
+	assert(meshPerdrawcallStorageBufferInfo.m_range < m_pGlobalRenderResource->m_storageBuffer.m_maxStorageBufferRange);
 
 	ST_RHIDescriptorBufferInfo meshPerDrawcallVertexBlendingStorageBufferInfo = {};
 	meshPerDrawcallVertexBlendingStorageBufferInfo.m_offset = 0;
 	meshPerDrawcallVertexBlendingStorageBufferInfo.m_range = sizeof(ST_MeshPerdrawcallVertexBlendingStorageBufferObject);
-	//meshPerDrawcallVertexBlendingStorageBufferInfo.m_pBuffer = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-	//assert(mesh_per_drawcall_vertex_blending_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
+	meshPerDrawcallVertexBlendingStorageBufferInfo.m_pBuffer = m_pGlobalRenderResource->m_storageBuffer.m_pGlobalUploadRingbuffer;
+	assert(meshPerDrawcallVertexBlendingStorageBufferInfo.m_range < m_pGlobalRenderResource->m_storageBuffer.m_maxStorageBufferRange);
 
 	ST_RHIDescriptorImageInfo brdfTextureImageInfo = {};
-	//brdfTextureImageInfo.m_pSampler = m_global_render_resource->_ibl_resource._brdfLUT_texture_sampler;
-	//brdfTextureImageInfo.m_pImageView = m_global_render_resource->_ibl_resource._brdfLUT_texture_image_view;
+	brdfTextureImageInfo.m_pSampler = m_pGlobalRenderResource->m_iblResource.m_pBrdfLUTTextureSampler;
+	brdfTextureImageInfo.m_pImageView = m_pGlobalRenderResource->m_iblResource.m_pBrdfLUTTextureImageView;
 	brdfTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	ST_RHIDescriptorImageInfo irradianceTextureImageInfo = {};
-	//irradianceTextureImageInfo.m_pSampler = m_global_render_resource->_ibl_resource._irradiance_texture_sampler;
-	//irradianceTextureImageInfo.m_pImageView = m_global_render_resource->_ibl_resource._irradiance_texture_image_view;
+	irradianceTextureImageInfo.m_pSampler = m_pGlobalRenderResource->m_iblResource.m_pIrradianceTextureSampler;
+	irradianceTextureImageInfo.m_pImageView = m_pGlobalRenderResource->m_iblResource.m_pIrradianceTextureImageView;
 	irradianceTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	ST_RHIDescriptorImageInfo specularTextureImageInfo{};
-	//specularTextureImageInfo.m_pSampler = m_global_render_resource->_ibl_resource._specular_texture_sampler;
-	//specularTextureImageInfo.m_pImageView = m_global_render_resource->_ibl_resource._specular_texture_image_view;
+	specularTextureImageInfo.m_pSampler = m_pGlobalRenderResource->m_iblResource.m_pSpecularTextureSampler;
+	specularTextureImageInfo.m_pImageView = m_pGlobalRenderResource->m_iblResource.m_pSpecularTextureImageView;
 	specularTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	ST_RHIDescriptorImageInfo pointLightShadowTextureImageInfo{};
 	pointLightShadowTextureImageInfo.m_pSampler = m_pRHI->GetOrCreateDefaultSampler(Default_Sampler_Nearest);
-	//pointLightShadowTextureImageInfo.m_pImageView = m_point_light_shadow_color_image_view;
+	pointLightShadowTextureImageInfo.m_pImageView = m_pPointLightShadowColorImageView;
 	pointLightShadowTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	ST_RHIDescriptorImageInfo directionalLightShadowTextureImageInfo{};
 	directionalLightShadowTextureImageInfo.m_pSampler = m_pRHI->GetOrCreateDefaultSampler(Default_Sampler_Nearest);
-	//directionalLightShadowTextureImageInfo.m_pImageView = m_directional_light_shadow_color_image_view;
+	directionalLightShadowTextureImageInfo.m_pImageView = m_pDirectionalLightShadowColorImageView;
 	directionalLightShadowTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 
@@ -1900,12 +1901,12 @@ void MainCameraPass::SetupSkyboxDescriptorSet()
 	ST_RHIDescriptorBufferInfo meshPerframeStorageBufferInfo = {};
 	meshPerframeStorageBufferInfo.m_offset = 0;
 	meshPerframeStorageBufferInfo.m_range = sizeof(ST_MeshPerframeStorageBufferObject);
-	//meshPerframeStorageBufferInfo.m_pBuffer = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-	//assert(mesh_perframe_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
+	meshPerframeStorageBufferInfo.m_pBuffer = m_pGlobalRenderResource->m_storageBuffer.m_pGlobalUploadRingbuffer;
+	assert(meshPerframeStorageBufferInfo.m_range < m_pGlobalRenderResource->m_storageBuffer.m_maxStorageBufferRange);
 
 	ST_RHIDescriptorImageInfo specularTextureImageInfo = {};
-	//specularTextureImageInfo.m_pSampler = m_global_render_resource->_ibl_resource._specular_texture_sampler;
-	//specularTextureImageInfo.m_pImageView = m_global_render_resource->_ibl_resource._specular_texture_image_view;
+	specularTextureImageInfo.m_pSampler = m_pGlobalRenderResource->m_iblResource.m_pSpecularTextureSampler;
+	specularTextureImageInfo.m_pImageView = m_pGlobalRenderResource->m_iblResource.m_pSpecularTextureImageView;
 	specularTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 
@@ -1949,13 +1950,13 @@ void MainCameraPass::SetupAxisDescriptorSet()
 	ST_RHIDescriptorBufferInfo meshPerframeStorageBufferInfo = {};
 	meshPerframeStorageBufferInfo.m_offset = 0;
 	meshPerframeStorageBufferInfo.m_range = sizeof(ST_MeshPerframeStorageBufferObject);
-	//meshPerframeStorageBufferInfo.m_pBuffer = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-	//assert(mesh_perframe_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
+	meshPerframeStorageBufferInfo.m_pBuffer = m_pGlobalRenderResource->m_storageBuffer.m_pGlobalUploadRingbuffer;
+	assert(meshPerframeStorageBufferInfo.m_range < m_pGlobalRenderResource->m_storageBuffer.m_maxStorageBufferRange);
 
 	ST_RHIDescriptorBufferInfo axisStorageBufferInfo = {};
 	axisStorageBufferInfo.m_offset = 0;
 	axisStorageBufferInfo.m_range = sizeof(ST_AxisStorageBufferObject);
-	//axis_storage_buffer_info.m_pBuffer = m_global_render_resource->_storage_buffer._axis_inefficient_storage_buffer;
+	axisStorageBufferInfo.m_pBuffer = m_pGlobalRenderResource->m_storageBuffer.m_pAxisInefficientStorageBuffer;
 
 	ST_RHIWriteDescriptorSet axisDescriptorWritesInfo[2];
 
@@ -2233,14 +2234,100 @@ void MainCameraPass::DrawDeferredLighting()
 
 void MainCameraPass::DrawMeshLighting()
 {
+	// 前向渲染使用
 }
 
 void MainCameraPass::DrawSkybox()
 {
+	float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	m_pRHI->PushEvent(m_pRHI->GetCurrentCommandBuffer(), "Skybox", color);
+
+	m_pRHI->CmdBindPipelinePFN(m_pRHI->GetCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipelines[_render_pipeline_type_skybox].m_pipeline);
+
+	// 每帧缓冲的动态偏移量
+	uint32_t perframeDynamicOffset = RoundUp(
+		m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()],
+		m_pGlobalRenderResource->m_storageBuffer.m_minStorageBufferOffsetAlignment
+	);
+
+	m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()] = perframeDynamicOffset + sizeof(ST_MeshPerframeStorageBufferObject);
+
+	assert(m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()] <=
+		(m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersBegin[m_pRHI->GetCurrentFrameIndex()] +
+			m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersSize[m_pRHI->GetCurrentFrameIndex()]));
+
+	(*reinterpret_cast<ST_MeshPerframeStorageBufferObject*>(reinterpret_cast<uintptr_t>(m_pGlobalRenderResource->m_storageBuffer.m_pGlobalUploadRingbufferMemoryPointer) + perframeDynamicOffset)) = m_meshPerframeStorageBufferObject;
+
+	m_pRHI->CmdBindDescriptorSetsPFN(
+		m_pRHI->GetCurrentCommandBuffer(),
+		RHI_PIPELINE_BIND_POINT_GRAPHICS,
+		m_renderPipelines[_render_pipeline_type_skybox].m_pipelineLayout,
+		0,
+		1,
+		&m_descriptorInfos[_skybox].m_pDescriptorSet,
+		1,
+		&perframeDynamicOffset);
+
+	m_pRHI->CmdDraw(m_pRHI->GetCurrentCommandBuffer(), 36, 1, 0, 0); // 2 triangles(6 vertex) each face, 6 faces
+
+	m_pRHI->PopEvent(m_pRHI->GetCurrentCommandBuffer());
 }
 
 void MainCameraPass::DrawAxis()
 {
+	if (!m_isShowAxis)
+		return;
+
+	// 每帧缓冲的动态偏移量
+	uint32_t perframeDynamicOffset = RoundUp(
+		m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()],
+		m_pGlobalRenderResource->m_storageBuffer.m_minStorageBufferOffsetAlignment
+	);
+
+	m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()] = perframeDynamicOffset + sizeof(ST_MeshPerframeStorageBufferObject);
+
+	assert(m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()] <=
+		(m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersBegin[m_pRHI->GetCurrentFrameIndex()] +
+			m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersSize[m_pRHI->GetCurrentFrameIndex()]));
+
+	(*reinterpret_cast<ST_MeshPerframeStorageBufferObject*>(reinterpret_cast<uintptr_t>(m_pGlobalRenderResource->m_storageBuffer.m_pGlobalUploadRingbufferMemoryPointer) + perframeDynamicOffset)) = m_meshPerframeStorageBufferObject;
+
+	float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	m_pRHI->PushEvent(m_pRHI->GetCurrentCommandBuffer(), "Axis", color);
+
+	m_pRHI->CmdBindPipelinePFN(m_pRHI->GetCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipelines[_render_pipeline_type_axis].m_pipeline);
+	m_pRHI->CmdSetViewportPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pViewport);
+	m_pRHI->CmdSetScissorPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pScissor);
+
+	m_axisStorageBufferObject.m_selectedAxis = m_selectedAxis;
+	m_axisStorageBufferObject.m_modelMatrix = s_visibleNodes.m_pAxisNode->m_modelMatrix;
+
+	RHIBuffer* vertexBuffers[3] = { 
+		s_visibleNodes.m_pAxisNode->m_refMesh->m_meshVertexPositionBuffer,
+		s_visibleNodes.m_pAxisNode->m_refMesh->m_meshVertexVaryingEnableBlendingBuffer,
+		s_visibleNodes.m_pAxisNode->m_refMesh->m_meshVertexVaryingBuffer 
+	};
+
+	RHIDeviceSize offsets[3] = { 0, 0, 0 };
+
+	m_pRHI->CmdBindVertexBuffersPFN(
+		m_pRHI->GetCurrentCommandBuffer(),
+		0,
+		(sizeof(vertexBuffers) / sizeof(vertexBuffers[0])),
+		vertexBuffers,
+		offsets);
+
+	m_pRHI->CmdBindIndexBufferPFN(
+		m_pRHI->GetCurrentCommandBuffer(),
+		s_visibleNodes.m_pAxisNode->m_refMesh->m_meshIndexBuffer,
+		0,
+		RHI_INDEX_TYPE_UINT16);
+
+	(*reinterpret_cast<ST_AxisStorageBufferObject*>(reinterpret_cast<uintptr_t>(m_pGlobalRenderResource->m_storageBuffer.m_pAxisInefficientStorageBufferMemoryPointer))) = m_axisStorageBufferObject;
+
+	m_pRHI->CmdDrawIndexedPFN(m_pRHI->GetCurrentCommandBuffer(), s_visibleNodes.m_pAxisNode->m_refMesh->m_meshIndexCount, 1, 0, 0, 0);
+
+	m_pRHI->PopEvent(m_pRHI->GetCurrentCommandBuffer());
 }
 
 NAMESPACE_XYH_END

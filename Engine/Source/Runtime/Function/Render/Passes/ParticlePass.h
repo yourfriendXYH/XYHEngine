@@ -19,7 +19,11 @@ public:
 
 	void CopyNormalAndDepthImage();
 
+	void SetDepthAndNormalImage(RHIImage* pDepthImage, RHIImage* pNormalImage);
+
 	void Simulate();
+
+	void SetRenderPassHandle(RHIRenderPass* pRenderPass);
 
 	void UpdateAfterFramebufferRecreate();
 

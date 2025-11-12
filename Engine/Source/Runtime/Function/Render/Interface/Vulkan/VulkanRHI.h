@@ -325,8 +325,6 @@ public:
 	VkQueue m_presentQueue = nullptr;	// Vulkan呈现队列
 	RHIQueue* m_computeQueue = nullptr;	// Vulkan计算队列
 
-	ERHIFormat m_depthImageFormat = RHI_FORMAT_UNDEFINED;	// 深度图像格式
-
 	// 默认命令池
 	RHICommandPool* m_rhiCommandPool;
 	// 其他命令池
@@ -357,6 +355,7 @@ public:
 	std::vector<RHIImageView*> m_swapchainImageViews;	// Vulkan交换链图像视图
 	uint32_t m_currentSwapchainImageIndex;
 
+	ERHIFormat m_depthImageFormat = RHI_FORMAT_UNDEFINED;	// 深度图像格式
 	RHIImage* m_depthImage;	// 深度图像
 	VkDeviceMemory m_depthImageMemory = nullptr;	// 深度图像内存
 	RHIImageView* m_depthImageView;	// 深度图像视图
