@@ -7,8 +7,9 @@ XYH::ST_VisibleNodes XYH::RenderPass::s_visibleNodes;
 
 NAMESPACE_XYH_BEGIN
 
-void RenderPass::Initialize(const ST_RenderPassInitInfo* init_info)
+void RenderPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 {
+	m_pGlobalRenderResource = &(std::static_pointer_cast<RenderResource>(m_pRenderResource)->m_globalRenderResource);
 }
 
 void RenderPass::PostInitialize()

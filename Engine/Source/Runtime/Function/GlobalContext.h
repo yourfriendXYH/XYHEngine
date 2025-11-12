@@ -21,6 +21,8 @@ public:
 	std::shared_ptr<class WindowSystem> m_pWindowSystem; // 窗口系统
 
 	std::shared_ptr<class RenderSystem> m_pRenderSystem; // 渲染系统
+
+	std::shared_ptr<class ParticleManager> m_pParticleManager;	// 粒子管理器
 };
 
 extern RuntimeGlobalContext g_runtimeGlobalContext;

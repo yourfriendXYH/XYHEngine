@@ -21,7 +21,7 @@ void MainCameraPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 {
 	RenderPass::Initialize(nullptr);	// ???
 
-	const ST_MainCameraPassInitInfp* mainCameraPassInitInfo = static_cast<const ST_MainCameraPassInitInfp*>(initInfo);
+	const ST_MainCameraPassInitInfo* mainCameraPassInitInfo = static_cast<const ST_MainCameraPassInitInfo*>(initInfo);
 	m_enableFXAA = mainCameraPassInitInfo->m_enableFXAA;
 
 	SetupAttachments();	// 创建帧缓冲的图像及视图
@@ -93,6 +93,7 @@ void MainCameraPass::Draw(ColorGradingPass& colorGradingPass, FXAAPass& fxaaPass
 
 	m_pRHI->CmdNextSubpassPFN(m_pRHI->GetCurrentCommandBuffer(), RHI_SUBPASS_CONTENTS_INLINE);	// 切换到下一个子通道
 	m_pRHI->PushEvent(m_pRHI->GetCurrentCommandBuffer(), "Deferred Lighting", color);
+	// 根据颜色附件和光源数据将光照计算结果绘制到帧缓冲的第四个颜色附件上（_main_camera_pass_backup_buffer_odd）偶数备用缓冲区
 	DrawDeferredLighting();	// 绘制延迟光照
 	m_pRHI->PopEvent(m_pRHI->GetCurrentCommandBuffer());
 
@@ -2118,7 +2119,7 @@ void MainCameraPass::DrawMeshGbuffer()
 					for (uint32_t i = 0; i < currentInstanceCount; ++i)
 					{
 						perdrawcallStorageBufferObject.m_meshInstances[i].m_modelMatrix = *meshNodes[drawcallMaxInstanceCount * drawcallIndex + i].m_modelMatrix;
-						perdrawcallStorageBufferObject.m_meshInstances[i].m_enableVertexBlending = meshNodes[drawcallMaxInstanceCount * drawcallIndex + i].m_jointMatrices ? 1.0 : -1.0;
+						perdrawcallStorageBufferObject.m_meshInstances[i].m_enableVertexBlending = meshNodes[drawcallMaxInstanceCount * drawcallIndex + i].m_jointMatrices ? 1.0f : -1.0f;
 					}
 
 					// 每个drawcall顶点混合存储缓冲区
@@ -2299,7 +2300,7 @@ void MainCameraPass::DrawAxis()
 	m_pRHI->CmdSetViewportPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pViewport);
 	m_pRHI->CmdSetScissorPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pScissor);
 
-	m_axisStorageBufferObject.m_selectedAxis = m_selectedAxis;
+	m_axisStorageBufferObject.m_selectedAxis = static_cast<uint32_t>(m_selectedAxis);
 	m_axisStorageBufferObject.m_modelMatrix = s_visibleNodes.m_pAxisNode->m_modelMatrix;
 
 	RHIBuffer* vertexBuffers[3] = { 

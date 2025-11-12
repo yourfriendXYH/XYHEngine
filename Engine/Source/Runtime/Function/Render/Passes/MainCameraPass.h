@@ -10,7 +10,7 @@
 
 NAMESPACE_XYH_BEGIN
 
-struct ST_MainCameraPassInitInfp : public ST_RenderPassInitInfo
+struct ST_MainCameraPassInitInfo : public ST_RenderPassInitInfo
 {
 	bool m_enableFXAA = false;  //  «∑Ò∆Ù”√FXAA
 };

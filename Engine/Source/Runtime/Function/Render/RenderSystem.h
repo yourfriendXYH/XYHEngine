@@ -49,7 +49,7 @@ private:
 
 	std::shared_ptr<RenderResourceBase> m_renderResource;
 
-	std::shared_ptr<RenderPipelineBase> m_renderPipeline;
+	std::shared_ptr<RenderPipelineBase> m_pRenderPipeline;
 };
 
 NAMESPACE_XYH_END

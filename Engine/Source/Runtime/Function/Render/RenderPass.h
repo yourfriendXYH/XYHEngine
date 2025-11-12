@@ -79,7 +79,7 @@ public:
 	};
 
 public:
-	void Initialize(const ST_RenderPassInitInfo* init_info) override;
+	void Initialize(const ST_RenderPassInitInfo* initInfo) override;
 	void PostInitialize() override;
 
 	virtual void Draw();

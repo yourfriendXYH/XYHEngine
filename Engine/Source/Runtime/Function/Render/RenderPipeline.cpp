@@ -11,6 +11,7 @@
 #include "Passes/ParticlePass.h"
 #include "Interface/Vulkan/VulkanRHI.h"
 #include "RenderResource.h"
+#include "Runtime/Function/GlobalContext.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -49,21 +50,19 @@ void RenderPipeline::Initialize(RenderPipelineInitInfo initInfo)
 	std::shared_ptr<ParticlePass> pParticlePass = std::static_pointer_cast<ParticlePass>(m_pParticlePass);
 
 	ST_ParticlePassInitInfo particlePassInitInfo;
-	//particle_init_info.m_particle_manager = g_runtime_global_context.m_particle_manager;
+	particlePassInitInfo.m_pParticleManager = g_runtimeGlobalContext.m_pParticleManager;
 	pParticlePass->Initialize(&particlePassInitInfo);	// 初始化粒子渲染通道
 
 	// 两种阴影的ImageView
-	//main_camera_pass->m_point_light_shadow_color_image_view =
-	//	std::static_pointer_cast<RenderPass>(m_point_light_shadow_pass)->getFramebufferImageViews()[0];
-	//main_camera_pass->m_directional_light_shadow_color_image_view =
-	//	std::static_pointer_cast<RenderPass>(m_directional_light_pass)->m_framebuffer.attachments[0].view;
+	pMainCameraPass->m_pPointLightShadowColorImageView = std::static_pointer_cast<RenderPass>(m_pPointLightShadowPass)->GetFramebufferImageViews()[0];
+	pMainCameraPass->m_pDirectionalLightShadowColorImageView = std::static_pointer_cast<RenderPass>(m_pDirectionalLightPass)->m_framebuffer.m_attachments[0].m_pView;
 
-	ST_MainCameraPassInitInfp mainCameraPassInitInfo;
+	ST_MainCameraPassInitInfo mainCameraPassInitInfo;
 	mainCameraPassInitInfo.m_enableFXAA = initInfo.m_enableFXAA;	// 设置是否启用FXAA, 抗锯齿
 	pMainCameraPass->SetParticlePass(pParticlePass);	// 设置粒子渲染通道
 	m_pMainCameraPass->Initialize(&mainCameraPassInitInfo);	// 初始化主摄像机渲染通道
 
-	//pParticlePass->SetupParticlePass();
+	pParticlePass->SetupParticlePass();
 
 	//std::vector<RHIDescriptorSetLayout*> descriptor_layouts = _main_camera_pass->getDescriptorSetLayouts();
 	//std::static_pointer_cast<PointLightShadowPass>(m_point_light_shadow_pass)

@@ -32,6 +32,7 @@
     <ClCompile Include="Engine\Source\Runtime\Core\Math\Vector4.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\GlobalContext.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Particle\ParticleManager.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanUtil.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanVMA.cpp" />
@@ -85,6 +86,7 @@
     <ClInclude Include="Engine\Source\Runtime\Engine.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Framework\Object\ObjectIdAllocator.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\GlobalContext.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Particle\ParticleManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHI.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHIStruct.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.h" />

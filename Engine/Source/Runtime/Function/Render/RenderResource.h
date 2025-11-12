@@ -3,6 +3,7 @@
 #include <vk_mem_alloc.h>
 #include "Interface/RHI.h"
 #include "RenderResourceBase.h"
+#include "RenderCommon.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -88,6 +89,9 @@ public:
 private:
 
 public:
+
+	ST_GlobalRenderResource m_globalRenderResource;
+
 	ST_MeshPerframeStorageBufferObject m_meshPerframeStorageBufferObject;	// 网格每帧存储缓冲区对象
 	ST_AxisStorageBufferObject m_axisStorageBufferObject;	// 坐标轴存储缓冲区对象
 
