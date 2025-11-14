@@ -12,6 +12,26 @@ public:
 	// 创建着色器模块
 	static VkShaderModule CreateShaderModule(VkDevice device, const std::vector<unsigned char>& shaderCode);
 
+	static void CreateBuffer(
+		VkPhysicalDevice physicalDevice,
+		VkDevice device,
+		VkDeviceSize size,
+		VkBufferUsageFlags usage,
+		VkMemoryPropertyFlags properties,
+		VkBuffer& buffer,
+		VkDeviceMemory& bufferMemory);
+
+	static void CreateBufferAndInitialize(
+		VkDevice device,
+		VkPhysicalDevice physicalDevice,
+		VkBufferUsageFlags usageFlags,
+		VkMemoryPropertyFlags memoryPropertyFlags,
+		VkBuffer* pBuffer,
+		VkDeviceMemory* pMemory,
+		VkDeviceSize size,
+		void* pData = nullptr,
+		int dataSize = 0);
+
 	// 创建图像视图
 	static VkImageView CreateImageView(
 		VkDevice device,

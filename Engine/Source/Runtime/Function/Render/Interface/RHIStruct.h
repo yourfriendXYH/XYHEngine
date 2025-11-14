@@ -584,6 +584,13 @@ struct ST_RHIWriteDescriptorSet
 	RHIBufferView* m_pTexelBufferView = nullptr;
 };
 
+struct ST_RHIFenceCreateInfo	// 
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIFenceCreateFlags m_flags;
+};
+
 struct ST_RHIFramebufferCreateInfo
 {
 	ERHIStructureType m_sType;
@@ -602,8 +609,8 @@ struct ST_RHICommandBufferAllocateInfo
 	ERHIStructureType m_sType;
 	const void* m_pNext;
 	RHICommandPool* m_pCommandPool;	// 命令池
-	ERHICommandBufferLevel level;	// 命令缓冲区级别
-	uint32_t commandBufferCount;	// 命令缓冲区数量
+	ERHICommandBufferLevel m_level;	// 命令缓冲区级别
+	uint32_t m_commandBufferCount;	// 命令缓冲区数量
 };
 
 struct ST_RHIDescriptorSetAllocateInfo

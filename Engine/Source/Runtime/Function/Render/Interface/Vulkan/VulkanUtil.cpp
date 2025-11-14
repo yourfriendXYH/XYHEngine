@@ -21,6 +21,115 @@ VkShaderModule VulkanUtil::CreateShaderModule(VkDevice device, const std::vector
 	return shaderModule;
 }
 
+void VulkanUtil::CreateBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+{
+	VkBufferCreateInfo bufferCreateInfo{};
+	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferCreateInfo.size = size;
+	bufferCreateInfo.usage = usage;                     // use as a vertex/staging/index buffer
+	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // not sharing among queue families
+
+	if (vkCreateBuffer(device, &bufferCreateInfo, nullptr, &buffer) != VK_SUCCESS)
+	{
+		LOG_ERROR("vkCreateBuffer failed!");
+		return;
+	}
+
+	VkMemoryRequirements bufferMemoryRequirements; // for allocate_info.allocationSize and
+	// allocate_info.memoryTypeIndex
+	vkGetBufferMemoryRequirements(device, buffer, &bufferMemoryRequirements);
+
+	VkMemoryAllocateInfo bufferMemoryAllocateInfo{};
+	bufferMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	bufferMemoryAllocateInfo.allocationSize = bufferMemoryRequirements.size;
+	bufferMemoryAllocateInfo.memoryTypeIndex = VulkanUtil::FindMemoryType(physicalDevice, bufferMemoryRequirements.memoryTypeBits, properties);
+
+	if (vkAllocateMemory(device, &bufferMemoryAllocateInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+	{
+		LOG_ERROR("vkAllocateMemory failed!");
+		return;
+	}
+
+	// bind buffer with buffer memory
+	vkBindBufferMemory(device, buffer, bufferMemory, 0); // offset = 0
+}
+
+void VulkanUtil::CreateBufferAndInitialize(
+	VkDevice device, 
+	VkPhysicalDevice physicalDevice, 
+	VkBufferUsageFlags usageFlags, 
+	VkMemoryPropertyFlags memoryPropertyFlags,
+	VkBuffer* pBuffer, 
+	VkDeviceMemory* pMemory, 
+	VkDeviceSize size, 
+	void* pData, 
+	int dataSize)
+{
+	// Create the buffer handle
+	VkBufferCreateInfo bufferCreateInfo{};
+	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferCreateInfo.usage = usageFlags;
+	bufferCreateInfo.size = size;
+	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	if (VK_SUCCESS != vkCreateBuffer(device, &bufferCreateInfo, nullptr, pBuffer))
+	{
+		LOG_ERROR("create buffer buffer failed!");
+		return;
+	}
+
+	//// Create the memory backing up the buffer handle
+	//VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
+	//vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemoryProperties);
+	//VkMemoryRequirements memReqs;
+	//VkMemoryAllocateInfo memAlloc{};
+	//memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	//vkGetBufferMemoryRequirements(device, *pBuffer, &memReqs);
+	//memAlloc.allocationSize = memReqs.size;
+
+	//// Find a memory type index that fits the properties of the buffer
+	//bool memTypeFound = false;
+	//for (uint32_t i = 0; i < deviceMemoryProperties.memoryTypeCount; i++)
+	//{
+	//	if ((memReqs.memoryTypeBits & 1) == 1)
+	//	{
+	//		if ((deviceMemoryProperties.memoryTypes[i].propertyFlags & memoryPropertyFlags) == memoryPropertyFlags)
+	//		{
+	//			memAlloc.memoryTypeIndex = i;
+	//			memTypeFound = true;
+	//		}
+	//	}
+	//	memReqs.memoryTypeBits >>= 1;
+	//}
+	//if (!memTypeFound)
+	//{
+	//	LOG_ERROR("memTypeFound is nullptr");
+	//	return;
+	//}
+	//if (VK_SUCCESS != vkAllocateMemory(device, &memAlloc, nullptr, memory))
+	//{
+	//	LOG_ERROR("alloc memory failed!");
+	//	return;
+	//}
+
+	//if (data != nullptr && datasize != 0)
+	//{
+	//	void* mapped;
+	//	if (VK_SUCCESS != vkMapMemory(device, *memory, 0, size, 0, &mapped))
+	//	{
+	//		LOG_ERROR("map memory failed!");
+	//		return;
+	//	}
+	//	memcpy(mapped, data, datasize);
+	//	vkUnmapMemory(device, *memory);
+	//}
+
+	//if (VK_SUCCESS != vkBindBufferMemory(device, *buffer, *memory, 0))
+	//{
+	//	LOG_ERROR("bind memory failed!");
+	//	return;
+	//}
+}
+
 VkImageView VulkanUtil::CreateImageView(
 	VkDevice device,
 	VkImage& image,

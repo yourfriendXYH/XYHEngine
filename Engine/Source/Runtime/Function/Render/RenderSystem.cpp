@@ -6,6 +6,7 @@
 #include "RenderResource.h"
 #include "RenderCamera.h"
 #include "RenderScene.h"
+#include "RenderPipeline.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -35,8 +36,8 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 	//level_resource_desc.m_ibl_resource_desc.m_brdf_map = global_rendering_res.m_brdf_map;
 	//level_resource_desc.m_color_grading_resource_desc.m_color_grading_map = global_rendering_res.m_color_grading_map;
 
-	m_renderResource = std::make_shared<RenderResource>();
-	m_renderResource->UploadGlobalRenderResource(m_pRHI, levelResourceDesc);	// 上传全局渲染资源
+	m_pRenderResource = std::make_shared<RenderResource>();
+	m_pRenderResource->UploadGlobalRenderResource(m_pRHI, levelResourceDesc);	// 上传全局渲染资源
 
 	// 初始化相机参数
 	m_renderCamera = std::make_shared<RenderCamera>();	// 创建渲染相机
@@ -56,7 +57,8 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 void RenderSystem::Tick(float deltaTime)
 {
 
-
+	// 准备渲染用到的资源和数据
+	m_pRenderPipeline->PreparePassData(m_pRenderResource);
 }
 
 void RenderSystem::Clear()

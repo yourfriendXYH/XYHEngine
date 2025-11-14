@@ -47,7 +47,7 @@ private:
 
 	std::shared_ptr<RenderScene> m_renderScene;	// 渲染场景
 
-	std::shared_ptr<RenderResourceBase> m_renderResource;
+	std::shared_ptr<RenderResourceBase> m_pRenderResource;
 
 	std::shared_ptr<RenderPipelineBase> m_pRenderPipeline;
 };

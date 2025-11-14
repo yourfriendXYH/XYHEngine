@@ -174,7 +174,7 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 	MainCameraPass* pMainCameraPass = static_cast<MainCameraPass*>(m_pMainCameraPass.get());
 	ParticlePass* pParticlePassPtr = static_cast<ParticlePass*>(m_pParticlePass.get());
 
-	// ???
+	// Ω´‰÷»æ√¸¡Óª∫≥Â«¯¥´∏¯¡£◊”pass
 	pParticlePassPtr->SetRenderCommandBufferHandle(pMainCameraPass->GetRenderCommandBuffer());
 
 	// —”≥Ÿ‰÷»æ

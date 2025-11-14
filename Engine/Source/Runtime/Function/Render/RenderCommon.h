@@ -143,4 +143,11 @@ struct ST_AxisStorageBufferObject
 	uint32_t m_selectedAxis = 3;
 };
 
+struct ST_ParticleCollisionPerframeStorageBufferObject	// 
+{
+	Matrix4x4 m_viewMatrix;
+	Matrix4x4 m_projViewMatrix;
+	Matrix4x4 m_projInvMatrix;
+};
+
 NAMESPACE_XYH_END

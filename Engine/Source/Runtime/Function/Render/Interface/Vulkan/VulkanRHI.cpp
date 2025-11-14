@@ -96,12 +96,67 @@ bool VulkanRHI::IsPointLightShadowEnabled()
 
 bool VulkanRHI::AllocateCommandBuffers(const ST_RHICommandBufferAllocateInfo* pAllocateInfo, RHICommandBuffer*& pCommandBuffers)
 {
-	return false;
+	VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
+	commandBufferAllocateInfo.sType = (VkStructureType)pAllocateInfo->m_sType;
+	commandBufferAllocateInfo.pNext = (const void*)pAllocateInfo->m_pNext;
+	commandBufferAllocateInfo.commandPool = ((VulkanCommandPool*)(pAllocateInfo->m_pCommandPool))->GetResource();
+	commandBufferAllocateInfo.level = (VkCommandBufferLevel)pAllocateInfo->m_level;
+	commandBufferAllocateInfo.commandBufferCount = pAllocateInfo->m_commandBufferCount;
+
+	VkCommandBuffer vkCommandBuffer;
+	pCommandBuffers = new RHICommandBuffer();
+	VkResult result = vkAllocateCommandBuffers(m_device, &commandBufferAllocateInfo, &vkCommandBuffer);
+	((VulkanCommandBuffer*)pCommandBuffers)->SetResource(vkCommandBuffer);
+
+	if (result == VK_SUCCESS)
+	{
+		return true;
+	}
+	else
+	{
+		LOG_ERROR("vkAllocateCommandBuffers failed!");
+		return false;
+	}
 }
 
 bool VulkanRHI::AllocateDescriptorSets(const ST_RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet*& pDescriptorSets)
 {
-	return false;
+	//descriptor_set_layout
+	int descriptorSetLayoutSize = pAllocateInfo->m_descriptorSetCount;
+	std::vector<VkDescriptorSetLayout> vkDescriptorSetLayoutList(descriptorSetLayoutSize);
+	for (int i = 0; i < descriptorSetLayoutSize; ++i)
+	{
+		const auto& rhiDescriptorSetLayoutElement = pAllocateInfo->m_pSetLayouts[i];
+		auto& vkDescriptorSetLayoutElement = vkDescriptorSetLayoutList[i];
+
+		vkDescriptorSetLayoutElement = ((VulkanDescriptorSetLayout*)rhiDescriptorSetLayoutElement)->GetResource();
+
+		// ???
+		VulkanDescriptorSetLayout* test = ((VulkanDescriptorSetLayout*)rhiDescriptorSetLayoutElement);
+		test = nullptr;
+	};
+
+	VkDescriptorSetAllocateInfo descriptorsetAllocateInfo{};
+	descriptorsetAllocateInfo.sType = (VkStructureType)pAllocateInfo->m_sType;
+	descriptorsetAllocateInfo.pNext = (const void*)pAllocateInfo->m_pNext;
+	descriptorsetAllocateInfo.descriptorPool = ((VulkanDescriptorPool*)(pAllocateInfo->m_pDescriptorPool))->GetResource();
+	descriptorsetAllocateInfo.descriptorSetCount = pAllocateInfo->m_descriptorSetCount;
+	descriptorsetAllocateInfo.pSetLayouts = vkDescriptorSetLayoutList.data();
+
+	VkDescriptorSet vkDescriptorSet;
+	pDescriptorSets = new VulkanDescriptorSet;
+	VkResult result = vkAllocateDescriptorSets(m_device, &descriptorsetAllocateInfo, &vkDescriptorSet);
+	((VulkanDescriptorSet*)pDescriptorSets)->SetResource(vkDescriptorSet);
+
+	if (result == VK_SUCCESS)
+	{
+		return true;
+	}
+	else
+	{
+		LOG_ERROR("vkAllocateDescriptorSets failed!");
+		return false;
+	}
 }
 
 void VulkanRHI::CreateSwapChain()
@@ -269,10 +324,20 @@ RHIShader* VulkanRHI::CreateShaderModule(const std::vector<unsigned char>& shade
 
 void VulkanRHI::CreateBuffer(RHIDeviceSize size, RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory)
 {
+	VkBuffer vkBuffer;
+	VkDeviceMemory vkDeviceMemory;
+
+	VulkanUtil::CreateBuffer(m_physicalDevice, m_device, size, usage, properties, vkBuffer, vkDeviceMemory);
+
+	buffer = new VulkanBuffer();
+	bufferMemory = new VulkanDeviceMemory();
+	((VulkanBuffer*)buffer)->SetResource(vkBuffer);
+	((VulkanDeviceMemory*)bufferMemory)->SetResource(vkDeviceMemory);
 }
 
 void VulkanRHI::CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory, RHIDeviceSize size, void* data, int datasize)
-{
+{        
+
 }
 
 bool VulkanRHI::CreateBufferVMA(VmaAllocator allocator, const ST_RHIBufferCreateInfo* pBufferCreateInfo, const VmaAllocationCreateInfo* pAllocationCreateInfo, RHIBuffer*& pBuffer, VmaAllocation* pAllocation, VmaAllocationInfo* pAllocationInfo)
@@ -421,7 +486,25 @@ bool VulkanRHI::CreateDescriptorSetLayout(const ST_RHIDescriptorSetLayoutCreateI
 
 bool VulkanRHI::CreateFence(const ST_RHIFenceCreateInfo* pCreateInfo, RHIFence*& pFence)
 {
-	return false;
+	VkFenceCreateInfo createInfo{};
+	createInfo.sType = (VkStructureType)pCreateInfo->m_sType;
+	createInfo.pNext = (const void*)pCreateInfo->m_pNext;
+	createInfo.flags = (VkFenceCreateFlags)pCreateInfo->m_flags;
+
+	pFence = new VulkanFence();
+	VkFence vkFence;
+	VkResult result = vkCreateFence(m_device, &createInfo, nullptr, &vkFence);
+	((VulkanFence*)pFence)->SetResource(vkFence);
+
+	if (result == VK_SUCCESS)
+	{
+		return RHI_SUCCESS;
+	}
+	else
+	{
+		LOG_ERROR("vkCreateFence failed!");
+		return false;
+	}
 }
 
 bool VulkanRHI::CreateFramebuffer(const ST_RHIFramebufferCreateInfo* pCreateInfo, RHIFramebuffer*& pFramebuffer)
@@ -1461,6 +1544,8 @@ bool VulkanRHI::QueueWaitIdle(RHIQueue* queue)
 
 void VulkanRHI::ResetCommandPool()
 {
+	// 置命令池中的所有命令缓冲区，让它们回到初始状态以便复用
+	// flag为0，内存保留在池中供后续分配重用
 	VkResult resResetCommandPool = _vkResetCommandPool(m_device, m_commandPools[m_currentFrameIndex], 0);	// 重置命令池
 	if (VK_SUCCESS != resResetCommandPool)
 	{
@@ -2084,7 +2169,7 @@ void VulkanRHI::CreateCommandBuffers()
 {
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo{};	// 命令缓冲区分配信息
 	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;	// 设置结构体类型
-	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;	// 设置命令缓冲区级别为主级别
+	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;	// 主命令缓冲区
 	commandBufferAllocateInfo.commandBufferCount = 1U;	// 设置命令缓冲区数量为1
 
 	// 分配命令缓冲区
