@@ -33,6 +33,8 @@ public:
 
 private:
 
+	// 准备统一缓冲区
+	// 用于传递在多次绘制调用中保持不变或变化缓慢的数据
 	void PrepareUniformBuffer();
 
 	void SetupDescriptorSetLayout();
@@ -50,14 +52,18 @@ private:
 
 	RHIFence* m_pFence = nullptr;
 
-	ST_ParticleCollisionPerframeStorageBufferObject m_particleCollisionPerframeStorageBufferObject;
+	ST_ParticleBillboardPerframeStorageBufferObject m_particleBillboardPerframeStorageBufferObject;	// 
+	ST_ParticleCollisionPerframeStorageBufferObject m_particleCollisionPerframeStorageBufferObject;	// 粒子控制数据
 
-	// 给描述符集用的数据
+	// 内存属性
 	RHIBuffer* m_pSceneUniformBuffer = nullptr;
 	RHIBuffer* m_pComputeUniformBuffer = nullptr;
+	RHIBuffer* m_pParticleBillboardUniformBuffer = nullptr;
 
+	// 内存映射首地址指针
 	void* m_pSceneUniformBufferMapped = nullptr;
 	void* m_pParticleComputeBufferMapped = nullptr;
+	void* m_pParticleBillboardUniformBufferMapped = nullptr;
 
 	struct ST_uVec4
 	{
@@ -68,17 +74,19 @@ private:
 	};
 	struct ST_ComputeUniformBufferObject
 	{
-		int     emit_gap;
-		int     xemit_count;
-		float   max_life;
-		float   time_step;
-		Vector4 pack; // randomness 3 | frame index 1
-		Vector3 gravity;
+		int m_emitGap;	// 
+		int m_xemitCount;
+		float m_maxLife;
+		float m_timeStep;
+		Vector4 m_pack; // randomness 3 | frame index 1
+		Vector3 m_gravity;
 		float m_padding;
 		ST_uVec4 m_viewport; // x, y, width, height
-		Vector4 extent;   // width, height, near, far
+		Vector4 m_extent;   // width, height, near, far
 	} m_ubo;
 
+
+	ST_RHIViewport m_viewportParams;	// 交换链视口属性
 };
 
 NAMESPACE_XYH_END

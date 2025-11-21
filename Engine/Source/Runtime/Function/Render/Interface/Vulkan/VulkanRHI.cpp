@@ -337,7 +337,15 @@ void VulkanRHI::CreateBuffer(RHIDeviceSize size, RHIBufferUsageFlags usage, RHIM
 
 void VulkanRHI::CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory, RHIDeviceSize size, void* data, int datasize)
 {        
+	VkBuffer vkBuffer;
+	VkDeviceMemory vkDeviceMemory;
 
+	VulkanUtil::CreateBufferAndInitialize(m_device, m_physicalDevice, usage, properties, &vkBuffer, &vkDeviceMemory, size, data, datasize);
+
+	buffer = new VulkanBuffer();
+	bufferMemory = new VulkanDeviceMemory();
+	((VulkanBuffer*)buffer)->SetResource(vkBuffer);
+	((VulkanDeviceMemory*)bufferMemory)->SetResource(vkDeviceMemory);
 }
 
 bool VulkanRHI::CreateBufferVMA(VmaAllocator allocator, const ST_RHIBufferCreateInfo* pBufferCreateInfo, const VmaAllocationCreateInfo* pAllocationCreateInfo, RHIBuffer*& pBuffer, VmaAllocation* pAllocation, VmaAllocationInfo* pAllocationInfo)
@@ -1891,13 +1899,24 @@ void VulkanRHI::FreeMemory(RHIDeviceMemory*& memory)
 {
 }
 
-bool VulkanRHI::MapMemory(RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size, RHIMemoryMapFlags flags, void** ppData)
+bool VulkanRHI::MapMemory(RHIDeviceMemory* pMemory, RHIDeviceSize offset, RHIDeviceSize size, RHIMemoryMapFlags flags, void** ppData)
 {
-	return false;
+	VkResult result = vkMapMemory(m_device, ((VulkanDeviceMemory*)pMemory)->GetResource(), offset, size, (VkMemoryMapFlags)flags, ppData);
+
+	if (result == VK_SUCCESS)
+	{
+		return true;
+	}
+	else
+	{
+		LOG_ERROR("vkMapMemory failed!");
+		return false;
+	}
 }
 
-void VulkanRHI::UnmapMemory(RHIDeviceMemory* memory)
+void VulkanRHI::UnmapMemory(RHIDeviceMemory* pMemory)
 {
+	vkUnmapMemory(m_device, ((VulkanDeviceMemory*)pMemory)->GetResource());
 }
 
 void VulkanRHI::InvalidateMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size)

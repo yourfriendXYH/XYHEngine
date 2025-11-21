@@ -143,6 +143,17 @@ struct ST_AxisStorageBufferObject
 	uint32_t m_selectedAxis = 3;
 };
 
+struct ST_ParticleBillboardPerframeStorageBufferObject
+{
+	Matrix4x4 m_projViewMatrix;
+	Vector3 m_rightDirection;
+	float m_paddingRightPosition;
+	Vector3 m_upDirection;
+	float m_paddingUpDirection;
+	Vector3 m_fowardDirection;
+	float m_paddingForwardPosition;
+};
+
 struct ST_ParticleCollisionPerframeStorageBufferObject	// 
 {
 	Matrix4x4 m_viewMatrix;

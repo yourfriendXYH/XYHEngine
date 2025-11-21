@@ -26,6 +26,7 @@ public:
     std::string m_positiveZMap;
 };
 
+// TODO 需要支持反射
 class GlobalRenderingResource
 {
 public:

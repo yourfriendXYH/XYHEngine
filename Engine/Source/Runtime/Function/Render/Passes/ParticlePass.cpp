@@ -65,70 +65,72 @@ void ParticlePass::UpdateAfterFramebufferRecreate()
 
 void ParticlePass::PrepareUniformBuffer()
 {
-    // 分配
+    // 分配 矩阵数据 的内存
     RHIDeviceMemory* pDeviceMemory;
     m_pRHI->CreateBuffer(
-        sizeof(m_particleCollisionPerframeStorageBufferObject),
+        sizeof(m_particleCollisionPerframeStorageBufferObject), // 内存大小
         RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
         m_pSceneUniformBuffer,
         pDeviceMemory);
-    // 写值
-    if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceMemory, 0, RHI_WHOLE_SIZE, 0, &m_pSceneUniformBufferMapped))
+
+    if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceMemory, 0, RHI_WHOLE_SIZE, 0, &m_pSceneUniformBufferMapped))    // 映射从偏移量到内存末尾的整个区域
     {
         throw std::runtime_error("map billboard uniform buffer");
     }
 
+    // 分配内存 粒子生成的参数
     RHIDeviceMemory* pDeviceUniformMemory;
     m_pRHI->CreateBufferAndInitialize(
         RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
         m_pComputeUniformBuffer,
         pDeviceUniformMemory,
-        sizeof(m_ubo));
-    if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceUniformMemory, 0, RHI_WHOLE_SIZE, 0, &m_pParticleComputeBufferMapped))
+        sizeof(m_ubo)); // 内存大小
+    if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceUniformMemory, 0, RHI_WHOLE_SIZE, 0, &m_pParticleComputeBufferMapped))  // 映射从偏移量到内存末尾的整个区域
     {
         throw std::runtime_error("map buffer");
     }
 
-    //const GlobalParticleRes& global_res = m_particle_manager->getGlobalParticleRes();
-    //m_ubo.emit_gap = global_res.m_emit_gap;
-    //m_ubo.time_step = global_res.m_time_step;
-    //m_ubo.max_life = global_res.m_max_life;
-    //m_ubo.gravity = global_res.m_gravity;
-    //std::random_device r;
-    //std::seed_seq      seed{ r() };
+    // 粒子生成的属性
+    const GlobalParticleResource& globalRes = m_pParticleManager->GetGlobalParticleRes();
+    m_ubo.m_emitGap = globalRes.m_emitGap;
+    m_ubo.m_timeStep = globalRes.m_timeStep;
+    m_ubo.m_maxLife = globalRes.m_maxLife;
+    m_ubo.m_gravity = globalRes.m_gravity;
+    std::random_device r;
+    std::seed_seq seed{ r() };
     //m_random_engine.seed(seed);
     //float rnd0 = m_random_engine.uniformDistribution<float>(0, 1000) * 0.001f;
     //float rnd1 = m_random_engine.uniformDistribution<float>(0, 1000) * 0.001f;
     //float rnd2 = m_random_engine.uniformDistribution<float>(0, 1000) * 0.001f;
-    //m_ubo.pack = Vector4{ rnd0, static_cast<float>(m_rhi->getCurrentFrameIndex()), rnd1, rnd2 };
-    //m_ubo.xemit_count = 100000;
+    //m_ubo.m_pack = Vector4{ rnd0, static_cast<float>(m_pRHI->GetCurrentFrameIndex()), rnd1, rnd2 };
+    m_ubo.m_xemitCount = 100000;
 
-    //m_viewport_params = *m_rhi->getSwapchainInfo().viewport;
-    //m_ubo.viewport.x = m_viewport_params.x;
-    //m_ubo.viewport.y = m_viewport_params.y;
-    //m_ubo.viewport.z = m_viewport_params.width;
-    //m_ubo.viewport.w = m_viewport_params.height;
-    //m_ubo.extent.x = m_rhi->getSwapchainInfo().scissor->extent.width;
-    //m_ubo.extent.y = m_rhi->getSwapchainInfo().scissor->extent.height;
+    m_viewportParams = *m_pRHI->GetSwapchainInfo().m_pViewport;
+    m_ubo.m_viewport.x = static_cast<uint32_t>(m_viewportParams.m_x);
+    m_ubo.m_viewport.y = static_cast<uint32_t>(m_viewportParams.m_y);
+    m_ubo.m_viewport.z = static_cast<uint32_t>(m_viewportParams.m_width);
+    m_ubo.m_viewport.w = static_cast<uint32_t>(m_viewportParams.m_height);
+    m_ubo.m_extent.x = static_cast<float>(m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_width);
+    m_ubo.m_extent.y = static_cast<float>(m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_height);
+    // 给内存赋值
+    memcpy(m_pParticleComputeBufferMapped, &m_ubo, sizeof(m_ubo));
 
-    //memcpy(m_particle_compute_buffer_mapped, &m_ubo, sizeof(m_ubo));
+    {
+        RHIDeviceMemory* pDeviceMemory;
+        m_pRHI->CreateBuffer(
+            sizeof(m_particleBillboardPerframeStorageBufferObject),
+            RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            m_pParticleBillboardUniformBuffer,
+            pDeviceMemory);
 
-    //{
-    //    RHIDeviceMemory* d_mem;
-    //    m_rhi->createBuffer(sizeof(m_particlebillboard_perframe_storage_buffer_object),
-    //        RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-    //        RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-    //        m_particle_billboard_uniform_buffer,
-    //        d_mem);
-
-    //    if (RHI_SUCCESS !=
-    //        m_rhi->mapMemory(d_mem, 0, RHI_WHOLE_SIZE, 0, &m_particle_billboard_uniform_buffer_mapped))
-    //    {
-    //        throw std::runtime_error("map billboard uniform buffer");
-    //    }
-    //}
+        if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceMemory, 0, RHI_WHOLE_SIZE, 0, &m_pParticleBillboardUniformBufferMapped))    // 映射从偏移量到内存末尾的整个区域
+        {
+            throw std::runtime_error("map billboard uniform buffer");
+        }
+    }
 }
 
 void ParticlePass::SetupAttachments()

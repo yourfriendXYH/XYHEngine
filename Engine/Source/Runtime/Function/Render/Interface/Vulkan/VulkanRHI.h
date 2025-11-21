@@ -250,9 +250,9 @@ public:
 	// 内存
 	virtual void FreeMemory(RHIDeviceMemory*& memory);	// 释放设备内存
 
-	virtual bool MapMemory(RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size, RHIMemoryMapFlags flags, void** ppData);	// 映射设备内存
+	virtual bool MapMemory(RHIDeviceMemory* pMemory, RHIDeviceSize offset, RHIDeviceSize size, RHIMemoryMapFlags flags, void** ppData);	// 映射设备内存
 
-	virtual void UnmapMemory(RHIDeviceMemory* memory);	// 取消映射设备内存
+	virtual void UnmapMemory(RHIDeviceMemory* pMemory);	// 取消映射设备内存
 
 	virtual void InvalidateMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size);	// 使映射的内存范围无效
 

@@ -29,14 +29,19 @@ void VulkanUtil::CreateBuffer(VkPhysicalDevice physicalDevice, VkDevice device, 
 	bufferCreateInfo.usage = usage;                     // use as a vertex/staging/index buffer
 	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // not sharing among queue families
 
+	// 注意：这个函数只创建了缓冲区的“骨架”，即定义了其大小、用途等属性，但并没有为其分配任何内存。
+	// 内存的分配和绑定是另一个独立的步骤，需要通过 vkAllocateMemory 和 vkBindBufferMemory 来完成。
 	if (vkCreateBuffer(device, &bufferCreateInfo, nullptr, &buffer) != VK_SUCCESS)
 	{
 		LOG_ERROR("vkCreateBuffer failed!");
 		return;
 	}
 
-	VkMemoryRequirements bufferMemoryRequirements; // for allocate_info.allocationSize and
-	// allocate_info.memoryTypeIndex
+	// 用于查询缓冲区对象的内存需求。在创建了缓冲区（vkCreateBuffer）之后，但在为其分配和绑定内存之前，必须调用此函数来了解：
+	//	需要分配多少内存
+	//	内存需要满足怎样的对齐要求
+	//	哪些内存类型适合这个缓冲区
+	VkMemoryRequirements bufferMemoryRequirements; // for allocate_info.allocationSize and allocate_info.memoryTypeIndex
 	vkGetBufferMemoryRequirements(device, buffer, &bufferMemoryRequirements);
 
 	VkMemoryAllocateInfo bufferMemoryAllocateInfo{};
@@ -44,13 +49,14 @@ void VulkanUtil::CreateBuffer(VkPhysicalDevice physicalDevice, VkDevice device, 
 	bufferMemoryAllocateInfo.allocationSize = bufferMemoryRequirements.size;
 	bufferMemoryAllocateInfo.memoryTypeIndex = VulkanUtil::FindMemoryType(physicalDevice, bufferMemoryRequirements.memoryTypeBits, properties);
 
+	// 分配内存，返回内存句柄
 	if (vkAllocateMemory(device, &bufferMemoryAllocateInfo, nullptr, &bufferMemory) != VK_SUCCESS)
 	{
 		LOG_ERROR("vkAllocateMemory failed!");
 		return;
 	}
 
-	// bind buffer with buffer memory
+	// 建立了缓冲区和其实际存储内存之间的关联
 	vkBindBufferMemory(device, buffer, bufferMemory, 0); // offset = 0
 }
 
@@ -71,63 +77,69 @@ void VulkanUtil::CreateBufferAndInitialize(
 	bufferCreateInfo.usage = usageFlags;
 	bufferCreateInfo.size = size;
 	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	// 只创建了缓冲区的“骨架”,不实际分配内存
 	if (VK_SUCCESS != vkCreateBuffer(device, &bufferCreateInfo, nullptr, pBuffer))
 	{
 		LOG_ERROR("create buffer buffer failed!");
 		return;
 	}
 
-	//// Create the memory backing up the buffer handle
-	//VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
-	//vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemoryProperties);
-	//VkMemoryRequirements memReqs;
-	//VkMemoryAllocateInfo memAlloc{};
-	//memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	//vkGetBufferMemoryRequirements(device, *pBuffer, &memReqs);
-	//memAlloc.allocationSize = memReqs.size;
+	// Create the memory backing up the buffer handle
+	VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
+	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemoryProperties);
 
-	//// Find a memory type index that fits the properties of the buffer
-	//bool memTypeFound = false;
-	//for (uint32_t i = 0; i < deviceMemoryProperties.memoryTypeCount; i++)
-	//{
-	//	if ((memReqs.memoryTypeBits & 1) == 1)
-	//	{
-	//		if ((deviceMemoryProperties.memoryTypes[i].propertyFlags & memoryPropertyFlags) == memoryPropertyFlags)
-	//		{
-	//			memAlloc.memoryTypeIndex = i;
-	//			memTypeFound = true;
-	//		}
-	//	}
-	//	memReqs.memoryTypeBits >>= 1;
-	//}
-	//if (!memTypeFound)
-	//{
-	//	LOG_ERROR("memTypeFound is nullptr");
-	//	return;
-	//}
-	//if (VK_SUCCESS != vkAllocateMemory(device, &memAlloc, nullptr, memory))
-	//{
-	//	LOG_ERROR("alloc memory failed!");
-	//	return;
-	//}
+	VkMemoryRequirements memoryRequirements;
+	vkGetBufferMemoryRequirements(device, *pBuffer, &memoryRequirements);
 
-	//if (data != nullptr && datasize != 0)
-	//{
-	//	void* mapped;
-	//	if (VK_SUCCESS != vkMapMemory(device, *memory, 0, size, 0, &mapped))
-	//	{
-	//		LOG_ERROR("map memory failed!");
-	//		return;
-	//	}
-	//	memcpy(mapped, data, datasize);
-	//	vkUnmapMemory(device, *memory);
-	//}
+	VkMemoryAllocateInfo memoryAllocateInfo{};
+	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	memoryAllocateInfo.allocationSize = memoryRequirements.size;
 
-	//if (VK_SUCCESS != vkBindBufferMemory(device, *buffer, *memory, 0))
-	//{
-	//	LOG_ERROR("bind memory failed!");
-	//	return;
-	//}
+	// Find a memory type index that fits the properties of the buffer
+	bool memTypeFound = false;
+	for (uint32_t i = 0; i < deviceMemoryProperties.memoryTypeCount; i++)
+	{
+		if ((memoryRequirements.memoryTypeBits & 1) == 1)
+		{
+			if ((deviceMemoryProperties.memoryTypes[i].propertyFlags & memoryPropertyFlags) == memoryPropertyFlags)
+			{
+				memoryAllocateInfo.memoryTypeIndex = i;
+				memTypeFound = true;
+			}
+		}
+		memoryRequirements.memoryTypeBits >>= 1;
+	}
+	if (!memTypeFound)
+	{
+		LOG_ERROR("memTypeFound is nullptr");
+		return;
+	}
+
+	if (VK_SUCCESS != vkAllocateMemory(device, &memoryAllocateInfo, nullptr, pMemory))
+	{
+		LOG_ERROR("alloc memory failed!");
+		return;
+	}
+
+	if (pData != nullptr && dataSize != 0)
+	{
+		void* mapped;	// 映射内存的起始地址
+		// 将设备内存映射到主机（CPU）可访问的地址空间
+		if (VK_SUCCESS != vkMapMemory(device, *pMemory, 0, size, 0, &mapped))
+		{
+			LOG_ERROR("map memory failed!");
+			return;
+		}
+		memcpy(mapped, pData, dataSize);	// 给内存赋值
+		// 解除设备内存的映射关系
+		vkUnmapMemory(device, *pMemory);
+	}
+
+	if (VK_SUCCESS != vkBindBufferMemory(device, *pBuffer, *pMemory, 0))
+	{
+		LOG_ERROR("bind memory failed!");
+		return;
+	}
 }
 
 VkImageView VulkanUtil::CreateImageView(

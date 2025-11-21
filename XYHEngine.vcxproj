@@ -124,6 +124,7 @@
     <ClInclude Include="Engine\Source\Runtime\Resource\AssetManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Resource\ConfigManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Data\CameraConfig.h" />
+    <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Global\GlobalParticle.h" />
     <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Global\GlobalRendering.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
