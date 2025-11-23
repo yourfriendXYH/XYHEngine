@@ -1,4 +1,5 @@
 #include "ParticlePass.h"
+#include <Runtime\Core\Macro.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -65,72 +66,72 @@ void ParticlePass::UpdateAfterFramebufferRecreate()
 
 void ParticlePass::PrepareUniformBuffer()
 {
-    // 分配 矩阵数据 的内存
-    RHIDeviceMemory* pDeviceMemory;
-    m_pRHI->CreateBuffer(
-        sizeof(m_particleCollisionPerframeStorageBufferObject), // 内存大小
-        RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-        RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        m_pSceneUniformBuffer,
-        pDeviceMemory);
+	// 分配 矩阵数据 的内存
+	RHIDeviceMemory* pDeviceMemory;
+	m_pRHI->CreateBuffer(
+		sizeof(m_particleCollisionPerframeStorageBufferObject), // 内存大小
+		RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		m_pSceneUniformBuffer,
+		pDeviceMemory);
 
-    if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceMemory, 0, RHI_WHOLE_SIZE, 0, &m_pSceneUniformBufferMapped))    // 映射从偏移量到内存末尾的整个区域
-    {
-        throw std::runtime_error("map billboard uniform buffer");
-    }
+	if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceMemory, 0, RHI_WHOLE_SIZE, 0, &m_pSceneUniformBufferMapped))    // 映射从偏移量到内存末尾的整个区域
+	{
+		throw std::runtime_error("map billboard uniform buffer");
+	}
 
-    // 分配内存 粒子生成的参数
-    RHIDeviceMemory* pDeviceUniformMemory;
-    m_pRHI->CreateBufferAndInitialize(
-        RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-        RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        m_pComputeUniformBuffer,
-        pDeviceUniformMemory,
-        sizeof(m_ubo)); // 内存大小
-    if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceUniformMemory, 0, RHI_WHOLE_SIZE, 0, &m_pParticleComputeBufferMapped))  // 映射从偏移量到内存末尾的整个区域
-    {
-        throw std::runtime_error("map buffer");
-    }
+	// 分配内存 粒子生成的参数
+	RHIDeviceMemory* pDeviceUniformMemory;
+	m_pRHI->CreateBufferAndInitialize(
+		RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		m_pComputeUniformBuffer,
+		pDeviceUniformMemory,
+		sizeof(m_ubo)); // 内存大小
+	if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceUniformMemory, 0, RHI_WHOLE_SIZE, 0, &m_pParticleComputeBufferMapped))  // 映射从偏移量到内存末尾的整个区域
+	{
+		throw std::runtime_error("map buffer");
+	}
 
-    // 粒子生成的属性
-    const GlobalParticleResource& globalRes = m_pParticleManager->GetGlobalParticleRes();
-    m_ubo.m_emitGap = globalRes.m_emitGap;
-    m_ubo.m_timeStep = globalRes.m_timeStep;
-    m_ubo.m_maxLife = globalRes.m_maxLife;
-    m_ubo.m_gravity = globalRes.m_gravity;
-    std::random_device r;
-    std::seed_seq seed{ r() };
-    //m_random_engine.seed(seed);
-    //float rnd0 = m_random_engine.uniformDistribution<float>(0, 1000) * 0.001f;
-    //float rnd1 = m_random_engine.uniformDistribution<float>(0, 1000) * 0.001f;
-    //float rnd2 = m_random_engine.uniformDistribution<float>(0, 1000) * 0.001f;
-    //m_ubo.m_pack = Vector4{ rnd0, static_cast<float>(m_pRHI->GetCurrentFrameIndex()), rnd1, rnd2 };
-    m_ubo.m_xemitCount = 100000;
+	// 粒子生成的属性
+	const GlobalParticleResource& globalRes = m_pParticleManager->GetGlobalParticleRes();
+	m_ubo.m_emitGap = globalRes.m_emitGap;
+	m_ubo.m_timeStep = globalRes.m_timeStep;
+	m_ubo.m_maxLife = globalRes.m_maxLife;
+	m_ubo.m_gravity = globalRes.m_gravity;
+	std::random_device r;
+	std::seed_seq seed{ r() };
+	//m_random_engine.seed(seed);
+	//float rnd0 = m_random_engine.uniformDistribution<float>(0, 1000) * 0.001f;
+	//float rnd1 = m_random_engine.uniformDistribution<float>(0, 1000) * 0.001f;
+	//float rnd2 = m_random_engine.uniformDistribution<float>(0, 1000) * 0.001f;
+	//m_ubo.m_pack = Vector4{ rnd0, static_cast<float>(m_pRHI->GetCurrentFrameIndex()), rnd1, rnd2 };
+	m_ubo.m_xemitCount = 100000;
 
-    m_viewportParams = *m_pRHI->GetSwapchainInfo().m_pViewport;
-    m_ubo.m_viewport.x = static_cast<uint32_t>(m_viewportParams.m_x);
-    m_ubo.m_viewport.y = static_cast<uint32_t>(m_viewportParams.m_y);
-    m_ubo.m_viewport.z = static_cast<uint32_t>(m_viewportParams.m_width);
-    m_ubo.m_viewport.w = static_cast<uint32_t>(m_viewportParams.m_height);
-    m_ubo.m_extent.x = static_cast<float>(m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_width);
-    m_ubo.m_extent.y = static_cast<float>(m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_height);
-    // 给内存赋值
-    memcpy(m_pParticleComputeBufferMapped, &m_ubo, sizeof(m_ubo));
+	m_viewportParams = *m_pRHI->GetSwapchainInfo().m_pViewport;
+	m_ubo.m_viewport.x = static_cast<uint32_t>(m_viewportParams.m_x);
+	m_ubo.m_viewport.y = static_cast<uint32_t>(m_viewportParams.m_y);
+	m_ubo.m_viewport.z = static_cast<uint32_t>(m_viewportParams.m_width);
+	m_ubo.m_viewport.w = static_cast<uint32_t>(m_viewportParams.m_height);
+	m_ubo.m_extent.x = static_cast<float>(m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_width);
+	m_ubo.m_extent.y = static_cast<float>(m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_height);
+	// 给内存赋值
+	memcpy(m_pParticleComputeBufferMapped, &m_ubo, sizeof(m_ubo));
 
-    {
-        RHIDeviceMemory* pDeviceMemory;
-        m_pRHI->CreateBuffer(
-            sizeof(m_particleBillboardPerframeStorageBufferObject),
-            RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            m_pParticleBillboardUniformBuffer,
-            pDeviceMemory);
+	{
+		RHIDeviceMemory* pDeviceMemory;
+		m_pRHI->CreateBuffer(
+			sizeof(m_particleBillboardPerframeStorageBufferObject),
+			RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			m_pParticleBillboardUniformBuffer,
+			pDeviceMemory);
 
-        if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceMemory, 0, RHI_WHOLE_SIZE, 0, &m_pParticleBillboardUniformBufferMapped))    // 映射从偏移量到内存末尾的整个区域
-        {
-            throw std::runtime_error("map billboard uniform buffer");
-        }
-    }
+		if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceMemory, 0, RHI_WHOLE_SIZE, 0, &m_pParticleBillboardUniformBufferMapped))    // 映射从偏移量到内存末尾的整个区域
+		{
+			throw std::runtime_error("map billboard uniform buffer");
+		}
+	}
 }
 
 void ParticlePass::SetupAttachments()
@@ -140,7 +141,112 @@ void ParticlePass::SetupAttachments()
 
 void ParticlePass::SetupDescriptorSetLayout()
 {
+	m_descriptorInfos.resize(3u);
 
+	// 
+	{
+		ST_RHIDescriptorSetLayoutBinding particleLayoutBindings[11] = {};
+		{
+			ST_RHIDescriptorSetLayoutBinding& uniformLayoutBinding = particleLayoutBindings[0];
+			uniformLayoutBinding.m_binding = 0;
+			uniformLayoutBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			uniformLayoutBinding.m_descriptorCount = 1;
+			uniformLayoutBinding.m_stageFlags = RHI_SHADER_STAGE_COMPUTE_BIT;
+		}
+
+		{
+			ST_RHIDescriptorSetLayoutBinding& storagePositionLayoutBinding = particleLayoutBindings[1];
+			storagePositionLayoutBinding.m_binding = 1;
+			storagePositionLayoutBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			storagePositionLayoutBinding.m_descriptorCount = 1;
+			storagePositionLayoutBinding.m_stageFlags = RHI_SHADER_STAGE_COMPUTE_BIT;
+		}
+
+		{
+			ST_RHIDescriptorSetLayoutBinding& storageCounterLayoutBinding = particleLayoutBindings[2];
+			storageCounterLayoutBinding.m_binding = 2;
+			storageCounterLayoutBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			storageCounterLayoutBinding.m_descriptorCount = 1;
+			storageCounterLayoutBinding.m_stageFlags = RHI_SHADER_STAGE_COMPUTE_BIT;
+		}
+
+		{
+			ST_RHIDescriptorSetLayoutBinding& storageIndirectargumentLayoutBinding = particleLayoutBindings[3];
+			storageIndirectargumentLayoutBinding.m_binding = 3;
+			storageIndirectargumentLayoutBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			storageIndirectargumentLayoutBinding.m_descriptorCount = 1;
+			storageIndirectargumentLayoutBinding.m_stageFlags = RHI_SHADER_STAGE_COMPUTE_BIT;
+		}
+
+		{
+			ST_RHIDescriptorSetLayoutBinding& aliveListLayoutBinding = particleLayoutBindings[4];
+			aliveListLayoutBinding.m_binding = 4;
+			aliveListLayoutBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			aliveListLayoutBinding.m_descriptorCount = 1;
+			aliveListLayoutBinding.m_stageFlags = RHI_SHADER_STAGE_COMPUTE_BIT;
+		}
+
+		{
+			ST_RHIDescriptorSetLayoutBinding& deadListLayoutBinding = particleLayoutBindings[5];
+			deadListLayoutBinding.m_binding = 5;
+			deadListLayoutBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			deadListLayoutBinding.m_descriptorCount = 1;
+			deadListLayoutBinding.m_stageFlags = RHI_SHADER_STAGE_COMPUTE_BIT;
+		}
+
+		{
+			ST_RHIDescriptorSetLayoutBinding& aliveListNextLayoutBinding = particleLayoutBindings[6];
+			aliveListNextLayoutBinding.m_binding = 6;
+			aliveListNextLayoutBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			aliveListNextLayoutBinding.m_descriptorCount = 1;
+			aliveListNextLayoutBinding.m_stageFlags = RHI_SHADER_STAGE_COMPUTE_BIT;
+		}
+
+		{
+			ST_RHIDescriptorSetLayoutBinding& particleResLayoutBinding = particleLayoutBindings[7];
+			particleResLayoutBinding.m_binding = 7;
+			particleResLayoutBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			particleResLayoutBinding.m_descriptorCount = 1;
+			particleResLayoutBinding.m_stageFlags = RHI_SHADER_STAGE_COMPUTE_BIT;
+		}
+
+		{
+			ST_RHIDescriptorSetLayoutBinding& sceneUniformbufferLayoutBinding = particleLayoutBindings[8];
+			sceneUniformbufferLayoutBinding.m_binding = 8;
+			sceneUniformbufferLayoutBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			sceneUniformbufferLayoutBinding.m_descriptorCount = 1;
+			sceneUniformbufferLayoutBinding.m_stageFlags = RHI_SHADER_STAGE_COMPUTE_BIT;
+		}
+
+		{
+			ST_RHIDescriptorSetLayoutBinding& storageRenderPositionLayoutBinding = particleLayoutBindings[9];
+			storageRenderPositionLayoutBinding.m_binding = 9;
+			storageRenderPositionLayoutBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			storageRenderPositionLayoutBinding.m_descriptorCount = 1;
+			storageRenderPositionLayoutBinding.m_stageFlags = RHI_SHADER_STAGE_COMPUTE_BIT;
+		}
+
+		{
+			ST_RHIDescriptorSetLayoutBinding& xyhTextureLayoutBinding = particleLayoutBindings[10];
+			xyhTextureLayoutBinding.m_binding = 10;
+			xyhTextureLayoutBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			xyhTextureLayoutBinding.m_descriptorCount = 1;
+			xyhTextureLayoutBinding.m_stageFlags = RHI_SHADER_STAGE_COMPUTE_BIT;
+		}
+
+		ST_RHIDescriptorSetLayoutCreateInfo particleDescriptorLayoutCreateInfo;
+		particleDescriptorLayoutCreateInfo.m_sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		particleDescriptorLayoutCreateInfo.m_pNext = NULL;
+		particleDescriptorLayoutCreateInfo.m_flags = 0;
+		particleDescriptorLayoutCreateInfo.m_bindingCount = sizeof(particleLayoutBindings) / sizeof(particleLayoutBindings[0]);
+		particleDescriptorLayoutCreateInfo.m_pBindings = particleLayoutBindings;
+
+		if (RHI_SUCCESS != m_pRHI->CreateDescriptorSetLayout(&particleDescriptorLayoutCreateInfo, m_descriptorInfos[0].m_pDescriptorSetLayout))
+		{
+			throw std::runtime_error("setup particle compute Descriptor done");
+		}
+		LOG_INFO("setup particle compute Descriptor done");
+	}
 }
 
 void ParticlePass::SetupPipelines()
