@@ -61,8 +61,8 @@ public:
 	virtual void CreateImageView(RHIImage* image, ERHIFormat format, RHIImageAspectFlags imageAspectFlags, ERHIImageViewType viewType, uint32_t layoutCount, uint32_t miplevels,
 		RHIImageView*& imageView);	// 创建图像视图
 
-	virtual void CreateGlobalImage(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, void* texture_image_pixels,
-		ERHIFormat texture_image_format, uint32_t miplevels);	// 创建全局图像
+	virtual void CreateGlobalImage(RHIImage*& pImage, RHIImageView*& pImageView, VmaAllocation& imageAllocation, uint32_t textureImageWidth, uint32_t textureImageHeight, void* pTextureImagePixels,
+		ERHIFormat textureImageFormat, uint32_t miplevels);	// 创建全局图像
 
 	virtual void CreateCubeMap(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, std::array<void*, 6> texture_image_pixels,
 		ERHIFormat texture_image_format, uint32_t miplevels);	// 创建立方体贴图

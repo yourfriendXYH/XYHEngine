@@ -398,8 +398,18 @@ void VulkanRHI::CreateImageView(RHIImage* image, ERHIFormat format, RHIImageAspe
 	((VulkanImageView*)imageView)->SetResource(vkImageView);
 }
 
-void VulkanRHI::CreateGlobalImage(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, void* texture_image_pixels, ERHIFormat texture_image_format, uint32_t miplevels)
+void VulkanRHI::CreateGlobalImage(RHIImage*& pImage, RHIImageView*& pImageView, VmaAllocation& imageAllocation, uint32_t textureImageWidth, uint32_t textureImageHeight, void* pTextureImagePixels,
+	ERHIFormat textureImageFormat, uint32_t miplevels)
 {
+	VkImage vkImage;
+	VkImageView vkImageView;
+
+	VulkanUtil::CreateGlobalImage(this, vkImage, vkImageView, imageAllocation, textureImageWidth, textureImageHeight, pTextureImagePixels, textureImageFormat, miplevels);
+
+	pImage = new VulkanImage();
+	pImageView = new VulkanImageView();
+	((VulkanImage*)pImage)->SetResource(vkImage);
+	((VulkanImageView*)pImageView)->SetResource(vkImageView);
 }
 
 void VulkanRHI::CreateCubeMap(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, std::array<void*, 6> texture_image_pixels, ERHIFormat texture_image_format, uint32_t miplevels)
@@ -897,6 +907,58 @@ bool VulkanRHI::CreateGraphicsPipelines(RHIPipelineCache* pipelineCache, uint32_
 
 bool VulkanRHI::CreateComputePipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIComputePipelineCreateInfo* pCreateInfo, RHIPipeline*& pPipelines)
 {
+	//VkPipelineShaderStageCreateInfo shader_stage_create_info{};
+	//if (pCreateInfos->pStages->pSpecializationInfo != nullptr)
+	//{
+	//	//will be complete soon if needed.
+	//	shader_stage_create_info.pSpecializationInfo = nullptr;
+	//}
+	//else
+	//{
+	//	shader_stage_create_info.pSpecializationInfo = nullptr;
+	//}
+	//shader_stage_create_info.sType = (VkStructureType)pCreateInfos->pStages->sType;
+	//shader_stage_create_info.pNext = (const void*)pCreateInfos->pStages->pNext;
+	//shader_stage_create_info.flags = (VkPipelineShaderStageCreateFlags)pCreateInfos->pStages->flags;
+	//shader_stage_create_info.stage = (VkShaderStageFlagBits)pCreateInfos->pStages->stage;
+	//shader_stage_create_info.module = ((VulkanShader*)pCreateInfos->pStages->module)->getResource();
+	//shader_stage_create_info.pName = pCreateInfos->pStages->pName;
+
+	//VkComputePipelineCreateInfo create_info{};
+	//create_info.sType = (VkStructureType)pCreateInfos->sType;
+	//create_info.pNext = (const void*)pCreateInfos->pNext;
+	//create_info.flags = (VkPipelineCreateFlags)pCreateInfos->flags;
+	//create_info.stage = shader_stage_create_info;
+	//create_info.layout = ((VulkanPipelineLayout*)pCreateInfos->layout)->getResource();;
+	//if (pCreateInfos->basePipelineHandle != nullptr)
+	//{
+	//	create_info.basePipelineHandle = ((VulkanPipeline*)pCreateInfos->basePipelineHandle)->getResource();
+	//}
+	//else
+	//{
+	//	create_info.basePipelineHandle = VK_NULL_HANDLE;
+	//}
+	//create_info.basePipelineIndex = pCreateInfos->basePipelineIndex;
+
+	//pPipelines = new VulkanPipeline();
+	//VkPipeline vk_pipelines;
+	//VkPipelineCache vk_pipeline_cache = VK_NULL_HANDLE;
+	//if (pipelineCache != nullptr)
+	//{
+	//	vk_pipeline_cache = ((VulkanPipelineCache*)pipelineCache)->getResource();
+	//}
+	//VkResult result = vkCreateComputePipelines(m_device, vk_pipeline_cache, createInfoCount, &create_info, nullptr, &vk_pipelines);
+	//((VulkanPipeline*)pPipelines)->setResource(vk_pipelines);
+
+	//if (result == VK_SUCCESS)
+	//{
+	//	return RHI_SUCCESS;
+	//}
+	//else
+	//{
+	//	LOG_ERROR("vkCreateComputePipelines failed!");
+	//	return false;
+	//}
 	return false;
 }
 

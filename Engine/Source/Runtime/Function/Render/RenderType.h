@@ -1652,6 +1652,7 @@ public:
 	void* m_data{ nullptr };
 };
 
+// 纹理数据
 class TextureData
 {
 public:
@@ -1671,7 +1672,7 @@ public:
 	uint32_t m_depth{ 0 };
 	uint32_t m_mipLevels{ 0 };
 	uint32_t m_arrayLayers{ 0 };
-	void* m_pixels{ nullptr };
+	void* m_pixels{ nullptr };	// 图片数据
 
 	ERHIFormat m_format = RHI_FORMAT_MAX_ENUM;  // 像素格式
 	EXYH_IMAGE_TYPE m_type{ EXYH_IMAGE_TYPE::XYH_IMAGE_TYPE_UNKNOWM };

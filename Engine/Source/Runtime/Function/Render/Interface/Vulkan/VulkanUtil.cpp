@@ -1,5 +1,6 @@
 #include "VulkanUtil.h"
-#include "../../../../Core/Macro.h"
+#include <Runtime/Core/Macro.h>
+#include <Runtime/Function/Render/Interface/Vulkan/VulkanRHI.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -315,6 +316,147 @@ VkSampler VulkanUtil::GetOrCreateNearestSampler(VkPhysicalDevice physicalDevice,
 	}
 
 	return m_nearestSampler;
+}
+
+void VulkanUtil::CreateGlobalImage(
+	RHI* pRHI, 
+	VkImage& image, 
+	VkImageView& imageView, 
+	VmaAllocation& imageAllocation, 
+	uint32_t textureImageWidth, 
+	uint32_t textureImageHeight, 
+	void* pTextureImagePixels, 
+	ERHIFormat textureImageFormat, 
+	uint32_t miplevels)
+{
+	//if (!texture_image_pixels)
+	//{
+	//	return;
+	//}
+
+	//VkDeviceSize texture_byte_size;
+	//VkFormat     vulkan_image_format;
+	//switch (texture_image_format)
+	//{
+	//case RHIFormat::RHI_FORMAT_R8G8B8_UNORM:
+	//	texture_byte_size = texture_image_width * texture_image_height * 3;
+	//	vulkan_image_format = VK_FORMAT_R8G8B8_UNORM;
+	//	break;
+	//case RHIFormat::RHI_FORMAT_R8G8B8_SRGB:
+	//	texture_byte_size = texture_image_width * texture_image_height * 3;
+	//	vulkan_image_format = VK_FORMAT_R8G8B8_SRGB;
+	//	break;
+	//case RHIFormat::RHI_FORMAT_R8G8B8A8_UNORM:
+	//	texture_byte_size = texture_image_width * texture_image_height * 4;
+	//	vulkan_image_format = VK_FORMAT_R8G8B8A8_UNORM;
+	//	break;
+	//case RHIFormat::RHI_FORMAT_R8G8B8A8_SRGB:
+	//	texture_byte_size = texture_image_width * texture_image_height * 4;
+	//	vulkan_image_format = VK_FORMAT_R8G8B8A8_SRGB;
+	//	break;
+	//case RHIFormat::RHI_FORMAT_R32_SFLOAT:
+	//	texture_byte_size = texture_image_width * texture_image_height * 4;
+	//	vulkan_image_format = VK_FORMAT_R32_SFLOAT;
+	//	break;
+	//case RHIFormat::RHI_FORMAT_R32G32_SFLOAT:
+	//	texture_byte_size = texture_image_width * texture_image_height * 4 * 2;
+	//	vulkan_image_format = VK_FORMAT_R32G32_SFLOAT;
+	//	break;
+	//case RHIFormat::RHI_FORMAT_R32G32B32_SFLOAT:
+	//	texture_byte_size = texture_image_width * texture_image_height * 4 * 3;
+	//	vulkan_image_format = VK_FORMAT_R32G32B32_SFLOAT;
+	//	break;
+	//case RHIFormat::RHI_FORMAT_R32G32B32A32_SFLOAT:
+	//	texture_byte_size = texture_image_width * texture_image_height * 4 * 4;
+	//	vulkan_image_format = VK_FORMAT_R32G32B32A32_SFLOAT;
+	//	break;
+	//default:
+	//	LOG_ERROR("invalid texture_byte_size");
+	//	break;
+	//}
+
+	//// use staging buffer
+	//VkBuffer       inefficient_staging_buffer;
+	//VkDeviceMemory inefficient_staging_buffer_memory;
+	//VulkanUtil::createBuffer(static_cast<VulkanRHI*>(rhi)->m_physical_device,
+	//	static_cast<VulkanRHI*>(rhi)->m_device,
+	//	texture_byte_size,
+	//	VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+	//	VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+	//	inefficient_staging_buffer,
+	//	inefficient_staging_buffer_memory);
+
+	//void* data;
+	//vkMapMemory(
+	//	static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, 0, texture_byte_size, 0, &data);
+	//memcpy(data, texture_image_pixels, static_cast<size_t>(texture_byte_size));
+	//vkUnmapMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory);
+
+	//// generate mipmapped image
+	//uint32_t mip_levels =
+	//	(miplevels != 0) ? miplevels : floor(log2(std::max(texture_image_width, texture_image_height))) + 1;
+
+	//// use the vmaAllocator to allocate asset texture image
+	//VkImageCreateInfo image_create_info{};
+	//image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	//image_create_info.flags = 0;
+	//image_create_info.imageType = VK_IMAGE_TYPE_2D;
+	//image_create_info.extent.width = texture_image_width;
+	//image_create_info.extent.height = texture_image_height;
+	//image_create_info.extent.depth = 1;
+	//image_create_info.mipLevels = mip_levels;
+	//image_create_info.arrayLayers = 1;
+	//image_create_info.format = vulkan_image_format;
+	//image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+	//image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	//image_create_info.usage =
+	//	VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	//image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+	//image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	//VmaAllocationCreateInfo allocInfo = {};
+	//allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+	//vmaCreateImage(static_cast<VulkanRHI*>(rhi)->m_assets_allocator,
+	//	&image_create_info,
+	//	&allocInfo,
+	//	&image,
+	//	&image_allocation,
+	//	NULL);
+
+	//// layout transitions -- image layout is set from none to destination
+	//transitionImageLayout(rhi,
+	//	image,
+	//	VK_IMAGE_LAYOUT_UNDEFINED,
+	//	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+	//	1,
+	//	1,
+	//	VK_IMAGE_ASPECT_COLOR_BIT);
+	//// copy from staging buffer as destination
+	//copyBufferToImage(rhi, inefficient_staging_buffer, image, texture_image_width, texture_image_height, 1);
+	//// layout transitions -- image layout is set from destination to shader_read
+	//transitionImageLayout(rhi,
+	//	image,
+	//	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+	//	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+	//	1,
+	//	1,
+	//	VK_IMAGE_ASPECT_COLOR_BIT);
+
+	//vkDestroyBuffer(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer, nullptr);
+	//vkFreeMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, nullptr);
+
+	//// generate mipmapped image
+	//genMipmappedImage(rhi, image, texture_image_width, texture_image_height, mip_levels);
+
+	//image_view = createImageView(
+	//	static_cast<VulkanRHI*>(rhi)->m_device,
+	//	image,
+	//	vulkan_image_format,
+	//	VK_IMAGE_ASPECT_COLOR_BIT,
+	//	VK_IMAGE_VIEW_TYPE_2D,
+	//	1,
+	//	mip_levels);
 }
 
 NAMESPACE_XYH_END

@@ -2,6 +2,7 @@
 #include <Common.h>
 #include <vulkan/vulkan.h>
 #include <vector>
+#include <Runtime/Function/Render/Interface/RHI.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -65,6 +66,17 @@ public:
 
 	// 获取或创建最近点采样器
 	static VkSampler GetOrCreateNearestSampler(VkPhysicalDevice physicalDevice, VkDevice device);
+
+	static void CreateGlobalImage(
+		RHI* pRHI,
+		VkImage& image,
+		VkImageView& imageView,
+		VmaAllocation& imageAllocation,
+		uint32_t textureImageWidth,
+		uint32_t textureImageHeight,
+		void* pTextureImagePixels,
+		ERHIFormat textureImageFormat,
+		uint32_t miplevels = 0);
 
 private:
 	static VkSampler m_linearSampler;

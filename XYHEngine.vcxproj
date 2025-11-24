@@ -67,6 +67,11 @@
     <ClInclude Include="Engine\Shader\Generated\Cpp\MeshFrag.h" />
     <ClInclude Include="Engine\Shader\Generated\Cpp\MeshGBufferFrag.h" />
     <ClInclude Include="Engine\Shader\Generated\Cpp\MeshVert.h" />
+    <ClInclude Include="Engine\Shader\Generated\Cpp\ParticleBillboardFrag.h" />
+    <ClInclude Include="Engine\Shader\Generated\Cpp\ParticleBillboardVert.h" />
+    <ClInclude Include="Engine\Shader\Generated\Cpp\ParticleEmitComp.h" />
+    <ClInclude Include="Engine\Shader\Generated\Cpp\ParticleKickoffComp.h" />
+    <ClInclude Include="Engine\Shader\Generated\Cpp\ParticleSimulateComp.h" />
     <ClInclude Include="Engine\Source\Common\Common.h" />
     <ClInclude Include="Engine\Source\Editor\Editor.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\LogSystem.h" />

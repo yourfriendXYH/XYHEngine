@@ -531,6 +531,7 @@ struct ST_RHIPipelineTessellationStateCreateInfo
 	uint32_t m_patchControlPoints;	// 曲面控制点数
 };
 
+// 图形管线创建信息
 struct ST_RHIGraphicsPipelineCreateInfo
 {
 	ERHIStructureType m_sType;
@@ -550,6 +551,18 @@ struct ST_RHIGraphicsPipelineCreateInfo
 	RHIPipelineLayout* m_pLayout;
 	RHIRenderPass* m_pRenderPass;
 	uint32_t m_subpass;
+	RHIPipeline* m_pBasePipelineHandle;
+	int32_t m_basePipelineIndex;
+};
+
+// 计算管线创建信息
+struct ST_RHIComputePipelineCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIPipelineCreateFlags m_flags;
+	ST_RHIPipelineShaderStageCreateInfo* m_pStages;	// 
+	RHIPipelineLayout* m_pLayout;
 	RHIPipeline* m_pBasePipelineHandle;
 	int32_t m_basePipelineIndex;
 };

@@ -401,5 +401,20 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Particle\ParticleManager.h">
       <Filter>Engine\Source\Runtime\Function\Particle</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Shader\Generated\Cpp\ParticleKickoffComp.h">
+      <Filter>Engine\Shader\Generated\Cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Shader\Generated\Cpp\ParticleEmitComp.h">
+      <Filter>Engine\Shader\Generated\Cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Shader\Generated\Cpp\ParticleSimulateComp.h">
+      <Filter>Engine\Shader\Generated\Cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Shader\Generated\Cpp\ParticleBillboardVert.h">
+      <Filter>Engine\Shader\Generated\Cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Shader\Generated\Cpp\ParticleBillboardFrag.h">
+      <Filter>Engine\Shader\Generated\Cpp</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

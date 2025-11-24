@@ -1,5 +1,10 @@
 #include "ParticlePass.h"
 #include <Runtime\Core\Macro.h>
+#include <ParticleKickoffComp.h>
+#include <ParticleEmitComp.h>
+#include <ParticleSimulateComp.h>
+#include <ParticleBillboardVert.h>
+#include <ParticleBillboardFrag.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -27,14 +32,15 @@ void ParticlePass::SetDepthAndNormalImage(RHIImage* pDepthImage, RHIImage* pNorm
 
 void ParticlePass::SetupParticlePass()
 {
-	PrepareUniformBuffer();
+	PrepareUniformBuffer();	// 着色器部分缓冲数据创建
 
-	SetupDescriptorSetLayout();
+	SetupDescriptorSetLayout();	// 描述符集布局创建
 
-	SetupPipelines();
+	SetupPipelines();	// 渲染管线创建
 
-	SetupAttachments();
+	SetupAttachments();	// Image附件创建
 
+	// 命令缓冲创建
 	ST_RHICommandBufferAllocateInfo cmdBufAllocateInfo{};
 	cmdBufAllocateInfo.m_sType = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	cmdBufAllocateInfo.m_pCommandPool = m_pRHI->GetCommandPoor();
@@ -45,6 +51,7 @@ void ParticlePass::SetupParticlePass()
 	if (RHI_SUCCESS != m_pRHI->AllocateCommandBuffers(&cmdBufAllocateInfo, m_pCopyCommandBuffer))
 		throw std::runtime_error("alloc copy command buffer");
 
+	// 栅栏创建
 	ST_RHIFenceCreateInfo fenceCreateInfo{};
 	fenceCreateInfo.m_sType = RHI_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceCreateInfo.m_flags = 0;	// 初始状态：未触发
@@ -136,7 +143,77 @@ void ParticlePass::PrepareUniformBuffer()
 
 void ParticlePass::SetupAttachments()
 {
+	// billboard texture
+	{
+		std::shared_ptr<TextureData> m_pParticleBillboardTextureResource = m_pRenderResource->LoadTextureHDR(m_pParticleManager->GetGlobalParticleRes().m_particleBillboardTexturePath);
+		m_pRHI->CreateGlobalImage(
+			m_pParticleBillboardTextureImage,
+			m_pParticleBillboardTextureImageView,
+			m_particleBillboardTextureVmaAllocation,
+			m_pParticleBillboardTextureResource->m_width,
+			m_pParticleBillboardTextureResource->m_height,
+			m_pParticleBillboardTextureResource->m_pixels,
+			m_pParticleBillboardTextureResource->m_format);
+	}
 
+	// piccolo texture
+	{
+		std::shared_ptr<TextureData> m_pPiccoloLogoTextureResource = m_pRenderResource->LoadTexture(m_pParticleManager->GetGlobalParticleRes().m_piccoloLogoTexturePath, true);
+		m_pRHI->CreateGlobalImage(
+			m_pPiccoloLogoTextureImage,
+			m_pPiccoloLogoTextureImageView,
+			m_piccoloLogoTextureVmaAllocation,
+			m_pPiccoloLogoTextureResource->m_width,
+			m_pPiccoloLogoTextureResource->m_height,
+			m_pPiccoloLogoTextureResource->m_pixels,
+			m_pPiccoloLogoTextureResource->m_format);
+	}
+
+	// 深度
+	m_pRHI->CreateImage(
+		m_pRHI->GetSwapchainInfo().m_extent.m_width,
+		m_pRHI->GetSwapchainInfo().m_extent.m_height,
+		m_pRHI->GetDepthImageInfo().m_depthImageFormat,
+		RHI_IMAGE_TILING_OPTIMAL,
+		RHI_IMAGE_USAGE_SAMPLED_BIT | RHI_IMAGE_USAGE_TRANSFER_DST_BIT,
+		RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		m_pDstDepthImage,
+		m_pDstDepthImageMemory,
+		0,
+		1,
+		1);
+
+	// 法线
+	m_pRHI->CreateImage(
+		m_pRHI->GetSwapchainInfo().m_extent.m_width,
+		m_pRHI->GetSwapchainInfo().m_extent.m_height,
+		RHI_FORMAT_R8G8B8A8_UNORM,
+		RHI_IMAGE_TILING_OPTIMAL,
+		RHI_IMAGE_USAGE_STORAGE_BIT | RHI_IMAGE_USAGE_TRANSFER_DST_BIT,
+		RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		m_pDstNormalImage,
+		m_pDstNormalImageMemory,
+		0,
+		1,
+		1);
+
+	m_pRHI->CreateImageView(
+		m_pDstDepthImage,
+		m_pRHI->GetDepthImageInfo().m_depthImageFormat,
+		RHI_IMAGE_ASPECT_DEPTH_BIT,
+		RHI_IMAGE_VIEW_TYPE_2D,
+		1,
+		1,
+		m_pSrcDepthImageView);
+
+	m_pRHI->CreateImageView(
+		m_pDstNormalImage,
+		RHI_FORMAT_R8G8B8A8_UNORM,
+		RHI_IMAGE_ASPECT_COLOR_BIT,
+		RHI_IMAGE_VIEW_TYPE_2D,
+		1,
+		1,
+		m_pSrcNormalImageView);
 }
 
 void ParticlePass::SetupDescriptorSetLayout()
@@ -247,11 +324,304 @@ void ParticlePass::SetupDescriptorSetLayout()
 		}
 		LOG_INFO("setup particle compute Descriptor done");
 	}
+
+	// scene depth and normal binding
+	{
+		ST_RHIDescriptorSetLayoutBinding sceneGlobalLayoutBindings[2] = {};
+
+		ST_RHIDescriptorSetLayoutBinding& gbufferNormalGlobalLayoutInputAttachmentBinding = sceneGlobalLayoutBindings[0];	// 
+		gbufferNormalGlobalLayoutInputAttachmentBinding.m_binding = 0;
+		gbufferNormalGlobalLayoutInputAttachmentBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+		gbufferNormalGlobalLayoutInputAttachmentBinding.m_descriptorCount = 1;
+		gbufferNormalGlobalLayoutInputAttachmentBinding.m_stageFlags = RHI_SHADER_STAGE_COMPUTE_BIT;
+
+		ST_RHIDescriptorSetLayoutBinding& gbufferDepthGlobalLayoutInputAttachmentBinding = sceneGlobalLayoutBindings[1];
+		gbufferDepthGlobalLayoutInputAttachmentBinding.m_binding = 1;
+		gbufferDepthGlobalLayoutInputAttachmentBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		gbufferDepthGlobalLayoutInputAttachmentBinding.m_descriptorCount = 1;
+		gbufferDepthGlobalLayoutInputAttachmentBinding.m_stageFlags = RHI_SHADER_STAGE_COMPUTE_BIT;
+
+		ST_RHIDescriptorSetLayoutCreateInfo gbufferLightingGlobalLayoutCreateInfo;
+		gbufferLightingGlobalLayoutCreateInfo.m_sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		gbufferLightingGlobalLayoutCreateInfo.m_pNext = NULL;
+		gbufferLightingGlobalLayoutCreateInfo.m_flags = 0;
+		gbufferLightingGlobalLayoutCreateInfo.m_bindingCount = sizeof(sceneGlobalLayoutBindings) / sizeof(sceneGlobalLayoutBindings[0]);
+		gbufferLightingGlobalLayoutCreateInfo.m_pBindings = sceneGlobalLayoutBindings;
+
+		if (RHI_SUCCESS != m_pRHI->CreateDescriptorSetLayout(&gbufferLightingGlobalLayoutCreateInfo, m_descriptorInfos[1].m_pDescriptorSetLayout))
+		{
+			throw std::runtime_error("create scene normal and depth global layout");
+		}
+	}
+
+	{
+		ST_RHIDescriptorSetLayoutBinding particleBillboardGlobalLayoutBindings[3];
+
+		ST_RHIDescriptorSetLayoutBinding& particleBillboardGlobalLayoutPerframeStorageBufferBinding = particleBillboardGlobalLayoutBindings[0];
+		particleBillboardGlobalLayoutPerframeStorageBufferBinding.m_binding = 0;
+		particleBillboardGlobalLayoutPerframeStorageBufferBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		particleBillboardGlobalLayoutPerframeStorageBufferBinding.m_descriptorCount = 1;
+		particleBillboardGlobalLayoutPerframeStorageBufferBinding.m_stageFlags = RHI_SHADER_STAGE_VERTEX_BIT;
+		particleBillboardGlobalLayoutPerframeStorageBufferBinding.m_pImmutableSamplers = NULL;
+
+		ST_RHIDescriptorSetLayoutBinding& particleBillboardGlobalLayoutPerdrawcallStorageBufferBinding = particleBillboardGlobalLayoutBindings[1];
+		particleBillboardGlobalLayoutPerdrawcallStorageBufferBinding.m_binding = 1;
+		particleBillboardGlobalLayoutPerdrawcallStorageBufferBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		particleBillboardGlobalLayoutPerdrawcallStorageBufferBinding.m_descriptorCount = 1;
+		particleBillboardGlobalLayoutPerdrawcallStorageBufferBinding.m_stageFlags = RHI_SHADER_STAGE_VERTEX_BIT;
+		particleBillboardGlobalLayoutPerdrawcallStorageBufferBinding.m_pImmutableSamplers = NULL;
+
+		ST_RHIDescriptorSetLayoutBinding& particleBillboardGlobalLayoutTextureBinding = particleBillboardGlobalLayoutBindings[2];
+		particleBillboardGlobalLayoutTextureBinding.m_binding = 2;
+		particleBillboardGlobalLayoutTextureBinding.m_descriptorType = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		particleBillboardGlobalLayoutTextureBinding.m_descriptorCount = 1;
+		particleBillboardGlobalLayoutTextureBinding.m_stageFlags = RHI_SHADER_STAGE_FRAGMENT_BIT;
+		particleBillboardGlobalLayoutTextureBinding.m_pImmutableSamplers = NULL;
+
+		ST_RHIDescriptorSetLayoutCreateInfo particleBillboardGlobalLayoutCreateInfo;
+		particleBillboardGlobalLayoutCreateInfo.m_sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		particleBillboardGlobalLayoutCreateInfo.m_pNext = NULL;
+		particleBillboardGlobalLayoutCreateInfo.m_flags = 0;
+		particleBillboardGlobalLayoutCreateInfo.m_bindingCount = 3;
+		particleBillboardGlobalLayoutCreateInfo.m_pBindings = particleBillboardGlobalLayoutBindings;
+
+		if (RHI_SUCCESS != m_pRHI->CreateDescriptorSetLayout(&particleBillboardGlobalLayoutCreateInfo, m_descriptorInfos[2].m_pDescriptorSetLayout))
+		{
+			throw std::runtime_error("create particle billboard global layout");
+		}
+	}
 }
 
 void ParticlePass::SetupPipelines()
 {
+	m_renderPipelines.resize(2u);	// 一个计算管线，一个绘制管线
 
+	// compute pipeline
+	{
+		// 计算管线布局
+		RHIDescriptorSetLayout* descriptorset_layouts[2] = { m_descriptorInfos[0].m_pDescriptorSetLayout, m_descriptorInfos[1].m_pDescriptorSetLayout };
+		ST_RHIPipelineLayoutCreateInfo pipeline_layout_create_info{};
+		pipeline_layout_create_info.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipeline_layout_create_info.m_setLayoutCount = sizeof(descriptorset_layouts) / sizeof(descriptorset_layouts[0]);
+		pipeline_layout_create_info.m_pSetLayouts = descriptorset_layouts;
+
+		if (m_pRHI->CreatePipelineLayout(&pipeline_layout_create_info, m_renderPipelines[0].m_pipelineLayout) != RHI_SUCCESS)
+		{
+			throw std::runtime_error("create compute pass pipe layout");
+		}
+		LOG_INFO("compute pipe layout done");
+	}
+
+	// specializationInfo暂时没有使用
+	struct ST_SpecializationData
+	{
+		uint32_t BUFFER_ELEMENT_COUNT = 32;
+	} specializationData;
+
+	VkSpecializationMapEntry specializationMapEntry{};
+	specializationMapEntry.constantID = 0;
+	specializationMapEntry.offset = 0;
+	specializationMapEntry.size = sizeof(uint32_t);
+
+	VkSpecializationInfo specializationInfo{};
+	specializationInfo.mapEntryCount = 1;
+	specializationInfo.pMapEntries = &specializationMapEntry;
+	specializationInfo.dataSize = sizeof(specializationData);
+	specializationInfo.pData = &specializationData;
+
+	ST_RHIComputePipelineCreateInfo computePipelineCreateInfo{};
+	computePipelineCreateInfo.m_sType = RHI_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+	computePipelineCreateInfo.m_pLayout = m_renderPipelines[0].m_pipelineLayout;
+	computePipelineCreateInfo.m_flags = 0;
+
+	ST_RHIPipelineShaderStageCreateInfo shaderStage = {};
+	shaderStage.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	shaderStage.m_stage = RHI_SHADER_STAGE_COMPUTE_BIT;	// 计算着色器
+	shaderStage.m_pName = "main";
+
+	// 开始
+	{
+		shaderStage.m_module = m_pRHI->CreateShaderModule(PARTICLE_KICKOFF_COMP);
+		shaderStage.m_pSpecializationInfo = nullptr;
+		assert(shaderStage.m_module != RHI_NULL_HANDLE);
+
+		computePipelineCreateInfo.m_pStages = &shaderStage;
+		// 创建计算管线
+		if (RHI_SUCCESS != m_pRHI->CreateComputePipelines(/*pipelineCache*/ nullptr, 1, &computePipelineCreateInfo, m_kickoffPipeline))
+		{
+			throw std::runtime_error("create particle kickoff pipe");
+		}
+	}
+
+	// 发出
+	{
+		shaderStage.m_module = m_pRHI->CreateShaderModule(PARTICLE_EMIT_COMP);
+		shaderStage.m_pSpecializationInfo = nullptr;
+		assert(shaderStage.m_module != RHI_NULL_HANDLE);
+
+		computePipelineCreateInfo.m_pStages = &shaderStage;
+		if (RHI_SUCCESS != m_pRHI->CreateComputePipelines(/*pipelineCache*/ nullptr, 1, &computePipelineCreateInfo, m_emitPipeline))
+		{
+			throw std::runtime_error("create particle emit pipe");
+		}
+	}
+
+	// 模拟
+	{
+		shaderStage.m_module = m_pRHI->CreateShaderModule(PARTICLE_SIMULATE_COMP);
+		shaderStage.m_pSpecializationInfo = nullptr;
+		assert(shaderStage.m_module != RHI_NULL_HANDLE);
+
+		computePipelineCreateInfo.m_pStages = &shaderStage;
+		if (RHI_SUCCESS != m_pRHI->CreateComputePipelines(/*pipelineCache*/ nullptr, 1, &computePipelineCreateInfo, m_simulatePipeline))
+		{
+			throw std::runtime_error("create particle simulate pipe");
+		}
+	}
+
+	// 粒子广告牌 是一种渲染技术，它确保一个通常代表粒子的二维四边形（即“广告牌”）始终面向摄像机。
+	// 你可以把它想象成在3D世界里放置一张总是正对着你的纸片或图片，无论你如何移动视角。
+	{
+		// 描述符集
+		RHIDescriptorSetLayout* descriptorsetLayouts[1] = { m_descriptorInfos[2].m_pDescriptorSetLayout };
+		ST_RHIPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+		pipelineLayoutCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutCreateInfo.m_setLayoutCount = 1;
+		pipelineLayoutCreateInfo.m_pSetLayouts = descriptorsetLayouts;
+
+		if (m_pRHI->CreatePipelineLayout(&pipelineLayoutCreateInfo, m_renderPipelines[1].m_pipelineLayout) != RHI_SUCCESS)
+		{
+			throw std::runtime_error("create particle billboard pipeline layout");
+		}
+
+		// 着色器阶段
+		RHIShader* pVertShaderModule = m_pRHI->CreateShaderModule(PARTICLEBILLBOARD_VERT);
+		RHIShader* pFragShaderModule = m_pRHI->CreateShaderModule(PARTICLEBILLBOARD_FRAG);
+
+		ST_RHIPipelineShaderStageCreateInfo vertPipelineShaderStageCreateInfo{};
+		vertPipelineShaderStageCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		vertPipelineShaderStageCreateInfo.m_stage = RHI_SHADER_STAGE_VERTEX_BIT;	// 顶点着色器
+		vertPipelineShaderStageCreateInfo.m_module = pVertShaderModule;
+		vertPipelineShaderStageCreateInfo.m_pName = "main";
+
+		ST_RHIPipelineShaderStageCreateInfo fragPipelineShaderStageCreateInfo{};
+		fragPipelineShaderStageCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		fragPipelineShaderStageCreateInfo.m_stage = RHI_SHADER_STAGE_FRAGMENT_BIT;	// 片段着色器
+		fragPipelineShaderStageCreateInfo.m_module = pFragShaderModule;
+		fragPipelineShaderStageCreateInfo.m_pName = "main";
+
+		ST_RHIPipelineShaderStageCreateInfo shaderStages[] = { 
+			vertPipelineShaderStageCreateInfo,
+			fragPipelineShaderStageCreateInfo
+		};
+
+		// 顶点布局
+		ST_RHIPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
+		vertexInputStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		vertexInputStateCreateInfo.m_vertexBindingDescriptionCount = 0;
+		vertexInputStateCreateInfo.m_pVertexBindingDescriptions = NULL;
+		vertexInputStateCreateInfo.m_vertexAttributeDescriptionCount = 0;
+		vertexInputStateCreateInfo.m_pVertexAttributeDescriptions = NULL;
+
+		// 输入装配
+		ST_RHIPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo{};
+		inputAssemblyCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+		inputAssemblyCreateInfo.m_topology = RHI_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;	// 拓扑
+		inputAssemblyCreateInfo.m_primitiveRestartEnable = RHI_FALSE;
+
+		// 视口信息
+		ST_RHIPipelineViewportStateCreateInfo viewportStateCreateInfo{};
+		viewportStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+		viewportStateCreateInfo.m_viewportCount = 1;
+		viewportStateCreateInfo.m_pViewports = m_pRHI->GetSwapchainInfo().m_pViewport;
+		viewportStateCreateInfo.m_scissorCount = 1;
+		viewportStateCreateInfo.m_pScissors = m_pRHI->GetSwapchainInfo().m_pScissor;
+
+		// 光栅化信息
+		ST_RHIPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo{};
+		rasterizationStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+		rasterizationStateCreateInfo.m_depthClampEnable = RHI_FALSE;
+		rasterizationStateCreateInfo.m_rasterizerDiscardEnable = RHI_FALSE;
+		rasterizationStateCreateInfo.m_polygonMode = RHI_POLYGON_MODE_FILL;
+		rasterizationStateCreateInfo.m_lineWidth = 1.0f;
+		rasterizationStateCreateInfo.m_cullMode = RHI_CULL_MODE_NONE;
+		rasterizationStateCreateInfo.m_frontFace = RHI_FRONT_FACE_CLOCKWISE;
+		rasterizationStateCreateInfo.m_depthBiasEnable = RHI_FALSE;
+		rasterizationStateCreateInfo.m_depthBiasConstantFactor = 0.0f;
+		rasterizationStateCreateInfo.m_depthBiasClamp = 0.0f;
+		rasterizationStateCreateInfo.m_depthBiasSlopeFactor = 0.0f;
+
+		// 采样信息
+		ST_RHIPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{};
+		multisampleStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+		multisampleStateCreateInfo.m_sampleShadingEnable = RHI_FALSE;
+		multisampleStateCreateInfo.m_rasterizationSamples = RHI_SAMPLE_COUNT_1_BIT;
+
+		// 颜色混合信息
+		ST_RHIPipelineColorBlendAttachmentState colorBlendAttachments[1] = {};
+		colorBlendAttachments[0].m_colorWriteMask = RHI_COLOR_COMPONENT_R_BIT | RHI_COLOR_COMPONENT_G_BIT | RHI_COLOR_COMPONENT_B_BIT | RHI_COLOR_COMPONENT_A_BIT;
+		colorBlendAttachments[0].m_blendEnable = RHI_TRUE;
+		colorBlendAttachments[0].m_srcColorBlendFactor = RHI_BLEND_FACTOR_ONE;
+		colorBlendAttachments[0].m_dstColorBlendFactor = RHI_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		colorBlendAttachments[0].m_colorBlendOp = RHI_BLEND_OP_ADD;
+		colorBlendAttachments[0].m_srcAlphaBlendFactor = RHI_BLEND_FACTOR_ONE;
+		colorBlendAttachments[0].m_dstAlphaBlendFactor = RHI_BLEND_FACTOR_ZERO;
+		colorBlendAttachments[0].m_alphaBlendOp = RHI_BLEND_OP_ADD;
+
+		ST_RHIPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = {};
+		colorBlendStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+		colorBlendStateCreateInfo.m_logicOpEnable = RHI_FALSE;
+		colorBlendStateCreateInfo.m_logicOp = RHI_LOGIC_OP_COPY;
+		colorBlendStateCreateInfo.m_attachmentCount = sizeof(colorBlendAttachments) / sizeof(colorBlendAttachments[0]);
+		colorBlendStateCreateInfo.m_pAttachments = &colorBlendAttachments[0];
+		colorBlendStateCreateInfo.m_blendConstants[0] = 0.0f;
+		colorBlendStateCreateInfo.m_blendConstants[1] = 0.0f;
+		colorBlendStateCreateInfo.m_blendConstants[2] = 0.0f;
+		colorBlendStateCreateInfo.m_blendConstants[3] = 0.0f;
+
+		// 深度模板
+		ST_RHIPipelineDepthStencilStateCreateInfo depthStencilCreateInfo{};
+		depthStencilCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depthStencilCreateInfo.m_depthTestEnable = RHI_TRUE;
+		depthStencilCreateInfo.m_depthWriteEnable = RHI_FALSE;
+		depthStencilCreateInfo.m_depthCompareOp = RHI_COMPARE_OP_LESS;
+		depthStencilCreateInfo.m_depthBoundsTestEnable = RHI_FALSE;
+		depthStencilCreateInfo.m_stencilTestEnable = RHI_FALSE;
+
+		// 动态数据（可在渲染执行时修改）
+		ERHIDynamicState dynamicStates[] = { RHI_DYNAMIC_STATE_VIEWPORT, RHI_DYNAMIC_STATE_SCISSOR };
+		ST_RHIPipelineDynamicStateCreateInfo dynamicStateCreateInfo{};
+		dynamicStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+		dynamicStateCreateInfo.m_dynamicStateCount = 2;
+		dynamicStateCreateInfo.m_pDynamicStates = dynamicStates;
+
+		ST_RHIGraphicsPipelineCreateInfo pipelineInfo{};
+		pipelineInfo.m_sType = RHI_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineInfo.m_stageCount = 2;
+		pipelineInfo.m_pStages = shaderStages;
+		pipelineInfo.m_pVertexInputState = &vertexInputStateCreateInfo;
+		pipelineInfo.m_pInputAssemblyState = &inputAssemblyCreateInfo;
+		pipelineInfo.m_pViewportState = &viewportStateCreateInfo;
+		pipelineInfo.m_pRasterizationState = &rasterizationStateCreateInfo;
+		pipelineInfo.m_pMultisampleState = &multisampleStateCreateInfo;
+		pipelineInfo.m_pColorBlendState = &colorBlendStateCreateInfo;
+		pipelineInfo.m_pDepthStencilState = &depthStencilCreateInfo;
+		pipelineInfo.m_pLayout = m_renderPipelines[1].m_pipelineLayout;
+		pipelineInfo.m_pRenderPass = m_pRenderPass;
+		pipelineInfo.m_subpass = _main_camera_subpass_forward_lighting;
+		pipelineInfo.m_pBasePipelineHandle = RHI_NULL_HANDLE;
+		pipelineInfo.m_pDynamicState = &dynamicStateCreateInfo;
+
+		// 创建用于粒子显示的管线
+		if (m_pRHI->CreateGraphicsPipelines(RHI_NULL_HANDLE, 1, &pipelineInfo, m_renderPipelines[1].m_pipeline) !=
+			RHI_SUCCESS)
+		{
+			throw std::runtime_error("create particle billboard graphics pipeline");
+		}
+
+		m_pRHI->DestroyShaderModule(pVertShaderModule);
+		m_pRHI->DestroyShaderModule(pFragShaderModule);
+	}
 }
 
 NAMESPACE_XYH_END

@@ -87,6 +87,35 @@ private:
 
 
 	ST_RHIViewport m_viewportParams;	// 交换链视口属性
+
+	// 管线对象
+	RHIPipeline* m_kickoffPipeline = nullptr;	// 开始
+	RHIPipeline* m_emitPipeline = nullptr;	// 发出
+	RHIPipeline* m_simulatePipeline = nullptr;	// 模拟
+
+	RHIRenderPass* m_pRenderPass = nullptr;
+
+	// 粒子绘制的image
+	RHIImage* m_pParticleBillboardTextureImage = nullptr;
+	RHIImageView* m_pParticleBillboardTextureImageView = nullptr;
+	VmaAllocation m_particleBillboardTextureVmaAllocation;
+
+	// Test
+	RHIImage* m_pPiccoloLogoTextureImage = nullptr;
+	RHIImageView* m_pPiccoloLogoTextureImageView = nullptr;
+	VmaAllocation m_piccoloLogoTextureVmaAllocation;
+
+	RHIImage* m_pSrcDepthImage = nullptr;
+	RHIImage* m_pSrcNormalImage = nullptr;
+
+	RHIImage* m_pDstNormalImage = nullptr;
+	RHIImage* m_pDstDepthImage = nullptr;
+	RHIDeviceMemory* m_pDstNormalImageMemory = nullptr;
+	RHIDeviceMemory* m_pDstDepthImageMemory = nullptr;
+
+	RHIImageView* m_pSrcDepthImageView = nullptr;
+	RHIImageView* m_pSrcNormalImageView = nullptr;
+
 };
 
 NAMESPACE_XYH_END
