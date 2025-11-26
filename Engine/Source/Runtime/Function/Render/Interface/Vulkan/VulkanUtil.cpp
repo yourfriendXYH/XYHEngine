@@ -329,51 +329,52 @@ void VulkanUtil::CreateGlobalImage(
 	ERHIFormat textureImageFormat, 
 	uint32_t miplevels)
 {
-	//if (!texture_image_pixels)
-	//{
-	//	return;
-	//}
+	// 判断图片数据是否为空
+	if (!pTextureImagePixels)
+	{
+		return;
+	}
 
-	//VkDeviceSize texture_byte_size;
-	//VkFormat     vulkan_image_format;
-	//switch (texture_image_format)
-	//{
-	//case RHIFormat::RHI_FORMAT_R8G8B8_UNORM:
-	//	texture_byte_size = texture_image_width * texture_image_height * 3;
-	//	vulkan_image_format = VK_FORMAT_R8G8B8_UNORM;
-	//	break;
-	//case RHIFormat::RHI_FORMAT_R8G8B8_SRGB:
-	//	texture_byte_size = texture_image_width * texture_image_height * 3;
-	//	vulkan_image_format = VK_FORMAT_R8G8B8_SRGB;
-	//	break;
-	//case RHIFormat::RHI_FORMAT_R8G8B8A8_UNORM:
-	//	texture_byte_size = texture_image_width * texture_image_height * 4;
-	//	vulkan_image_format = VK_FORMAT_R8G8B8A8_UNORM;
-	//	break;
-	//case RHIFormat::RHI_FORMAT_R8G8B8A8_SRGB:
-	//	texture_byte_size = texture_image_width * texture_image_height * 4;
-	//	vulkan_image_format = VK_FORMAT_R8G8B8A8_SRGB;
-	//	break;
-	//case RHIFormat::RHI_FORMAT_R32_SFLOAT:
-	//	texture_byte_size = texture_image_width * texture_image_height * 4;
-	//	vulkan_image_format = VK_FORMAT_R32_SFLOAT;
-	//	break;
-	//case RHIFormat::RHI_FORMAT_R32G32_SFLOAT:
-	//	texture_byte_size = texture_image_width * texture_image_height * 4 * 2;
-	//	vulkan_image_format = VK_FORMAT_R32G32_SFLOAT;
-	//	break;
-	//case RHIFormat::RHI_FORMAT_R32G32B32_SFLOAT:
-	//	texture_byte_size = texture_image_width * texture_image_height * 4 * 3;
-	//	vulkan_image_format = VK_FORMAT_R32G32B32_SFLOAT;
-	//	break;
-	//case RHIFormat::RHI_FORMAT_R32G32B32A32_SFLOAT:
-	//	texture_byte_size = texture_image_width * texture_image_height * 4 * 4;
-	//	vulkan_image_format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	//	break;
-	//default:
-	//	LOG_ERROR("invalid texture_byte_size");
-	//	break;
-	//}
+	VkDeviceSize textureByteSize;
+	VkFormat vulkanImageFormat;
+	switch (vulkanImageFormat)
+	{
+	case ERHIFormat::RHI_FORMAT_R8G8B8_UNORM:
+		textureByteSize = textureImageWidth * textureImageHeight * 3;
+		vulkanImageFormat = VK_FORMAT_R8G8B8_UNORM;
+		break;
+	case ERHIFormat::RHI_FORMAT_R8G8B8_SRGB:
+		textureByteSize = textureImageWidth * textureImageHeight * 3;
+		vulkanImageFormat = VK_FORMAT_R8G8B8_SRGB;
+		break;
+	case ERHIFormat::RHI_FORMAT_R8G8B8A8_UNORM:
+		textureByteSize = textureImageWidth * textureImageHeight * 4;
+		vulkanImageFormat = VK_FORMAT_R8G8B8A8_UNORM;
+		break;
+	case ERHIFormat::RHI_FORMAT_R8G8B8A8_SRGB:
+		textureByteSize = textureImageWidth * textureImageHeight * 4;
+		vulkanImageFormat = VK_FORMAT_R8G8B8A8_SRGB;
+		break;
+	case ERHIFormat::RHI_FORMAT_R32_SFLOAT:
+		textureByteSize = textureImageWidth * textureImageHeight * 4;
+		vulkanImageFormat = VK_FORMAT_R32_SFLOAT;
+		break;
+	case ERHIFormat::RHI_FORMAT_R32G32_SFLOAT:
+		textureByteSize = textureImageWidth * textureImageHeight * 4 * 2;
+		vulkanImageFormat = VK_FORMAT_R32G32_SFLOAT;
+		break;
+	case ERHIFormat::RHI_FORMAT_R32G32B32_SFLOAT:
+		textureByteSize = textureImageWidth * textureImageHeight * 4 * 3;
+		vulkanImageFormat = VK_FORMAT_R32G32B32_SFLOAT;
+		break;
+	case ERHIFormat::RHI_FORMAT_R32G32B32A32_SFLOAT:
+		textureByteSize = textureImageWidth * textureImageHeight * 4 * 4;
+		vulkanImageFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
+		break;
+	default:
+		LOG_ERROR("invalid texture_byte_size");
+		break;
+	}
 
 	//// use staging buffer
 	//VkBuffer       inefficient_staging_buffer;
