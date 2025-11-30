@@ -207,6 +207,9 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Particle\ParticleManager.cpp">
       <Filter>Engine\Source\Runtime\Function\Particle</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Particle\EmitterIdAllocator.cpp">
+      <Filter>Engine\Source\Runtime\Function\Particle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Runtime\Engine.h">
@@ -415,6 +418,12 @@
     </ClInclude>
     <ClInclude Include="Engine\Shader\Generated\Cpp\ParticleBillboardFrag.h">
       <Filter>Engine\Shader\Generated\Cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Particle\ParticleDesc.h">
+      <Filter>Engine\Source\Runtime\Function\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Particle\EmitterIdAllocator.h">
+      <Filter>Engine\Source\Runtime\Function\Particle</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -78,6 +78,13 @@ public:
 		ERHIFormat textureImageFormat,
 		uint32_t miplevels = 0);
 
+	static void TransitionImageLayout(RHI* pRHI, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount, uint32_t mipLevels, VkImageAspectFlags aspectMaskBits);
+
+	static void CopyBufferToImage(RHI* pRHI, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
+
+	// 
+	static void GenMipmappedImage(RHI* pRHI, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevels);
+
 private:
 	static VkSampler m_linearSampler;
 	static VkSampler m_nearestSampler;

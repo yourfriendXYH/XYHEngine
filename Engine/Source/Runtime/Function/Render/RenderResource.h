@@ -95,6 +95,9 @@ public:
 	ST_MeshPerframeStorageBufferObject m_meshPerframeStorageBufferObject;	// 网格每帧存储缓冲区对象
 	ST_AxisStorageBufferObject m_axisStorageBufferObject;	// 坐标轴存储缓冲区对象
 
+	ST_ParticleBillboardPerframeStorageBufferObject m_particleBillboardPerframeStorageBufferObject;	// 
+	ST_ParticleCollisionPerframeStorageBufferObject m_particleCollisionPerframeStorageBufferObject;	// 粒子控制数据
+
 };
 
 NAMESPACE_XYH_END

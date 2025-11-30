@@ -336,7 +336,7 @@ void VulkanRHI::CreateBuffer(RHIDeviceSize size, RHIBufferUsageFlags usage, RHIM
 }
 
 void VulkanRHI::CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory, RHIDeviceSize size, void* data, int datasize)
-{        
+{
 	VkBuffer vkBuffer;
 	VkDeviceMemory vkDeviceMemory;
 
@@ -907,58 +907,62 @@ bool VulkanRHI::CreateGraphicsPipelines(RHIPipelineCache* pipelineCache, uint32_
 
 bool VulkanRHI::CreateComputePipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIComputePipelineCreateInfo* pCreateInfo, RHIPipeline*& pPipelines)
 {
-	//VkPipelineShaderStageCreateInfo shader_stage_create_info{};
-	//if (pCreateInfos->pStages->pSpecializationInfo != nullptr)
-	//{
-	//	//will be complete soon if needed.
-	//	shader_stage_create_info.pSpecializationInfo = nullptr;
-	//}
-	//else
-	//{
-	//	shader_stage_create_info.pSpecializationInfo = nullptr;
-	//}
-	//shader_stage_create_info.sType = (VkStructureType)pCreateInfos->pStages->sType;
-	//shader_stage_create_info.pNext = (const void*)pCreateInfos->pStages->pNext;
-	//shader_stage_create_info.flags = (VkPipelineShaderStageCreateFlags)pCreateInfos->pStages->flags;
-	//shader_stage_create_info.stage = (VkShaderStageFlagBits)pCreateInfos->pStages->stage;
-	//shader_stage_create_info.module = ((VulkanShader*)pCreateInfos->pStages->module)->getResource();
-	//shader_stage_create_info.pName = pCreateInfos->pStages->pName;
+	// 着色器阶段创建信息
+	VkPipelineShaderStageCreateInfo shaderStageCreateInfo{};
+	if (pCreateInfo->m_pStages->m_pSpecializationInfo != nullptr)
+	{
+		//will be complete soon if needed.
+		shaderStageCreateInfo.pSpecializationInfo = nullptr;	// 指向特殊化常量信息的指针，用于在管线创建时提供编译时常量
+	}
+	else
+	{
+		shaderStageCreateInfo.pSpecializationInfo = nullptr;	// 指向特殊化常量信息的指针，用于在管线创建时提供编译时常量
+	}
+	shaderStageCreateInfo.sType = (VkStructureType)pCreateInfo->m_pStages->m_sType;
+	shaderStageCreateInfo.pNext = (const void*)pCreateInfo->m_pStages->m_pNext;
+	shaderStageCreateInfo.flags = (VkPipelineShaderStageCreateFlags)pCreateInfo->m_pStages->m_flags;
+	shaderStageCreateInfo.stage = (VkShaderStageFlagBits)pCreateInfo->m_pStages->m_stage;	// 着色器阶段类型
+	shaderStageCreateInfo.module = ((VulkanShader*)pCreateInfo->m_pStages->m_module)->GetResource();	// 指向已创建的 VkShaderModule，包含编译后的 SPIR-V 代码
+	shaderStageCreateInfo.pName = pCreateInfo->m_pStages->m_pName;	// 着色器入口函数名称，通常是 "main"
 
-	//VkComputePipelineCreateInfo create_info{};
-	//create_info.sType = (VkStructureType)pCreateInfos->sType;
-	//create_info.pNext = (const void*)pCreateInfos->pNext;
-	//create_info.flags = (VkPipelineCreateFlags)pCreateInfos->flags;
-	//create_info.stage = shader_stage_create_info;
-	//create_info.layout = ((VulkanPipelineLayout*)pCreateInfos->layout)->getResource();;
-	//if (pCreateInfos->basePipelineHandle != nullptr)
-	//{
-	//	create_info.basePipelineHandle = ((VulkanPipeline*)pCreateInfos->basePipelineHandle)->getResource();
-	//}
-	//else
-	//{
-	//	create_info.basePipelineHandle = VK_NULL_HANDLE;
-	//}
-	//create_info.basePipelineIndex = pCreateInfos->basePipelineIndex;
+	// 计算管线创建信息
+	VkComputePipelineCreateInfo createInfo{};
+	createInfo.sType = (VkStructureType)pCreateInfo->m_sType;
+	createInfo.pNext = (const void*)pCreateInfo->m_pNext;
+	createInfo.flags = (VkPipelineCreateFlags)pCreateInfo->m_flags;
+	createInfo.stage = shaderStageCreateInfo;	// 着色器阶段创建信息
+	createInfo.layout = ((VulkanPipelineLayout*)pCreateInfo->m_pLayout)->GetResource();	// 管线布局，描述着色器使用的描述符集和推送常量
+	// 用于管线派生，提高创建效率
+	if (pCreateInfo->m_pBasePipelineHandle != nullptr)
+	{
+		createInfo.basePipelineHandle = ((VulkanPipeline*)pCreateInfo->m_pBasePipelineHandle)->GetResource();
+	}
+	else
+	{
+		createInfo.basePipelineHandle = VK_NULL_HANDLE;
+	}
+	createInfo.basePipelineIndex = pCreateInfo->m_basePipelineIndex;
 
-	//pPipelines = new VulkanPipeline();
-	//VkPipeline vk_pipelines;
-	//VkPipelineCache vk_pipeline_cache = VK_NULL_HANDLE;
-	//if (pipelineCache != nullptr)
-	//{
-	//	vk_pipeline_cache = ((VulkanPipelineCache*)pipelineCache)->getResource();
-	//}
-	//VkResult result = vkCreateComputePipelines(m_device, vk_pipeline_cache, createInfoCount, &create_info, nullptr, &vk_pipelines);
-	//((VulkanPipeline*)pPipelines)->setResource(vk_pipelines);
+	// 创建计算管线
+	pPipelines = new VulkanPipeline();
+	VkPipeline vkPipelines;
+	VkPipelineCache vkPipelineCache = VK_NULL_HANDLE;	// 管线缓存对象，可以加速管线创建。可以是 VK_NULL_HANDLE
+	if (pipelineCache != nullptr)
+	{
+		vkPipelineCache = ((VulkanPipelineCache*)pipelineCache)->GetResource();
+	}
+	VkResult result = vkCreateComputePipelines(m_device, vkPipelineCache, createInfoCount, &createInfo, nullptr, &vkPipelines);
+	((VulkanPipeline*)pPipelines)->SetResource(vkPipelines);
 
-	//if (result == VK_SUCCESS)
-	//{
-	//	return RHI_SUCCESS;
-	//}
-	//else
-	//{
-	//	LOG_ERROR("vkCreateComputePipelines failed!");
-	//	return false;
-	//}
+	if (result == VK_SUCCESS)
+	{
+		return RHI_SUCCESS;
+	}
+	else
+	{
+		LOG_ERROR("vkCreateComputePipelines failed!");
+		return false;
+	}
 	return false;
 }
 
@@ -1325,7 +1329,7 @@ void VulkanRHI::CmdSetScissorPFN(RHICommandBuffer* commandBuffer, uint32_t first
 }
 
 void VulkanRHI::CmdBindVertexBuffersPFN(RHICommandBuffer* commandBuffer, uint32_t firstBinding, uint32_t bindingCount, RHIBuffer* const* pBuffers, const RHIDeviceSize* pOffsets)
-{        
+{
 	//buffer
 	int bufferSize = bindingCount;
 	std::vector<VkBuffer> vkBufferList(bufferSize);

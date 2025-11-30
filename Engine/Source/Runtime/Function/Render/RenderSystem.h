@@ -34,6 +34,8 @@ public:
 
 	std::shared_ptr<RHI> GetRHI() const;	// 获取渲染硬件接口
 
+	std::shared_ptr<RenderCamera> GetRenderCamera() const;
+
 
 private:
 
@@ -43,9 +45,9 @@ private:
 
 	std::shared_ptr<RHI> m_pRHI;	// 渲染硬件接口
 
-	std::shared_ptr<RenderCamera> m_renderCamera;	// 渲染相机
+	std::shared_ptr<RenderCamera> m_pRenderCamera;	// 渲染相机
 
-	std::shared_ptr<RenderScene> m_renderScene;	// 渲染场景
+	std::shared_ptr<RenderScene> m_pRenderScene;	// 渲染场景
 
 	std::shared_ptr<RenderResourceBase> m_pRenderResource;
 

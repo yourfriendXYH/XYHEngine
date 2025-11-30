@@ -62,14 +62,14 @@ void VulkanUtil::CreateBuffer(VkPhysicalDevice physicalDevice, VkDevice device, 
 }
 
 void VulkanUtil::CreateBufferAndInitialize(
-	VkDevice device, 
-	VkPhysicalDevice physicalDevice, 
-	VkBufferUsageFlags usageFlags, 
+	VkDevice device,
+	VkPhysicalDevice physicalDevice,
+	VkBufferUsageFlags usageFlags,
 	VkMemoryPropertyFlags memoryPropertyFlags,
-	VkBuffer* pBuffer, 
-	VkDeviceMemory* pMemory, 
-	VkDeviceSize size, 
-	void* pData, 
+	VkBuffer* pBuffer,
+	VkDeviceMemory* pMemory,
+	VkDeviceSize size,
+	void* pData,
 	int dataSize)
 {
 	// Create the buffer handle
@@ -319,14 +319,14 @@ VkSampler VulkanUtil::GetOrCreateNearestSampler(VkPhysicalDevice physicalDevice,
 }
 
 void VulkanUtil::CreateGlobalImage(
-	RHI* pRHI, 
-	VkImage& image, 
-	VkImageView& imageView, 
-	VmaAllocation& imageAllocation, 
-	uint32_t textureImageWidth, 
-	uint32_t textureImageHeight, 
-	void* pTextureImagePixels, 
-	ERHIFormat textureImageFormat, 
+	RHI* pRHI,
+	VkImage& image,
+	VkImageView& imageView,
+	VmaAllocation& imageAllocation,
+	uint32_t textureImageWidth,
+	uint32_t textureImageHeight,
+	void* pTextureImagePixels,
+	ERHIFormat textureImageFormat,
 	uint32_t miplevels)
 {
 	// 判断图片数据是否为空
@@ -335,9 +335,10 @@ void VulkanUtil::CreateGlobalImage(
 		return;
 	}
 
-	VkDeviceSize textureByteSize;
-	VkFormat vulkanImageFormat;
-	switch (vulkanImageFormat)
+	// 确定图片格式以及图片大小
+	VkDeviceSize textureByteSize = 0u;
+	VkFormat vulkanImageFormat = VK_FORMAT_UNDEFINED;
+	switch (textureImageFormat)
 	{
 	case ERHIFormat::RHI_FORMAT_R8G8B8_UNORM:
 		textureByteSize = textureImageWidth * textureImageHeight * 3;
@@ -376,88 +377,79 @@ void VulkanUtil::CreateGlobalImage(
 		break;
 	}
 
-	//// use staging buffer
-	//VkBuffer       inefficient_staging_buffer;
-	//VkDeviceMemory inefficient_staging_buffer_memory;
-	//VulkanUtil::createBuffer(static_cast<VulkanRHI*>(rhi)->m_physical_device,
-	//	static_cast<VulkanRHI*>(rhi)->m_device,
-	//	texture_byte_size,
-	//	VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-	//	VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-	//	inefficient_staging_buffer,
-	//	inefficient_staging_buffer_memory);
+	// 图片数据的内存创建
+	VkBuffer inefficientStagingBuffer;	// 低效的临时缓冲区
+	VkDeviceMemory inefficientStagingBufferMemory;	// 低效的临时缓冲区内存
+	VulkanUtil::CreateBuffer(
+		static_cast<VulkanRHI*>(pRHI)->m_physicalDevice,
+		static_cast<VulkanRHI*>(pRHI)->m_device,
+		textureByteSize,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		inefficientStagingBuffer,
+		inefficientStagingBufferMemory);
 
-	//void* data;
-	//vkMapMemory(
-	//	static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, 0, texture_byte_size, 0, &data);
-	//memcpy(data, texture_image_pixels, static_cast<size_t>(texture_byte_size));
-	//vkUnmapMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory);
+	// 给数据赋值
+	void* data;
+	vkMapMemory(static_cast<VulkanRHI*>(pRHI)->m_device, inefficientStagingBufferMemory, 0, textureByteSize, 0, &data);
+	memcpy(data, pTextureImagePixels, static_cast<size_t>(textureByteSize));
+	vkUnmapMemory(static_cast<VulkanRHI*>(pRHI)->m_device, inefficientStagingBufferMemory);
 
-	//// generate mipmapped image
-	//uint32_t mip_levels =
-	//	(miplevels != 0) ? miplevels : floor(log2(std::max(texture_image_width, texture_image_height))) + 1;
+	// generate mipmapped image
+	uint32_t tempMipLevels = (miplevels != 0) ? miplevels : static_cast<uint32_t>(floor(log2(std::max(textureImageWidth, textureImageHeight)))) + 1;
 
-	//// use the vmaAllocator to allocate asset texture image
-	//VkImageCreateInfo image_create_info{};
-	//image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	//image_create_info.flags = 0;
-	//image_create_info.imageType = VK_IMAGE_TYPE_2D;
-	//image_create_info.extent.width = texture_image_width;
-	//image_create_info.extent.height = texture_image_height;
-	//image_create_info.extent.depth = 1;
-	//image_create_info.mipLevels = mip_levels;
-	//image_create_info.arrayLayers = 1;
-	//image_create_info.format = vulkan_image_format;
-	//image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-	//image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	//image_create_info.usage =
-	//	VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	//image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
-	//image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	// use the vmaAllocator to allocate asset texture image
+	VkImageCreateInfo imageCreateInfo{};
+	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCreateInfo.flags = 0;
+	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageCreateInfo.extent.width = textureImageWidth;
+	imageCreateInfo.extent.height = textureImageHeight;
+	imageCreateInfo.extent.depth = 1;
+	imageCreateInfo.mipLevels = tempMipLevels;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.format = vulkanImageFormat;
+	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	imageCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	//VmaAllocationCreateInfo allocInfo = {};
-	//allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+	VmaAllocationCreateInfo allocInfo = {};
+	allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;	// GPU only
 
-	//vmaCreateImage(static_cast<VulkanRHI*>(rhi)->m_assets_allocator,
-	//	&image_create_info,
-	//	&allocInfo,
-	//	&image,
-	//	&image_allocation,
-	//	NULL);
+	// 创建图像并分配内存
+	vmaCreateImage(static_cast<VulkanRHI*>(pRHI)->m_assetsAllocator, &imageCreateInfo, &allocInfo, &image, &imageAllocation, NULL);
 
-	//// layout transitions -- image layout is set from none to destination
-	//transitionImageLayout(rhi,
-	//	image,
-	//	VK_IMAGE_LAYOUT_UNDEFINED,
-	//	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-	//	1,
-	//	1,
-	//	VK_IMAGE_ASPECT_COLOR_BIT);
-	//// copy from staging buffer as destination
-	//copyBufferToImage(rhi, inefficient_staging_buffer, image, texture_image_width, texture_image_height, 1);
-	//// layout transitions -- image layout is set from destination to shader_read
-	//transitionImageLayout(rhi,
-	//	image,
-	//	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-	//	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-	//	1,
-	//	1,
-	//	VK_IMAGE_ASPECT_COLOR_BIT);
+	// layout transitions -- image layout is set from none to destination
+	TransitionImageLayout(pRHI, image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1, VK_IMAGE_ASPECT_COLOR_BIT);
+	// copy from staging buffer as destination
+	CopyBufferToImage(pRHI, inefficientStagingBuffer, image, textureImageWidth, textureImageHeight, 1);
+	// layout transitions -- image layout is set from destination to shader_read
+	TransitionImageLayout(pRHI, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 1, VK_IMAGE_ASPECT_COLOR_BIT);
 
-	//vkDestroyBuffer(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer, nullptr);
-	//vkFreeMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, nullptr);
+	vkDestroyBuffer(static_cast<VulkanRHI*>(pRHI)->m_device, inefficientStagingBuffer, nullptr);
+	vkFreeMemory(static_cast<VulkanRHI*>(pRHI)->m_device, inefficientStagingBufferMemory, nullptr);
 
-	//// generate mipmapped image
-	//genMipmappedImage(rhi, image, texture_image_width, texture_image_height, mip_levels);
+	// generate mipmapped image
+	GenMipmappedImage(pRHI, image, textureImageWidth, textureImageHeight, tempMipLevels);
 
-	//image_view = createImageView(
-	//	static_cast<VulkanRHI*>(rhi)->m_device,
-	//	image,
-	//	vulkan_image_format,
-	//	VK_IMAGE_ASPECT_COLOR_BIT,
-	//	VK_IMAGE_VIEW_TYPE_2D,
-	//	1,
-	//	mip_levels);
+	// 创建ImageView
+	imageView = CreateImageView(static_cast<VulkanRHI*>(pRHI)->m_device, image, vulkanImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, tempMipLevels);
+}
+
+void VulkanUtil::TransitionImageLayout(RHI* pRHI, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount, uint32_t mipLevels, VkImageAspectFlags aspectMaskBits)
+{
+
+}
+
+void VulkanUtil::CopyBufferToImage(RHI* pRHI, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount)
+{
+
+}
+
+void VulkanUtil::GenMipmappedImage(RHI* pRHI, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevels)
+{
 }
 
 NAMESPACE_XYH_END

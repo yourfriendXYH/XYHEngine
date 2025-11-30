@@ -6,6 +6,9 @@
 #include <ParticleBillboardVert.h>
 #include <ParticleBillboardFrag.h>
 
+#include <Runtime/Function/Render/RenderSystem.h>
+#include <Runtime/Function/Render/RenderCamera.h>
+
 NAMESPACE_XYH_BEGIN
 
 void ParticlePass::Initialize(const ST_RenderPassInitInfo* initInfo)
@@ -15,6 +18,29 @@ void ParticlePass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	const ST_ParticlePassInitInfo* pParticlePassInitInfo = static_cast<const ST_ParticlePassInitInfo*>(initInfo);
 	assert(pParticlePassInitInfo != nullptr);
 	m_pParticleManager = pParticlePassInitInfo->m_pParticleManager;	// 获取粒子管理器
+}
+
+void ParticlePass::PreparePassData(std::shared_ptr<RenderResourceBase> pRenderResource)
+{
+	// 每帧执行（初始化部分渲染数据）
+	const RenderResource* pVulkanResource = static_cast<const RenderResource*>(pRenderResource.get());
+	if (pVulkanResource)
+	{
+		m_particleCollisionPerframeStorageBufferObject = pVulkanResource->m_particleCollisionPerframeStorageBufferObject;
+		memcpy(m_pSceneUniformBufferMapped, &m_particleCollisionPerframeStorageBufferObject, sizeof(ST_ParticleCollisionPerframeStorageBufferObject));
+
+		m_particleBillboardPerframeStorageBufferObject = pVulkanResource->m_particleBillboardPerframeStorageBufferObject;
+		memcpy(m_pParticleBillboardUniformBufferMapped, &m_particleBillboardPerframeStorageBufferObject, sizeof(ST_ParticleBillboardPerframeStorageBufferObject));
+
+		// 交换链视口数据
+		m_viewportParams = *m_pRHI->GetSwapchainInfo().m_pViewport;
+
+		// 更新 m_ubo 数据
+		UpdateUniformBuffer();
+
+		// 更新发射器的变换数据
+		UpdateEmitterTransform();
+	}
 }
 
 void ParticlePass::SetRenderCommandBufferHandle(RHICommandBuffer* commandBuffer)
@@ -447,7 +473,7 @@ void ParticlePass::SetupPipelines()
 
 		computePipelineCreateInfo.m_pStages = &shaderStage;
 		// 创建计算管线
-		if (RHI_SUCCESS != m_pRHI->CreateComputePipelines(/*pipelineCache*/ nullptr, 1, &computePipelineCreateInfo, m_kickoffPipeline))
+		if (RHI_SUCCESS != m_pRHI->CreateComputePipelines(/*pipelineCache*/ nullptr, 1, &computePipelineCreateInfo, m_pKickoffPipeline))
 		{
 			throw std::runtime_error("create particle kickoff pipe");
 		}
@@ -460,7 +486,7 @@ void ParticlePass::SetupPipelines()
 		assert(shaderStage.m_module != RHI_NULL_HANDLE);
 
 		computePipelineCreateInfo.m_pStages = &shaderStage;
-		if (RHI_SUCCESS != m_pRHI->CreateComputePipelines(/*pipelineCache*/ nullptr, 1, &computePipelineCreateInfo, m_emitPipeline))
+		if (RHI_SUCCESS != m_pRHI->CreateComputePipelines(/*pipelineCache*/ nullptr, 1, &computePipelineCreateInfo, m_pEmitPipeline))
 		{
 			throw std::runtime_error("create particle emit pipe");
 		}
@@ -473,7 +499,7 @@ void ParticlePass::SetupPipelines()
 		assert(shaderStage.m_module != RHI_NULL_HANDLE);
 
 		computePipelineCreateInfo.m_pStages = &shaderStage;
-		if (RHI_SUCCESS != m_pRHI->CreateComputePipelines(/*pipelineCache*/ nullptr, 1, &computePipelineCreateInfo, m_simulatePipeline))
+		if (RHI_SUCCESS != m_pRHI->CreateComputePipelines(/*pipelineCache*/ nullptr, 1, &computePipelineCreateInfo, m_pSimulatePipeline))
 		{
 			throw std::runtime_error("create particle simulate pipe");
 		}
@@ -510,7 +536,7 @@ void ParticlePass::SetupPipelines()
 		fragPipelineShaderStageCreateInfo.m_module = pFragShaderModule;
 		fragPipelineShaderStageCreateInfo.m_pName = "main";
 
-		ST_RHIPipelineShaderStageCreateInfo shaderStages[] = { 
+		ST_RHIPipelineShaderStageCreateInfo shaderStages[] = {
 			vertPipelineShaderStageCreateInfo,
 			fragPipelineShaderStageCreateInfo
 		};
@@ -621,6 +647,40 @@ void ParticlePass::SetupPipelines()
 
 		m_pRHI->DestroyShaderModule(pVertShaderModule);
 		m_pRHI->DestroyShaderModule(pFragShaderModule);
+	}
+}
+
+void ParticlePass::UpdateUniformBuffer()
+{
+	std::random_device r;
+	std::seed_seq seed{ r() };
+	//m_randomEngine.seed(seed);
+	//float rnd0 = m_random_engine.uniformDistribution<float>(0, 1000) * 0.001f;
+	//float rnd1 = m_random_engine.uniformDistribution<float>(0, 1000) * 0.001f;
+	//float rnd2 = m_random_engine.uniformDistribution<float>(0, 1000) * 0.001f;
+	//m_ubo.m_pack = Vector4{ rnd0, rnd1, rnd2, static_cast<float>(m_pRHI->GetCurrentFrameIndex()) };
+
+	m_ubo.m_viewport.x = m_pRHI->GetSwapchainInfo().m_pViewport->m_x;
+	m_ubo.m_viewport.y = m_pRHI->GetSwapchainInfo().m_pViewport->m_y;
+	m_ubo.m_viewport.z = m_pRHI->GetSwapchainInfo().m_pViewport->m_width;
+	m_ubo.m_viewport.w = m_pRHI->GetSwapchainInfo().m_pViewport->m_height;
+	m_ubo.m_extent.x = m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_width;
+	m_ubo.m_extent.y = m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_height;
+
+	m_ubo.m_extent.z = g_runtimeGlobalContext.m_pRenderSystem->GetRenderCamera()->m_zNear;
+	m_ubo.m_extent.w = g_runtimeGlobalContext.m_pRenderSystem->GetRenderCamera()->m_zFar;
+	memcpy(m_pParticleComputeBufferMapped, &m_ubo, sizeof(m_ubo));
+}
+
+void ParticlePass::UpdateEmitterTransform()
+{
+	for (ST_ParticleEmitterTransformDesc& transformDesc : m_emitterTransformIndices)
+	{
+		int index = transformDesc.m_id;
+		m_emitterBufferBatches[index].m_emitterDesc.m_position = transformDesc.m_position;
+		m_emitterBufferBatches[index].m_emitterDesc.m_rotation = transformDesc.m_rotation;
+
+		memcpy(m_emitterBufferBatches[index].m_pEmitterDescMapped, &m_emitterBufferBatches[index].m_emitterDesc, sizeof(ST_ParticleEmitterDesc));
 	}
 }
 

@@ -132,7 +132,7 @@ void RenderPipeline::ForwardRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<Re
 	MainCameraPass* pMainCameraPass = static_cast<MainCameraPass*>(m_pMainCameraPass.get());
 	ParticlePass* pParticlePassPtr = static_cast<ParticlePass*>(m_pParticlePass.get());
 
-	// ???
+	// …Ë÷√‰÷»æ√¸¡Óª∫≥Â«¯÷∏’Î
 	pParticlePassPtr->SetRenderCommandBufferHandle(pMainCameraPass->GetRenderCommandBuffer());
 
 	// «∞œÚ‰÷»æ
