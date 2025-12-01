@@ -97,6 +97,10 @@ void ParticlePass::UpdateAfterFramebufferRecreate()
 {
 }
 
+void ParticlePass::Draw()
+{
+}
+
 void ParticlePass::PrepareUniformBuffer()
 {
 	// 分配 矩阵数据 的内存
@@ -682,6 +686,273 @@ void ParticlePass::UpdateEmitterTransform()
 
 		memcpy(m_emitterBufferBatches[index].m_pEmitterDescMapped, &m_emitterBufferBatches[index].m_emitterDesc, sizeof(ST_ParticleEmitterDesc));
 	}
+}
+
+void ParticlePass::AllocateDescriptorSet()
+{
+	ST_RHIDescriptorSetAllocateInfo particleDescriptorSetAllocInfo;
+	particleDescriptorSetAllocInfo.m_sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	particleDescriptorSetAllocInfo.m_pDescriptorPool = m_pRHI->GetDescriptorPoor();
+
+	m_descriptorInfos.resize(3 * m_emitterCount);
+	for (int eid = 0; eid < m_emitterCount; ++eid)
+	{
+		particleDescriptorSetAllocInfo.m_pSetLayouts = &m_descriptorInfos[0].m_pDescriptorSetLayout;
+		particleDescriptorSetAllocInfo.m_descriptorSetCount = 1;
+		particleDescriptorSetAllocInfo.m_pNext = NULL;
+
+		if (RHI_SUCCESS != m_pRHI->AllocateDescriptorSets(&particleDescriptorSetAllocInfo, m_descriptorInfos[eid * 3].m_pDescriptorSet))
+			throw std::runtime_error("allocate compute descriptor set");
+
+		particleDescriptorSetAllocInfo.m_pSetLayouts = &m_descriptorInfos[1].m_pDescriptorSetLayout;
+		particleDescriptorSetAllocInfo.m_descriptorSetCount = 1;
+		particleDescriptorSetAllocInfo.m_pNext = NULL;
+
+		if (RHI_SUCCESS != m_pRHI->AllocateDescriptorSets(&particleDescriptorSetAllocInfo, m_descriptorInfos[eid * 3 + 1].m_pDescriptorSet))
+			LOG_INFO("allocate normal and depth descriptor set done");
+	}
+}
+
+void ParticlePass::UpdateDescriptorSet()
+{
+	for (int eid = 0; eid < m_emitterCount; ++eid)
+	{
+		// compute part
+		{
+			std::vector<ST_RHIWriteDescriptorSet> computeWriteDescriptorSets{ {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {} };
+
+			ST_RHIDescriptorBufferInfo uniformbufferDescriptor = { m_pComputeUniformBuffer, 0, RHI_WHOLE_SIZE };
+			{
+				ST_RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[0];
+				descriptorset.m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorset.m_pDstSet = m_descriptorInfos[eid * 3].m_pDescriptorSet;
+				descriptorset.m_descriptorType = RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptorset.m_dstBinding = 0;
+				descriptorset.m_pBufferInfo = &uniformbufferDescriptor;
+				descriptorset.m_descriptorCount = 1;
+			}
+
+			ST_RHIDescriptorBufferInfo positionBufferDescriptor = { m_emitterBufferBatches[eid].m_pPositionDeviceBuffer, 0, RHI_WHOLE_SIZE };
+			{
+				ST_RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[1];
+				descriptorset.m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorset.m_pDstSet = m_descriptorInfos[eid * 3].m_pDescriptorSet;
+				descriptorset.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				descriptorset.m_dstBinding = 1;
+				descriptorset.m_pBufferInfo = &positionBufferDescriptor;
+				descriptorset.m_descriptorCount = 1;
+			}
+
+			ST_RHIDescriptorBufferInfo counterBufferDescriptor = { m_emitterBufferBatches[eid].m_pCounterDeviceBuffer, 0, RHI_WHOLE_SIZE };
+			{
+				ST_RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[2];
+				descriptorset.m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorset.m_pDstSet = m_descriptorInfos[eid * 3].m_pDescriptorSet;
+				descriptorset.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				descriptorset.m_dstBinding = 2;
+				descriptorset.m_pBufferInfo = &counterBufferDescriptor;
+				descriptorset.m_descriptorCount = 1;
+			}
+
+			ST_RHIDescriptorBufferInfo indirectArgumentBufferDescriptor = { m_emitterBufferBatches[eid].m_pIndirectDispatchArgumentBuffer, 0, RHI_WHOLE_SIZE };
+			{
+				ST_RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[3];
+				descriptorset.m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorset.m_pDstSet = m_descriptorInfos[eid * 3].m_pDescriptorSet;
+				descriptorset.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				descriptorset.m_dstBinding = 3;
+				descriptorset.m_pBufferInfo = &indirectArgumentBufferDescriptor;
+				descriptorset.m_descriptorCount = 1;
+			}
+
+			ST_RHIDescriptorBufferInfo aliveListBufferDescriptor = { m_emitterBufferBatches[eid].m_pAliveListBuffer, 0, RHI_WHOLE_SIZE };
+			{
+				ST_RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[4];
+				descriptorset.m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorset.m_pDstSet = m_descriptorInfos[eid * 3].m_pDescriptorSet;
+				descriptorset.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				descriptorset.m_dstBinding = 4;
+				descriptorset.m_pBufferInfo = &aliveListBufferDescriptor;
+				descriptorset.m_descriptorCount = 1;
+			}
+
+			//RHIDescriptorBufferInfo deadListBufferDescriptor = {
+			//	m_emitter_buffer_batches[eid].m_dead_list_buffer, 0, RHI_WHOLE_SIZE };
+			//{
+			//	RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[5];
+			//	descriptorset.sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			//	descriptorset.dstSet = m_descriptor_infos[eid * 3].descriptor_set;
+			//	descriptorset.descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			//	descriptorset.dstBinding = 5;
+			//	descriptorset.pBufferInfo = &deadListBufferDescriptor;
+			//	descriptorset.descriptorCount = 1;
+			//}
+
+			//RHIDescriptorBufferInfo aliveListNextBufferDescriptor = {
+			//	m_emitter_buffer_batches[eid].m_alive_list_next_buffer, 0, RHI_WHOLE_SIZE };
+			//{
+			//	RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[6];
+			//	descriptorset.sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			//	descriptorset.dstSet = m_descriptor_infos[eid * 3].descriptor_set;
+			//	descriptorset.descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			//	descriptorset.dstBinding = 6;
+			//	descriptorset.pBufferInfo = &aliveListNextBufferDescriptor;
+			//	descriptorset.descriptorCount = 1;
+			//}
+
+			//RHIDescriptorBufferInfo particleComponentResBufferDescriptor = {
+			//	m_emitter_buffer_batches[eid].m_particle_component_res_buffer, 0, RHI_WHOLE_SIZE };
+			//{
+			//	RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[7];
+			//	descriptorset.sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			//	descriptorset.dstSet = m_descriptor_infos[eid * 3].descriptor_set;
+			//	descriptorset.descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			//	descriptorset.dstBinding = 7;
+			//	descriptorset.pBufferInfo = &particleComponentResBufferDescriptor;
+			//	descriptorset.descriptorCount = 1;
+			//}
+
+			//RHIDescriptorBufferInfo particleSceneUniformBufferDescriptor = {
+			//	m_scene_uniform_buffer, 0, RHI_WHOLE_SIZE };
+			//{
+			//	RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[8];
+			//	descriptorset.sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			//	descriptorset.dstSet = m_descriptor_infos[eid * 3].descriptor_set;
+			//	descriptorset.descriptorType = RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			//	descriptorset.dstBinding = 8;
+			//	descriptorset.pBufferInfo = &particleSceneUniformBufferDescriptor;
+			//	descriptorset.descriptorCount = 1;
+			//}
+
+			//RHIDescriptorBufferInfo positionRenderbufferDescriptor = {
+			//	m_emitter_buffer_batches[eid].m_position_render_buffer, 0, RHI_WHOLE_SIZE };
+			//{
+			//	RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[9];
+			//	descriptorset.sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			//	descriptorset.dstSet = m_descriptor_infos[eid * 3].descriptor_set;
+			//	descriptorset.descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			//	descriptorset.dstBinding = 9;
+			//	descriptorset.pBufferInfo = &positionRenderbufferDescriptor;
+			//	descriptorset.descriptorCount = 1;
+			//}
+
+			//RHISampler* sampler;
+			//RHISamplerCreateInfo samplerCreateInfo{};
+			//samplerCreateInfo.sType = RHI_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+			//samplerCreateInfo.maxAnisotropy = 1.0f;
+			//samplerCreateInfo.anisotropyEnable = true;
+			//samplerCreateInfo.magFilter = RHI_FILTER_LINEAR;
+			//samplerCreateInfo.minFilter = RHI_FILTER_LINEAR;
+			//samplerCreateInfo.mipmapMode = RHI_SAMPLER_MIPMAP_MODE_LINEAR;
+			//samplerCreateInfo.addressModeU = RHI_SAMPLER_ADDRESS_MODE_REPEAT;
+			//samplerCreateInfo.addressModeV = RHI_SAMPLER_ADDRESS_MODE_REPEAT;
+			//samplerCreateInfo.addressModeW = RHI_SAMPLER_ADDRESS_MODE_REPEAT;
+			//samplerCreateInfo.mipLodBias = 0.0f;
+			//samplerCreateInfo.compareOp = RHI_COMPARE_OP_NEVER;
+			//samplerCreateInfo.minLod = 0.0f;
+			//samplerCreateInfo.maxLod = 0.0f;
+			//samplerCreateInfo.borderColor = RHI_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+
+			//if (RHI_SUCCESS != m_rhi->createSampler(&samplerCreateInfo, sampler))
+			//{
+			//	throw std::runtime_error("create sampler error");
+			//}
+
+			//RHIDescriptorImageInfo piccolo_texture_image_info = {};
+			//piccolo_texture_image_info.sampler = sampler;
+			//piccolo_texture_image_info.imageView = m_piccolo_logo_texture_image_view;
+			//piccolo_texture_image_info.imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+			//{
+			//	RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[10];
+			//	descriptorset.sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			//	descriptorset.dstSet = m_descriptor_infos[eid * 3].descriptor_set;
+			//	descriptorset.descriptorType = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			//	descriptorset.dstBinding = 10;
+			//	descriptorset.pImageInfo = &piccolo_texture_image_info;
+			//	descriptorset.descriptorCount = 1;
+			//}
+
+			//m_rhi->updateDescriptorSets(static_cast<uint32_t>(computeWriteDescriptorSets.size()), computeWriteDescriptorSets.data(), 0, NULL);
+		}
+
+		//{
+		//	RHIWriteDescriptorSet descriptor_input_attachment_writes_info[2] = { {}, {} };
+
+		//	RHIDescriptorImageInfo gbuffer_normal_descriptor_image_info = {};
+		//	gbuffer_normal_descriptor_image_info.sampler = nullptr;
+		//	gbuffer_normal_descriptor_image_info.imageView = m_src_normal_image_view;
+		//	gbuffer_normal_descriptor_image_info.imageLayout = RHI_IMAGE_LAYOUT_GENERAL;
+		//	{
+
+		//		RHIWriteDescriptorSet& gbuffer_normal_descriptor_input_attachment_write_info =
+		//			descriptor_input_attachment_writes_info[0];
+		//		gbuffer_normal_descriptor_input_attachment_write_info.sType =
+		//			RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		//		gbuffer_normal_descriptor_input_attachment_write_info.pNext = NULL;
+		//		gbuffer_normal_descriptor_input_attachment_write_info.dstSet =
+		//			m_descriptor_infos[eid * 3 + 1].descriptor_set;
+		//		gbuffer_normal_descriptor_input_attachment_write_info.dstBinding = 0;
+		//		gbuffer_normal_descriptor_input_attachment_write_info.dstArrayElement = 0;
+		//		gbuffer_normal_descriptor_input_attachment_write_info.descriptorType =
+		//			RHI_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+		//		gbuffer_normal_descriptor_input_attachment_write_info.descriptorCount = 1;
+		//		gbuffer_normal_descriptor_input_attachment_write_info.pImageInfo =
+		//			&gbuffer_normal_descriptor_image_info;
+		//	}
+
+		//	RHISampler* sampler;
+		//	RHISamplerCreateInfo samplerCreateInfo{};
+		//	samplerCreateInfo.sType = RHI_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		//	samplerCreateInfo.maxAnisotropy = 1.0f;
+		//	samplerCreateInfo.anisotropyEnable = true;
+		//	samplerCreateInfo.magFilter = RHI_FILTER_NEAREST;
+		//	samplerCreateInfo.minFilter = RHI_FILTER_NEAREST;
+		//	samplerCreateInfo.mipmapMode = RHI_SAMPLER_MIPMAP_MODE_LINEAR;
+		//	samplerCreateInfo.addressModeU = RHI_SAMPLER_ADDRESS_MODE_REPEAT;
+		//	samplerCreateInfo.addressModeV = RHI_SAMPLER_ADDRESS_MODE_REPEAT;
+		//	samplerCreateInfo.addressModeW = RHI_SAMPLER_ADDRESS_MODE_REPEAT;
+		//	samplerCreateInfo.mipLodBias = 0.0f;
+		//	samplerCreateInfo.compareOp = RHI_COMPARE_OP_NEVER;
+		//	samplerCreateInfo.minLod = 0.0f;
+		//	samplerCreateInfo.maxLod = 0.0f;
+		//	samplerCreateInfo.borderColor = RHI_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+		//	if (RHI_SUCCESS != m_rhi->createSampler(&samplerCreateInfo, sampler))
+		//	{
+		//		throw std::runtime_error("create sampler error");
+		//	}
+
+		//	RHIDescriptorImageInfo depth_descriptor_image_info = {};
+		//	depth_descriptor_image_info.sampler = sampler;
+		//	depth_descriptor_image_info.imageView = m_src_depth_image_view;
+		//	depth_descriptor_image_info.imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		//	{
+		//		RHIWriteDescriptorSet& depth_descriptor_input_attachment_write_info =
+		//			descriptor_input_attachment_writes_info[1];
+		//		depth_descriptor_input_attachment_write_info.sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		//		depth_descriptor_input_attachment_write_info.pNext = NULL;
+		//		depth_descriptor_input_attachment_write_info.dstSet =
+		//			m_descriptor_infos[eid * 3 + 1].descriptor_set;
+		//		depth_descriptor_input_attachment_write_info.dstBinding = 1;
+		//		depth_descriptor_input_attachment_write_info.dstArrayElement = 0;
+		//		depth_descriptor_input_attachment_write_info.descriptorType =
+		//			RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		//		depth_descriptor_input_attachment_write_info.descriptorCount = 1;
+		//		depth_descriptor_input_attachment_write_info.pImageInfo = &depth_descriptor_image_info;
+		//	}
+
+		//	m_rhi->updateDescriptorSets(sizeof(descriptor_input_attachment_writes_info) /
+		//		sizeof(descriptor_input_attachment_writes_info[0]),
+		//		descriptor_input_attachment_writes_info,
+		//		0,
+		//		NULL);
+		//}
+	}
+}
+
+void ParticlePass::SetupParticleDescriptorSet()
+{
 }
 
 NAMESPACE_XYH_END

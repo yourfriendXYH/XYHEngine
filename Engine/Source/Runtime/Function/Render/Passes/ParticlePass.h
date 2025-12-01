@@ -15,33 +15,33 @@ struct ST_ParticlePassInitInfo : public ST_RenderPassInitInfo
 class ParticleEmitterBufferBatch
 {
 public:
-	RHIBuffer* m_position_render_buffer = nullptr;
-	RHIBuffer* m_position_device_buffer = nullptr;
-	RHIBuffer* m_position_host_buffer = nullptr;
-	RHIBuffer* m_counter_device_buffer = nullptr;
-	RHIBuffer* m_counter_host_buffer = nullptr;
-	RHIBuffer* m_indirect_dispatch_argument_buffer = nullptr;
-	RHIBuffer* m_alive_list_buffer = nullptr;
-	RHIBuffer* m_alive_list_next_buffer = nullptr;
-	RHIBuffer* m_dead_list_buffer = nullptr;
-	RHIBuffer* m_particle_component_res_buffer = nullptr;
+	RHIBuffer* m_pPositionRenderBuffer = nullptr;
+	RHIBuffer* m_pPositionDeviceBuffer = nullptr;
+	RHIBuffer* m_pPositionHostBuffer = nullptr;
+	RHIBuffer* m_pCounterDeviceBuffer = nullptr;
+	RHIBuffer* m_pCounterHostBuffer = nullptr;
+	RHIBuffer* m_pIndirectDispatchArgumentBuffer = nullptr;
+	RHIBuffer* m_pAliveListBuffer = nullptr;
+	RHIBuffer* m_pAliveListNextBuffer = nullptr;
+	RHIBuffer* m_pDeadListBuffer = nullptr;
+	RHIBuffer* m_pParticleComponentResBuffer = nullptr;
 
-	RHIDeviceMemory* m_counter_host_memory = nullptr;
-	RHIDeviceMemory* m_position_host_memory = nullptr;
-	RHIDeviceMemory* m_position_device_memory = nullptr;
-	RHIDeviceMemory* m_counter_device_memory = nullptr;
-	RHIDeviceMemory* m_indirect_dispatch_argument_memory = nullptr;
-	RHIDeviceMemory* m_alive_list_memory = nullptr;
-	RHIDeviceMemory* m_alive_list_next_memory = nullptr;
-	RHIDeviceMemory* m_dead_list_memory = nullptr;
-	RHIDeviceMemory* m_particle_component_res_memory = nullptr;
-	RHIDeviceMemory* m_position_render_memory = nullptr;
+	RHIDeviceMemory* m_pCounterHostMemory = nullptr;
+	RHIDeviceMemory* m_pPositionHostMemory = nullptr;
+	RHIDeviceMemory* m_pPositionDeviceMemory = nullptr;
+	RHIDeviceMemory* m_pCounterDeviceMemory = nullptr;
+	RHIDeviceMemory* m_pIndirectDispatchArgumentMemory = nullptr;
+	RHIDeviceMemory* m_pAliveListMemory = nullptr;
+	RHIDeviceMemory* m_pAliveListNextMemory = nullptr;
+	RHIDeviceMemory* m_pDeadListMemory = nullptr;
+	RHIDeviceMemory* m_pParticleComponentResMemory = nullptr;
+	RHIDeviceMemory* m_pPositionRenderMemory = nullptr;
 
 	void* m_pEmitterDescMapped{ nullptr };
 
 	ST_ParticleEmitterDesc m_emitterDesc;
 
-	uint32_t m_num_particle{ 0 };
+	uint32_t m_numParticle{ 0 };
 	void FreeUpBatch(std::shared_ptr<RHI> rhi) {};
 };
 
@@ -52,6 +52,7 @@ public:
 	// 初始化（传入全局资源、粒子管理器）
 	void Initialize(const ST_RenderPassInitInfo* initInfo) override final;
 
+	// 每帧执行（初始化部分渲染数据）
 	void PreparePassData(std::shared_ptr<RenderResourceBase> pRenderResource) override final;
 
 	// 设置渲染命令缓冲区指针
@@ -69,6 +70,9 @@ public:
 	void SetRenderPassHandle(RHIRenderPass* pRenderPass);
 
 	void UpdateAfterFramebufferRecreate();
+
+	// 绘制粒子效果
+	void Draw() override final;
 
 private:
 
@@ -90,6 +94,14 @@ private:
 
 	// 更新发射器的变换数据
 	void UpdateEmitterTransform();
+
+	// 发射器描述符集分配
+	void AllocateDescriptorSet();
+
+	// 更新粒子发射器的描述符集数据
+	void UpdateDescriptorSet();
+
+	void SetupParticleDescriptorSet();
 
 private:
 	std::shared_ptr<ParticleManager> m_pParticleManager;
@@ -167,6 +179,8 @@ private:
 	std::vector<ST_ParticleEmitterTransformDesc> m_emitterTransformIndices;
 
 	std::vector<ParticleEmitterBufferBatch> m_emitterBufferBatches;
+
+	int m_emitterCount;
 };
 
 NAMESPACE_XYH_END

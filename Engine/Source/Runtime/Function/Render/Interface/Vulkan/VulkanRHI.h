@@ -339,7 +339,7 @@ public:
 	RHICommandBuffer* m_pCurrentCommandBuffer = new VulkanCommandBuffer();
 
 	VkDescriptorPool m_vkDescriptorPool;	// 全局描述符池
-	RHIDescriptorPool* m_rhiDescriptorPool;	// RHI描述符池
+	RHIDescriptorPool* m_pRHIDescriptorPool;	// RHI描述符池
 
 	// VkSemaphore 和 VkFence 是两种同步原语（Synchronization Primitives），用于协调 GPU 和 CPU 之间的执行顺序，防止资源竞争和数据竞争
 	RHISemaphore* m_imageAvailableForTexturescopySemaphores[s_maxFramesInFlight];	// 图像可用信号量

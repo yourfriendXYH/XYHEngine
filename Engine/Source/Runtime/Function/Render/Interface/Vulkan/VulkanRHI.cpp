@@ -1657,7 +1657,7 @@ RHICommandPool* VulkanRHI::GetCommandPoor() const
 
 RHIDescriptorPool* VulkanRHI::GetDescriptorPoor() const
 {
-	return m_rhiDescriptorPool;
+	return m_pRHIDescriptorPool;
 }
 
 RHIFence* const* VulkanRHI::GetFenceList() const
@@ -2307,8 +2307,8 @@ void VulkanRHI::CreateDescriptorPool()
 		LOG_ERROR("failed to create descriptor pool!");	// 如果创建失败，输出错误信息
 	}
 
-	m_rhiDescriptorPool = new VulkanDescriptorPool();	// 创建Vulkan描述符池对象
-	((VulkanDescriptorPool*)m_rhiDescriptorPool)->SetResource(m_vkDescriptorPool);	// 设置Vulkan描述符池资源
+	m_pRHIDescriptorPool = new VulkanDescriptorPool();	// 创建Vulkan描述符池对象
+	((VulkanDescriptorPool*)m_pRHIDescriptorPool)->SetResource(m_vkDescriptorPool);	// 设置Vulkan描述符池资源
 }
 
 // semaphore : signal an image is ready for rendering // ready for presentation
