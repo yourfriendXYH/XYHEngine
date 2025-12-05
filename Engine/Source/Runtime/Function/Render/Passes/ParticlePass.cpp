@@ -776,17 +776,16 @@ void ParticlePass::UpdateDescriptorSet()
 				descriptorset.m_descriptorCount = 1;
 			}
 
-			//RHIDescriptorBufferInfo deadListBufferDescriptor = {
-			//	m_emitter_buffer_batches[eid].m_dead_list_buffer, 0, RHI_WHOLE_SIZE };
-			//{
-			//	RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[5];
-			//	descriptorset.sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			//	descriptorset.dstSet = m_descriptor_infos[eid * 3].descriptor_set;
-			//	descriptorset.descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			//	descriptorset.dstBinding = 5;
-			//	descriptorset.pBufferInfo = &deadListBufferDescriptor;
-			//	descriptorset.descriptorCount = 1;
-			//}
+			ST_RHIDescriptorBufferInfo deadListBufferDescriptor = { m_emitterBufferBatches[eid].m_pDeadListBuffer, 0, RHI_WHOLE_SIZE };
+			{
+				ST_RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[5];
+				descriptorset.m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorset.m_pDstSet = m_descriptorInfos[eid * 3].m_pDescriptorSet;
+				descriptorset.m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				descriptorset.m_dstBinding = 5;
+				descriptorset.m_pBufferInfo = &deadListBufferDescriptor;
+				descriptorset.m_descriptorCount = 1;
+			}
 
 			//RHIDescriptorBufferInfo aliveListNextBufferDescriptor = {
 			//	m_emitter_buffer_batches[eid].m_alive_list_next_buffer, 0, RHI_WHOLE_SIZE };
