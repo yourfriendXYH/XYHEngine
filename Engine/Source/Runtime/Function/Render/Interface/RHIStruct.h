@@ -568,7 +568,7 @@ struct ST_RHIComputePipelineCreateInfo
 };
 
 // 描述符图像信息
-struct ST_RHIDescriptorImageInfo 
+struct ST_RHIDescriptorImageInfo
 {
 	RHISampler* m_pSampler;
 	RHIImageView* m_pImageView;
@@ -576,7 +576,7 @@ struct ST_RHIDescriptorImageInfo
 };
 
 // 描述符缓冲区信息
-struct ST_RHIDescriptorBufferInfo 
+struct ST_RHIDescriptorBufferInfo
 {
 	RHIBuffer* m_pBuffer;
 	RHIDeviceSize m_offset;
@@ -633,6 +633,28 @@ struct ST_RHIDescriptorSetAllocateInfo
 	RHIDescriptorPool* m_pDescriptorPool;	// 描述符池
 	uint32_t m_descriptorSetCount;	// 描述符集数量
 	const RHIDescriptorSetLayout* const* m_pSetLayouts;	// 描述符集布局
+};
+
+struct ST_RHISamplerCreateInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHISamplerCreateFlags m_flags;
+	ERHIFilter m_magFilter;
+	ERHIFilter m_minFilter;
+	ERHISamplerMipmapMode m_mipmapMode;
+	ERHISamplerAddressMode m_addressModeU;
+	ERHISamplerAddressMode m_addressModeV;
+	ERHISamplerAddressMode m_addressModeW;
+	float m_mipLodBias;
+	RHIBool32 m_anisotropyEnable;
+	float m_maxAnisotropy;
+	RHIBool32 m_compareEnable;
+	ERHICompareOp m_compareOp;
+	float m_minLod;
+	float m_maxLod;
+	ERHIBorderColor m_borderColor;
+	RHIBool32 m_unnormalizedCoordinates;
 };
 
 NAMESPACE_XYH_END

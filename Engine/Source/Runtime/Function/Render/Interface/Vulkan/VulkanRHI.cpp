@@ -1169,7 +1169,48 @@ bool VulkanRHI::CreateRenderPass(const ST_RHIRenderPassCreateInfo* pCreateInfo, 
 
 bool VulkanRHI::CreateSampler(const ST_RHISamplerCreateInfo* pCreateInfo, RHISampler*& pSampler)
 {
-	return false;
+	// 采样器创建
+	VkSamplerCreateInfo createInfo{};
+	createInfo.sType = (VkStructureType)pCreateInfo->m_sType;
+	createInfo.pNext = (const void*)pCreateInfo->m_pNext;
+	createInfo.flags = (VkSamplerCreateFlags)pCreateInfo->m_flags;
+	// 过滤模式
+	createInfo.magFilter = (VkFilter)pCreateInfo->m_magFilter;
+	createInfo.minFilter = (VkFilter)pCreateInfo->m_minFilter;
+	createInfo.mipmapMode = (VkSamplerMipmapMode)pCreateInfo->m_mipmapMode;
+	// 寻址模式
+	createInfo.addressModeU = (VkSamplerAddressMode)pCreateInfo->m_addressModeU;
+	createInfo.addressModeV = (VkSamplerAddressMode)pCreateInfo->m_addressModeV;
+	createInfo.addressModeW = (VkSamplerAddressMode)pCreateInfo->m_addressModeW;
+	// Mipmap相关
+	createInfo.mipLodBias = pCreateInfo->m_mipLodBias;
+	createInfo.minLod = pCreateInfo->m_minLod;
+	createInfo.maxLod = pCreateInfo->m_maxLod;
+	// 各向异性过滤
+	createInfo.anisotropyEnable = (VkBool32)pCreateInfo->m_anisotropyEnable;
+	createInfo.maxAnisotropy = pCreateInfo->m_maxAnisotropy;
+	// 边界颜色
+	createInfo.borderColor = (VkBorderColor)pCreateInfo->m_borderColor;
+
+	createInfo.compareEnable = (VkBool32)pCreateInfo->m_compareEnable;
+	createInfo.compareOp = (VkCompareOp)pCreateInfo->m_compareOp;
+	createInfo.unnormalizedCoordinates = (VkBool32)pCreateInfo->m_unnormalizedCoordinates;
+
+	// 创建采样器
+	pSampler = new VulkanSampler();
+	VkSampler vkSampler;
+	VkResult result = vkCreateSampler(m_device, &createInfo, nullptr, &vkSampler);
+	((VulkanSampler*)pSampler)->SetResource(vkSampler);
+
+	if (result == VK_SUCCESS)
+	{
+		return RHI_SUCCESS;
+	}
+	else
+	{
+		LOG_ERROR("vkCreateSampler failed!");
+		return false;
+	}
 }
 
 bool VulkanRHI::CreateRHISemaphore(const ST_RHISemaphoreCreateInfo* pCreateInfo, RHISemaphore*& pSemaphore)

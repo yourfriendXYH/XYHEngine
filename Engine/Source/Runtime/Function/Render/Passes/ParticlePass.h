@@ -58,18 +58,35 @@ public:
 	// 设置渲染命令缓冲区指针
 	void SetRenderCommandBufferHandle(RHICommandBuffer* commandBuffer);
 
+	// （每帧渲染结束后调用）
 	void CopyNormalAndDepthImage();
-
-	void SetDepthAndNormalImage(RHIImage* pDepthImage, RHIImage* pNormalImage);
-
-	// 粒子Pass部分数据创建
-	void SetupParticlePass();
-
+	// （每帧渲染结束后调用）
 	void Simulate();
 
+	// 粒子Pass部分数据创建
+	// 初始化时调用
+	void SetupParticlePass();
+
+	// 获取MainCameraPass的部分数据
+	// 从MainCameraPass上获取深度和法线的Image
+	void SetDepthAndNormalImage(RHIImage* pDepthImage, RHIImage* pNormalImage);
+	// 获取MainCameraPass的RenderPass指针
 	void SetRenderPassHandle(RHIRenderPass* pRenderPass);
 
+	// ???
 	void UpdateAfterFramebufferRecreate();
+
+
+	// 设置粒子发射器数量（每帧调用）
+	void SetEmitterCount(int count);
+	// 创建粒子发射器（每帧调用）
+	void CreateEmitter(int id, const ST_ParticleEmitterDesc& desc);
+	// 初始化粒子发射器（每帧判断是否更新）
+	void InitializeEmitters();
+	// （每帧调用）
+	void SetTickIndices(const std::vector<ParticleEmitterID>& tickIndices);
+	// （每帧调用）
+	void SetTransformIndices(const std::vector<ST_ParticleEmitterTransformDesc>& transformIndices);
 
 	// 绘制粒子效果
 	void Draw() override final;
@@ -99,8 +116,11 @@ private:
 	void AllocateDescriptorSet();
 
 	// 更新粒子发射器的描述符集数据
+	// 1. 每帧执行ProcessSwapData方法会调用
+	// 2. 帧缓冲重新创建时会调用
 	void UpdateDescriptorSet();
 
+	// 设置粒子发射器的描述符集
 	void SetupParticleDescriptorSet();
 
 private:
@@ -153,6 +173,7 @@ private:
 	RHIPipeline* m_pEmitPipeline = nullptr;	// 发出
 	RHIPipeline* m_pSimulatePipeline = nullptr;	// 模拟
 
+	// MainCameraPass的渲染通道指针
 	RHIRenderPass* m_pRenderPass = nullptr;
 
 	// 粒子绘制的image

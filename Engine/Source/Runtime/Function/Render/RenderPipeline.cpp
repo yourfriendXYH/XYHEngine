@@ -201,6 +201,7 @@ void RenderPipeline::PassUpdateAfterRecreateSwapchain()
 	mainCameraPass.UpdateAfterFramebufferRecreate();	// 主摄像机渲染通道更新
 
 	pickPass.RecreateFramebuffer();	// 重建拾取渲染通道的帧缓冲
+	particlePass.UpdateAfterFramebufferRecreate();	// 粒子渲染通道更新
 }
 
 uint32_t RenderPipeline::GetGuidOfPickedMesh(const Vector2& pickedUV)
