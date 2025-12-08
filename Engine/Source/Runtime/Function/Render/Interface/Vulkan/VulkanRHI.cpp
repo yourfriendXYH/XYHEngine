@@ -165,18 +165,18 @@ void VulkanRHI::CreateSwapChain()
 	ST_SwapChainSupportDetails swapchainSupportDetails = QuerySwapChainSupport(m_physicalDevice);
 
 	// choose the best or fitting format
-	VkSurfaceFormatKHR chosenSurfaceFormat = ChooseSwapchainSurfaceFormatFromDetails(swapchainSupportDetails.formats);
+	VkSurfaceFormatKHR chosenSurfaceFormat = ChooseSwapchainSurfaceFormatFromDetails(swapchainSupportDetails.m_formats);
 
 	// choose the best or fitting present mode
-	VkPresentModeKHR chosenPresentMode = ChooseSwapchainPresentModeFromDetails(swapchainSupportDetails.presentModes);
+	VkPresentModeKHR chosenPresentMode = ChooseSwapchainPresentModeFromDetails(swapchainSupportDetails.m_presentModes);
 
 	// 选择最合适的屏幕大小
-	VkExtent2D chosenExtent = ChooseSwapchainExtentFromDetails(swapchainSupportDetails.capabilities);
+	VkExtent2D chosenExtent = ChooseSwapchainExtentFromDetails(swapchainSupportDetails.m_capabilities);
 
-	uint32_t imageCount = swapchainSupportDetails.capabilities.minImageCount + 1;
-	if (swapchainSupportDetails.capabilities.maxImageCount > 0 && imageCount > swapchainSupportDetails.capabilities.maxImageCount)
+	uint32_t imageCount = swapchainSupportDetails.m_capabilities.minImageCount + 1;
+	if (swapchainSupportDetails.m_capabilities.maxImageCount > 0 && imageCount > swapchainSupportDetails.m_capabilities.maxImageCount)
 	{
-		imageCount = swapchainSupportDetails.capabilities.maxImageCount;
+		imageCount = swapchainSupportDetails.m_capabilities.maxImageCount;
 	}
 
 	// 创建交换链的配置信息
@@ -203,7 +203,7 @@ void VulkanRHI::CreateSwapChain()
 	{
 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;	// 共享模式为独占
 	}
-	createInfo.preTransform = swapchainSupportDetails.capabilities.currentTransform;	// 交换链的当前变换
+	createInfo.preTransform = swapchainSupportDetails.m_capabilities.currentTransform;	// 交换链的当前变换
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;	// 合成Alpha通道的方式，通常为不透明
 	createInfo.presentMode = chosenPresentMode;	// 交换链的呈现模式
 	createInfo.clipped = VK_TRUE;	// 是否裁剪交换链图像
@@ -1533,8 +1533,91 @@ void VulkanRHI::CmdDispatchIndirect(RHICommandBuffer* commandBuffer, RHIBuffer* 
 {
 }
 
-void VulkanRHI::CmdPipelineBarrier(RHICommandBuffer* commandBuffer, RHIPipelineStageFlags srcStageMask, RHIPipelineStageFlags dstStageMask, RHIDependencyFlags dependencyFlags, uint32_t memoryBarrierCount, const ST_RHIMemoryBarrier* pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const ST_RHIBufferMemoryBarrier* pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount, const ST_RHIImageMemoryBarrier* pImageMemoryBarriers)
+void VulkanRHI::CmdPipelineBarrier(
+	RHICommandBuffer* commandBuffer, 
+	RHIPipelineStageFlags srcStageMask, 
+	RHIPipelineStageFlags dstStageMask, 
+	RHIDependencyFlags dependencyFlags, 
+	uint32_t memoryBarrierCount, 
+	const ST_RHIMemoryBarrier* pMemoryBarriers, 
+	uint32_t bufferMemoryBarrierCount, 
+	const ST_RHIBufferMemoryBarrier* pBufferMemoryBarriers, 
+	uint32_t imageMemoryBarrierCount, 
+	const ST_RHIImageMemoryBarrier* pImageMemoryBarriers)
 {
+	//memory_barrier
+	int memoryBarrierSize = memoryBarrierCount;
+	std::vector<VkMemoryBarrier> vk_memory_barrier_list(memoryBarrierSize);
+	for (int i = 0; i < memoryBarrierSize; ++i)
+	{
+		const auto& rhiMemoryBarrierElement = pMemoryBarriers[i];
+		auto& vkMemoryBarrierElement = vk_memory_barrier_list[i];
+
+
+		vkMemoryBarrierElement.sType = (VkStructureType)rhiMemoryBarrierElement.m_sType;
+		vkMemoryBarrierElement.pNext = (const void*)rhiMemoryBarrierElement.m_pNext;
+		vkMemoryBarrierElement.srcAccessMask = (VkAccessFlags)rhiMemoryBarrierElement.m_srcAccessMask;
+		vkMemoryBarrierElement.dstAccessMask = (VkAccessFlags)rhiMemoryBarrierElement.m_dstAccessMask;
+	};
+
+	////buffer_memory_barrier
+	//int buffer_memory_barrier_size = bufferMemoryBarrierCount;
+	//std::vector<VkBufferMemoryBarrier> vk_buffer_memory_barrier_list(buffer_memory_barrier_size);
+	//for (int i = 0; i < buffer_memory_barrier_size; ++i)
+	//{
+	//	const auto& rhi_buffer_memory_barrier_element = pBufferMemoryBarriers[i];
+	//	auto& vk_buffer_memory_barrier_element = vk_buffer_memory_barrier_list[i];
+
+	//	vk_buffer_memory_barrier_element.sType = (VkStructureType)rhi_buffer_memory_barrier_element.sType;
+	//	vk_buffer_memory_barrier_element.pNext = (const void*)rhi_buffer_memory_barrier_element.pNext;
+	//	vk_buffer_memory_barrier_element.srcAccessMask = (VkAccessFlags)rhi_buffer_memory_barrier_element.srcAccessMask;
+	//	vk_buffer_memory_barrier_element.dstAccessMask = (VkAccessFlags)rhi_buffer_memory_barrier_element.dstAccessMask;
+	//	vk_buffer_memory_barrier_element.srcQueueFamilyIndex = rhi_buffer_memory_barrier_element.srcQueueFamilyIndex;
+	//	vk_buffer_memory_barrier_element.dstQueueFamilyIndex = rhi_buffer_memory_barrier_element.dstQueueFamilyIndex;
+	//	vk_buffer_memory_barrier_element.buffer = ((VulkanBuffer*)rhi_buffer_memory_barrier_element.buffer)->getResource();
+	//	vk_buffer_memory_barrier_element.offset = (VkDeviceSize)rhi_buffer_memory_barrier_element.offset;
+	//	vk_buffer_memory_barrier_element.size = (VkDeviceSize)rhi_buffer_memory_barrier_element.size;
+	//};
+
+	////image_memory_barrier
+	//int image_memory_barrier_size = imageMemoryBarrierCount;
+	//std::vector<VkImageMemoryBarrier> vk_image_memory_barrier_list(image_memory_barrier_size);
+	//for (int i = 0; i < image_memory_barrier_size; ++i)
+	//{
+	//	const auto& rhi_image_memory_barrier_element = pImageMemoryBarriers[i];
+	//	auto& vk_image_memory_barrier_element = vk_image_memory_barrier_list[i];
+
+	//	VkImageSubresourceRange image_subresource_range{};
+	//	image_subresource_range.aspectMask = (VkImageAspectFlags)rhi_image_memory_barrier_element.subresourceRange.aspectMask;
+	//	image_subresource_range.baseMipLevel = rhi_image_memory_barrier_element.subresourceRange.baseMipLevel;
+	//	image_subresource_range.levelCount = rhi_image_memory_barrier_element.subresourceRange.levelCount;
+	//	image_subresource_range.baseArrayLayer = rhi_image_memory_barrier_element.subresourceRange.baseArrayLayer;
+	//	image_subresource_range.layerCount = rhi_image_memory_barrier_element.subresourceRange.layerCount;
+
+	//	vk_image_memory_barrier_element.sType = (VkStructureType)rhi_image_memory_barrier_element.sType;
+	//	vk_image_memory_barrier_element.pNext = (const void*)rhi_image_memory_barrier_element.pNext;
+	//	vk_image_memory_barrier_element.srcAccessMask = (VkAccessFlags)rhi_image_memory_barrier_element.srcAccessMask;
+	//	vk_image_memory_barrier_element.dstAccessMask = (VkAccessFlags)rhi_image_memory_barrier_element.dstAccessMask;
+	//	vk_image_memory_barrier_element.oldLayout = (VkImageLayout)rhi_image_memory_barrier_element.oldLayout;
+	//	vk_image_memory_barrier_element.newLayout = (VkImageLayout)rhi_image_memory_barrier_element.newLayout;
+	//	vk_image_memory_barrier_element.srcQueueFamilyIndex = rhi_image_memory_barrier_element.srcQueueFamilyIndex;
+	//	vk_image_memory_barrier_element.dstQueueFamilyIndex = rhi_image_memory_barrier_element.dstQueueFamilyIndex;
+	//	vk_image_memory_barrier_element.image = ((VulkanImage*)rhi_image_memory_barrier_element.image)->getResource();
+	//	vk_image_memory_barrier_element.subresourceRange = image_subresource_range;
+	//};
+
+	//vkCmdPipelineBarrier(
+	//	((VulkanCommandBuffer*)commandBuffer)->getResource(),
+	//	(RHIPipelineStageFlags)srcStageMask,
+	//	(RHIPipelineStageFlags)dstStageMask,
+	//	(RHIDependencyFlags)dependencyFlags,
+	//	memoryBarrierCount,
+	//	vk_memory_barrier_list.data(),
+	//	bufferMemoryBarrierCount,
+	//	vk_buffer_memory_barrier_list.data(),
+	//	imageMemoryBarrierCount,
+	//	vk_image_memory_barrier_list.data()
+	//);
 }
 
 bool VulkanRHI::EndCommandBuffer(RHICommandBuffer* commandBuffer)
@@ -1703,7 +1786,7 @@ RHIDescriptorPool* VulkanRHI::GetDescriptorPoor() const
 
 RHIFence* const* VulkanRHI::GetFenceList() const
 {
-	return nullptr;
+	return m_rhiIsFrameInFlightFences;
 }
 
 ST_QueueFamilyIndices VulkanRHI::GetQueueFamilyIndices() const
@@ -1743,7 +1826,7 @@ ST_RHIDepthImageDesc VulkanRHI::GetDepthImageInfo() const
 
 uint8_t VulkanRHI::GetMaxFramesInFlight() const
 {
-	return 0;
+	return s_maxFramesInFlight;
 }
 
 uint8_t VulkanRHI::GetCurrentFrameIndex() const
@@ -2486,7 +2569,7 @@ bool VulkanRHI::IsDeviceSuitable(VkPhysicalDevice physicalDevice)
 	if (isExtensionSupported)
 	{
 		ST_SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(physicalDevice);	// 查询交换链支持情况
-		isSwapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();	// 如果交换链格式和呈现模式都不为空，则认为交换链足够
+		isSwapChainAdequate = !swapChainSupport.m_formats.empty() && !swapChainSupport.m_presentModes.empty();	// 如果交换链格式和呈现模式都不为空，则认为交换链足够
 	}
 
 	VkPhysicalDeviceFeatures physicalDeviceFeatures;	// 特性
@@ -2559,22 +2642,22 @@ ST_SwapChainSupportDetails VulkanRHI::QuerySwapChainSupport(VkPhysicalDevice phy
 {
 	ST_SwapChainSupportDetails detailsResult;
 
-	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_surface, &detailsResult.capabilities);	// 获取交换链表面能力
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_surface, &detailsResult.m_capabilities);	// 获取交换链表面能力
 
 	uint32_t formatCount;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &formatCount, nullptr);	// 获取交换链表面格式数量
 	if (formatCount != 0)
 	{
-		detailsResult.formats.resize(formatCount);	// 调整交换链表面格式向量大小
-		vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &formatCount, detailsResult.formats.data());	// 获取交换链表面格式
+		detailsResult.m_formats.resize(formatCount);	// 调整交换链表面格式向量大小
+		vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &formatCount, detailsResult.m_formats.data());	// 获取交换链表面格式
 	}
 
 	uint32_t presentModeCount;	// 获取交换链表面呈现模式数量
 	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, nullptr);	// 获取交换链表面呈现模式数量
 	if (presentModeCount != 0)
 	{
-		detailsResult.presentModes.resize(presentModeCount);	// 调整交换链表面呈现模式向量大小
-		vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, detailsResult.presentModes.data());	// 获取交换链表面呈现模式
+		detailsResult.m_presentModes.resize(presentModeCount);	// 调整交换链表面呈现模式向量大小
+		vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, detailsResult.m_presentModes.data());	// 获取交换链表面呈现模式
 	}
 
 	return detailsResult;

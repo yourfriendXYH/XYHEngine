@@ -123,7 +123,7 @@ struct ST_RHIClearDepthStencilValue;
 ////////////////////结构体定义////////////////////////
 struct ST_RHIMemoryBarrier
 {
-	ERHIStructureType m_type;
+	ERHIStructureType m_sType;
 	const void* m_pNext;
 	RHIAccessFlags m_srcAccessMask;
 	RHIAccessFlags m_dstAccessMask;
@@ -263,9 +263,9 @@ struct ST_QueueFamilyIndices    // 队列族索引
 
 struct ST_SwapChainSupportDetails   // 交换链支持细节
 {
-	VkSurfaceCapabilitiesKHR        capabilities;   // 交换链的能力
-	std::vector<VkSurfaceFormatKHR> formats;    // 交换链支持的表面格式
-	std::vector<VkPresentModeKHR>   presentModes;   // 交换链支持的呈现模式
+	VkSurfaceCapabilitiesKHR m_capabilities;   // 交换链的能力
+	std::vector<VkSurfaceFormatKHR> m_formats;    // 交换链支持的表面格式
+	std::vector<VkPresentModeKHR> m_presentModes;   // 交换链支持的呈现模式
 };
 
 struct ST_RHISwapChainDesc
@@ -626,6 +626,27 @@ struct ST_RHICommandBufferAllocateInfo
 	uint32_t m_commandBufferCount;	// 命令缓冲区数量
 };
 
+// 命令缓冲开始信息
+struct ST_RHICommandBufferBeginInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHICommandBufferUsageFlags m_flags;
+	const ST_RHICommandBufferInheritanceInfo* m_pInheritanceInfo;	// 继承信息
+};
+
+struct ST_RHICommandBufferInheritanceInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIRenderPass* m_pRenderPass;
+	uint32_t m_subpass;
+	RHIFramebuffer* m_pFramebuffer;
+	RHIBool32 m_occlusionQueryEnable;
+	RHIQueryControlFlags m_queryFlags;
+	RHIQueryPipelineStatisticFlags m_pipelineStatistics;
+};
+
 struct ST_RHIDescriptorSetAllocateInfo
 {
 	ERHIStructureType m_sType;
@@ -655,6 +676,31 @@ struct ST_RHISamplerCreateInfo
 	float m_maxLod;
 	ERHIBorderColor m_borderColor;
 	RHIBool32 m_unnormalizedCoordinates;
+};
+
+// 图像子资源范围
+struct ST_RHIImageSubresourceRange 
+{
+	RHIImageAspectFlags m_aspectMask;
+	uint32_t m_baseMipLevel;
+	uint32_t m_levelCount;
+	uint32_t m_baseArrayLayer;
+	uint32_t m_layerCount;
+};
+
+// 图像内存屏障
+struct ST_RHIImageMemoryBarrier
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIAccessFlags m_srcAccessMask;
+	RHIAccessFlags m_dstAccessMask;
+	ERHIImageLayout m_oldLayout;
+	ERHIImageLayout m_newLayout;
+	uint32_t m_srcQueueFamilyIndex;
+	uint32_t m_dstQueueFamilyIndex;
+	RHIImage* m_pImage;
+	ST_RHIImageSubresourceRange m_subresourceRange;
 };
 
 NAMESPACE_XYH_END

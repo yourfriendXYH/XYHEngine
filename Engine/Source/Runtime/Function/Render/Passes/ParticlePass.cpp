@@ -48,10 +48,6 @@ void ParticlePass::SetRenderCommandBufferHandle(RHICommandBuffer* commandBuffer)
 	m_pRenderCommandBuffer = commandBuffer;
 }
 
-void ParticlePass::CopyNormalAndDepthImage()
-{
-}
-
 void ParticlePass::SetDepthAndNormalImage(RHIImage* pDepthImage, RHIImage* pNormalImage)
 {
 	// MainCameraPass的深度图像和法线图像
@@ -86,6 +82,116 @@ void ParticlePass::SetupParticlePass()
 	fenceCreateInfo.m_flags = 0;	// 初始状态：未触发
 	if (RHI_SUCCESS != m_pRHI->CreateFence(&fenceCreateInfo, m_pFence))
 		throw std::runtime_error("create fence");
+}
+
+void ParticlePass::CopyNormalAndDepthImage()
+{
+	// 上一个索引
+	uint8_t lastIndex = (m_pRHI->GetCurrentFrameIndex() + m_pRHI->GetMaxFramesInFlight() - 1) % m_pRHI->GetMaxFramesInFlight();
+
+	// 等待上一个帧缓冲的栅栏
+	m_pRHI->WaitForFencesPFN(1, &(m_pRHI->GetFenceList()[lastIndex]), VK_TRUE, UINT64_MAX);
+
+	ST_RHICommandBufferBeginInfo commandBufferBeginInfo{};
+	commandBufferBeginInfo.m_sType = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	commandBufferBeginInfo.m_flags = 0;
+	commandBufferBeginInfo.m_pInheritanceInfo = nullptr;
+
+	bool resBeginCommandBuffer = m_pRHI->BeginCommandBufferPFN(m_pCopyCommandBuffer, &commandBufferBeginInfo);
+	assert(RHI_SUCCESS == resBeginCommandBuffer);
+
+	// 复制粒子的深度图像
+	float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	m_pRHI->PushEvent(m_pCopyCommandBuffer, "Copy Depth Image for Particle", color);
+	// depth image
+	ST_RHIImageSubresourceRange subresourceRange = { RHI_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 };
+	ST_RHIImageMemoryBarrier imagememorybarrier{};
+	imagememorybarrier.m_sType = RHI_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imagememorybarrier.m_srcQueueFamilyIndex = RHI_QUEUE_FAMILY_IGNORED;
+	imagememorybarrier.m_dstQueueFamilyIndex = RHI_QUEUE_FAMILY_IGNORED;
+	imagememorybarrier.m_subresourceRange = subresourceRange;
+	{
+		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_UNDEFINED;
+		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		imagememorybarrier.m_srcAccessMask = 0;
+		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_TRANSFER_WRITE_BIT;
+		imagememorybarrier.m_pImage = m_pDstDepthImage;
+
+		m_pRHI->CmdPipelineBarrier(
+			m_pCopyCommandBuffer,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			0,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1,
+			&imagememorybarrier);
+
+		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_UNDEFINED;
+		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		imagememorybarrier.m_srcAccessMask = RHI_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_TRANSFER_READ_BIT;
+		imagememorybarrier.m_pImage = m_pSrcDepthImage;
+
+		m_pRHI->CmdPipelineBarrier(
+			m_pCopyCommandBuffer,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			0,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1,
+			&imagememorybarrier);
+
+		m_pRHI->CmdCopyImageToImage(
+			m_pCopyCommandBuffer,
+			m_pSrcDepthImage,
+			RHI_IMAGE_ASPECT_DEPTH_BIT,
+			m_pDstDepthImage,
+			RHI_IMAGE_ASPECT_DEPTH_BIT,
+			m_pRHI->GetSwapchainInfo().m_extent.m_width,
+			m_pRHI->GetSwapchainInfo().m_extent.m_height);
+
+		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		imagememorybarrier.m_srcAccessMask = RHI_ACCESS_TRANSFER_WRITE_BIT;
+		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | RHI_ACCESS_SHADER_READ_BIT;
+
+		m_pRHI->CmdPipelineBarrier(
+			m_pCopyCommandBuffer,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			0,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1,
+			&imagememorybarrier);
+
+		imagememorybarrier.m_pImage = m_pDstDepthImage;
+		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imagememorybarrier.m_srcAccessMask = RHI_ACCESS_TRANSFER_WRITE_BIT;
+		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_SHADER_READ_BIT;
+
+		m_pRHI->CmdPipelineBarrier(
+			m_pCopyCommandBuffer,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			0,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1,
+			&imagememorybarrier);
+	}
+	m_pRHI->PopEvent(m_pCopyCommandBuffer); // end depth image copy label
 }
 
 void ParticlePass::Simulate()
@@ -149,6 +255,7 @@ void ParticlePass::UpdateAfterFramebufferRecreate()
 		1,
 		m_pSrcNormalImageView);
 
+	// 更新粒子发射器的描述符集（0、1）
 	UpdateDescriptorSet();
 }
 
@@ -164,9 +271,9 @@ void ParticlePass::InitializeEmitters()
 {
 	AllocateDescriptorSet();	// 分配发射器描述符集内存
 
-	UpdateDescriptorSet();	// 更新粒子发射器的描述符集
+	UpdateDescriptorSet();	// 更新粒子发射器的描述符集（0、1）
 
-	SetupParticleDescriptorSet();	// 设置第三个描述符集
+	SetupParticleDescriptorSet();	// 设置第三个描述符集（2）
 }
 
 void ParticlePass::SetTickIndices(const std::vector<ParticleEmitterID>& tickIndices)
@@ -744,12 +851,12 @@ void ParticlePass::UpdateUniformBuffer()
 	//float rnd2 = m_random_engine.uniformDistribution<float>(0, 1000) * 0.001f;
 	//m_ubo.m_pack = Vector4{ rnd0, rnd1, rnd2, static_cast<float>(m_pRHI->GetCurrentFrameIndex()) };
 
-	m_ubo.m_viewport.x = m_pRHI->GetSwapchainInfo().m_pViewport->m_x;
-	m_ubo.m_viewport.y = m_pRHI->GetSwapchainInfo().m_pViewport->m_y;
-	m_ubo.m_viewport.z = m_pRHI->GetSwapchainInfo().m_pViewport->m_width;
-	m_ubo.m_viewport.w = m_pRHI->GetSwapchainInfo().m_pViewport->m_height;
-	m_ubo.m_extent.x = m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_width;
-	m_ubo.m_extent.y = m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_height;
+	m_ubo.m_viewport.x = static_cast<uint32_t>(m_pRHI->GetSwapchainInfo().m_pViewport->m_x);
+	m_ubo.m_viewport.y = static_cast<uint32_t>(m_pRHI->GetSwapchainInfo().m_pViewport->m_y);
+	m_ubo.m_viewport.z = static_cast<uint32_t>(m_pRHI->GetSwapchainInfo().m_pViewport->m_width);
+	m_ubo.m_viewport.w = static_cast<uint32_t>(m_pRHI->GetSwapchainInfo().m_pViewport->m_height);
+	m_ubo.m_extent.x = static_cast<float>(m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_width);
+	m_ubo.m_extent.y = static_cast<float>(m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_height);
 
 	m_ubo.m_extent.z = g_runtimeGlobalContext.m_pRenderSystem->GetRenderCamera()->m_zNear;
 	m_ubo.m_extent.w = g_runtimeGlobalContext.m_pRenderSystem->GetRenderCamera()->m_zFar;
@@ -760,7 +867,7 @@ void ParticlePass::UpdateEmitterTransform()
 {
 	for (ST_ParticleEmitterTransformDesc& transformDesc : m_emitterTransformIndices)
 	{
-		int index = transformDesc.m_id;
+		size_t index = transformDesc.m_id;
 		m_emitterBufferBatches[index].m_emitterDesc.m_position = transformDesc.m_position;
 		m_emitterBufferBatches[index].m_emitterDesc.m_rotation = transformDesc.m_rotation;
 

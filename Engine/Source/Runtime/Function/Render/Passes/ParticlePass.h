@@ -55,7 +55,7 @@ public:
 	// 每帧执行（初始化部分渲染数据）
 	void PreparePassData(std::shared_ptr<RenderResourceBase> pRenderResource) override final;
 
-	// 设置渲染命令缓冲区指针
+	// 设置渲染命令缓冲区指针（每帧执行）
 	void SetRenderCommandBufferHandle(RHICommandBuffer* commandBuffer);
 
 	// （每帧渲染结束后调用）
@@ -73,9 +73,8 @@ public:
 	// 获取MainCameraPass的RenderPass指针
 	void SetRenderPassHandle(RHIRenderPass* pRenderPass);
 
-	// ???
+	// 交换链重新创建后，重置部分数据
 	void UpdateAfterFramebufferRecreate();
-
 
 	// 设置粒子发射器数量（每帧调用）
 	void SetEmitterCount(int count);
