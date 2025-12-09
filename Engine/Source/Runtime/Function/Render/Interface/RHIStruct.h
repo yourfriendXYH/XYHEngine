@@ -290,6 +290,19 @@ struct ST_RHIRenderPassCreateInfo
 	const ST_RHISubpassDependency* m_pDependencies;
 };
 
+struct ST_RHISubmitInfo
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	uint32_t m_waitSemaphoreCount;
+	RHISemaphore** m_pWaitSemaphores;
+	const RHIPipelineStageFlags* m_pWaitDstStageMask;
+	uint32_t m_commandBufferCount;
+	RHICommandBuffer* const* m_pCommandBuffers;
+	uint32_t m_signalSemaphoreCount;
+	const RHISemaphore** m_pSignalSemaphores;
+};
+
 struct ST_RHISubpassDependency
 {
 	uint32_t m_srcSubpass;

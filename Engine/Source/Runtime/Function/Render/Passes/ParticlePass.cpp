@@ -192,6 +192,115 @@ void ParticlePass::CopyNormalAndDepthImage()
 			&imagememorybarrier);
 	}
 	m_pRHI->PopEvent(m_pCopyCommandBuffer); // end depth image copy label
+
+	// 复制粒子的法线图像
+	m_pRHI->PushEvent(m_pCopyCommandBuffer, "Copy Normal Image for Particle", color);
+	// color image
+	subresourceRange = { RHI_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+	imagememorybarrier.m_subresourceRange = subresourceRange;
+	{
+		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_UNDEFINED;
+		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		imagememorybarrier.m_srcAccessMask = 0;
+		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_TRANSFER_WRITE_BIT;
+		imagememorybarrier.m_pImage = m_pDstDepthImage;
+
+		m_pRHI->CmdPipelineBarrier(
+			m_pCopyCommandBuffer,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			0,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1,
+			&imagememorybarrier);
+
+		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_UNDEFINED;
+		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		imagememorybarrier.m_srcAccessMask = RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_TRANSFER_READ_BIT;
+		imagememorybarrier.m_pImage = m_pSrcDepthImage;
+
+		m_pRHI->CmdPipelineBarrier(
+			m_pCopyCommandBuffer,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			0,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1,
+			&imagememorybarrier);
+
+		m_pRHI->CmdCopyImageToImage(
+			m_pCopyCommandBuffer,
+			m_pSrcDepthImage,
+			RHI_IMAGE_ASPECT_COLOR_BIT,
+			m_pDstDepthImage,
+			RHI_IMAGE_ASPECT_COLOR_BIT,
+			m_pRHI->GetSwapchainInfo().m_extent.m_width,
+			m_pRHI->GetSwapchainInfo().m_extent.m_height);
+
+		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imagememorybarrier.m_srcAccessMask = RHI_ACCESS_TRANSFER_WRITE_BIT;
+		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT | RHI_ACCESS_SHADER_READ_BIT;
+
+		m_pRHI->CmdPipelineBarrier(
+			m_pCopyCommandBuffer,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			0,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1,
+			&imagememorybarrier);
+
+		imagememorybarrier.m_pImage = m_pDstDepthImage;
+		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_GENERAL;
+		imagememorybarrier.m_srcAccessMask = RHI_ACCESS_TRANSFER_WRITE_BIT;
+		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_SHADER_READ_BIT;
+
+		m_pRHI->CmdPipelineBarrier(
+			m_pCopyCommandBuffer,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			0,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1,
+			&imagememorybarrier);
+	}
+	m_pRHI->PopEvent(m_pCopyCommandBuffer);
+
+	bool resEndCommandBuffer = m_pRHI->EndCommandBufferPFN(m_pCopyCommandBuffer);
+	assert(RHI_SUCCESS == resEndCommandBuffer);
+
+	bool resResetFences = m_pRHI->ResetFencesPFN(1, &m_pRHI->GetFenceList()[lastIndex]);
+	assert(RHI_SUCCESS == resResetFences);
+
+	RHIPipelineStageFlags waitStages[] = { RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	ST_RHISubmitInfo submitInfo = {};
+	submitInfo.m_sType = RHI_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.m_waitSemaphoreCount = 1;
+	submitInfo.m_pWaitSemaphores = &(m_pRHI->GetTextureCopySemaphore(lastIndex));
+	submitInfo.m_pWaitDstStageMask = waitStages;
+	submitInfo.m_commandBufferCount = 1;
+	submitInfo.m_pCommandBuffers = &m_pCopyCommandBuffer;
+	submitInfo.m_signalSemaphoreCount = 0;
+	submitInfo.m_pSignalSemaphores = nullptr;
+	bool resQueueSubmit = m_pRHI->QueueSubmit(m_pRHI->GetGraphicsQueue(), 1, &submitInfo, m_pRHI->GetFenceList()[lastIndex]);
+	assert(RHI_SUCCESS == resQueueSubmit);
+
+	m_pRHI->QueueWaitIdle(m_pRHI->GetGraphicsQueue());
 }
 
 void ParticlePass::Simulate()

@@ -1218,14 +1218,58 @@ bool VulkanRHI::CreateRHISemaphore(const ST_RHISemaphoreCreateInfo* pCreateInfo,
 	return false;
 }
 
-bool VulkanRHI::WaitForFencesPFN(uint32_t fenceCount, RHIFence* const* pFence, RHIBool32 waitAll, uint64_t timeout)
+bool VulkanRHI::WaitForFencesPFN(uint32_t fenceCount, RHIFence* const* pFences, RHIBool32 waitAll, uint64_t timeout)
 {
-	return false;
+	int fenceSize = fenceCount;
+	std::vector<VkFence> vkFenceList(fenceSize);
+	for (int i = 0; i < fenceSize; ++i)
+	{
+		const auto& rhiFenceElement = pFences[i];
+		auto& vkFenceElement = vkFenceList[i];
+
+		vkFenceElement = ((VulkanFence*)rhiFenceElement)->GetResource();
+	};
+
+	// 用于等待一个或多个栅栏（Fence）到达 signaled（已完成）状态的函数。
+	// 它主要用于同步 CPU 与 GPU 的执行，确保 GPU 完成特定工作后，CPU 才能继续执行。
+	VkResult result = _vkWaitForFences(m_device, fenceCount, vkFenceList.data(), waitAll, timeout);
+
+	if (result == VK_SUCCESS)
+	{
+		return true;
+	}
+	else
+	{
+		LOG_ERROR("_vkWaitForFences failed!");
+		return false;
+	}
 }
 
 bool VulkanRHI::ResetFencesPFN(uint32_t fenceCount, RHIFence* const* pFences)
 {
-	return false;
+	//fence
+	int fenceSize = fenceCount;
+	std::vector<VkFence> vkFenceList(fenceSize);
+	for (int i = 0; i < fenceSize; ++i)
+	{
+		const auto& rhiFenceElement = pFences[i];
+		auto& vkFenceElement = vkFenceList[i];
+
+		vkFenceElement = ((VulkanFence*)rhiFenceElement)->GetResource();
+	};
+
+	// 用于重置栅栏（Fence）状态的函数，将栅栏从 signaled（已完成）状态重置为 unsignaled（未完成）状态。
+	VkResult result = _vkResetFences(m_device, fenceCount, vkFenceList.data());
+
+	if (result == VK_SUCCESS)
+	{
+		return true;
+	}
+	else
+	{
+		LOG_ERROR("_vkResetFences failed!");
+		return false;
+	}
 }
 
 bool VulkanRHI::ResetCommandPoolPFN(RHICommandPool* commandPool, RHICommandPoolResetFlags flags)
@@ -1753,6 +1797,8 @@ void VulkanRHI::ResetCommandPool()
 
 void VulkanRHI::WaitForFences()
 {
+	// 用于等待一个或多个栅栏（Fence）到达 signaled（已完成）状态的函数。
+	// 它主要用于同步 CPU 与 GPU 的执行，确保 GPU 完成特定工作后，CPU 才能继续执行。
 	VkResult resWaitForFences = _vkWaitForFences(m_device, 1, &m_isFrameInFlightFences[m_currentFrameIndex], VK_TRUE, UINT64_MAX);
 	if (VK_SUCCESS != resWaitForFences)
 	{
@@ -1947,6 +1993,7 @@ void VulkanRHI::SubmitRendering(std::function<void()> passUpdateAfterRecreateSwa
 	submitInfo.signalSemaphoreCount = 2;
 	submitInfo.pSignalSemaphores = semaphores;
 
+	// 用于重置栅栏（Fence）状态的函数，将栅栏从 signaled（已完成）状态重置为 unsignaled（未完成）状态。
 	VkResult resResetFences = _vkResetFences(m_device, 1, &m_isFrameInFlightFences[m_currentFrameIndex]);
 	if (VK_SUCCESS != resResetFences)
 	{

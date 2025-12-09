@@ -91,7 +91,7 @@ public:
 
 
 	// command and command write
-	virtual bool WaitForFencesPFN(uint32_t fenceCount, RHIFence* const* pFence, RHIBool32 waitAll, uint64_t timeout);	// 等待栅栏
+	virtual bool WaitForFencesPFN(uint32_t fenceCount, RHIFence* const* pFences, RHIBool32 waitAll, uint64_t timeout);	// 等待栅栏
 
 	virtual bool ResetFencesPFN(uint32_t fenceCount, RHIFence* const* pFences);	// 重置栅栏
 
@@ -367,6 +367,7 @@ public:
 	PFN_vkCmdBeginDebugUtilsLabelEXT _vkCmdBeginDebugUtilsLabelEXT;	// 开始调试工具标签
 	PFN_vkCmdEndDebugUtilsLabelEXT   _vkCmdEndDebugUtilsLabelEXT;	// 结束调试工具标签
 	PFN_vkWaitForFences         _vkWaitForFences;	// 等待栅栏
+	// 用于重置栅栏（Fence）状态的函数，将栅栏从 signaled（已完成）状态重置为 unsignaled（未完成）状态。
 	PFN_vkResetFences           _vkResetFences;		// 重置栅栏
 	PFN_vkResetCommandPool      _vkResetCommandPool;
 	PFN_vkBeginCommandBuffer    _vkBeginCommandBuffer;
