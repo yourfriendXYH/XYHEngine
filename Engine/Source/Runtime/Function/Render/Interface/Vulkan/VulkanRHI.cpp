@@ -1277,9 +1277,41 @@ bool VulkanRHI::ResetCommandPoolPFN(RHICommandPool* commandPool, RHICommandPoolR
 	return false;
 }
 
-bool VulkanRHI::BeginCommandBufferPFN(RHICommandBuffer* commandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo)
+bool VulkanRHI::BeginCommandBufferPFN(RHICommandBuffer* pCommandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo)
 {
-	return false;
+	VkCommandBufferInheritanceInfo* commandBufferInheritanceInfoPtr = nullptr;
+	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo{};
+	if (pBeginInfo->m_pInheritanceInfo != nullptr)
+	{
+		commandBufferInheritanceInfo.sType = (VkStructureType)pBeginInfo->m_pInheritanceInfo->m_sType;
+		commandBufferInheritanceInfo.pNext = (const void*)pBeginInfo->m_pInheritanceInfo->m_pNext;
+		commandBufferInheritanceInfo.renderPass = ((VulkanRenderPass*)pBeginInfo->m_pInheritanceInfo->m_pRenderPass)->GetResource();
+		commandBufferInheritanceInfo.subpass = pBeginInfo->m_pInheritanceInfo->m_subpass;
+		commandBufferInheritanceInfo.framebuffer = ((VulkanFramebuffer*)pBeginInfo->m_pInheritanceInfo->m_pFramebuffer)->GetResource();
+		commandBufferInheritanceInfo.occlusionQueryEnable = (VkBool32)pBeginInfo->m_pInheritanceInfo->m_occlusionQueryEnable;
+		commandBufferInheritanceInfo.queryFlags = (VkQueryControlFlags)pBeginInfo->m_pInheritanceInfo->m_queryFlags;
+		commandBufferInheritanceInfo.pipelineStatistics = (VkQueryPipelineStatisticFlags)pBeginInfo->m_pInheritanceInfo->m_pipelineStatistics;
+
+		commandBufferInheritanceInfoPtr = &commandBufferInheritanceInfo;
+	}
+
+	VkCommandBufferBeginInfo commandBufferBeginInfo{};
+	commandBufferBeginInfo.sType = (VkStructureType)pBeginInfo->m_sType;
+	commandBufferBeginInfo.pNext = (const void*)pBeginInfo->m_pNext;
+	commandBufferBeginInfo.flags = (VkCommandBufferUsageFlags)pBeginInfo->m_flags;
+	commandBufferBeginInfo.pInheritanceInfo = commandBufferInheritanceInfoPtr;
+	// 用于开始录制命令到命令缓冲区的核心函数
+	VkResult result = _vkBeginCommandBuffer(((VulkanCommandBuffer*)pCommandBuffer)->GetResource(), &commandBufferBeginInfo);
+
+	if (result == VK_SUCCESS)
+	{
+		return true;
+	}
+	else
+	{
+		LOG_ERROR("_vkBeginCommandBuffer failed!");
+		return false;
+	}
 }
 
 bool VulkanRHI::EndCommandBufferPFN(RHICommandBuffer* commandBuffer)
@@ -1578,24 +1610,26 @@ void VulkanRHI::CmdDispatchIndirect(RHICommandBuffer* commandBuffer, RHIBuffer* 
 }
 
 void VulkanRHI::CmdPipelineBarrier(
-	RHICommandBuffer* commandBuffer, 
-	RHIPipelineStageFlags srcStageMask, 
-	RHIPipelineStageFlags dstStageMask, 
-	RHIDependencyFlags dependencyFlags, 
-	uint32_t memoryBarrierCount, 
-	const ST_RHIMemoryBarrier* pMemoryBarriers, 
-	uint32_t bufferMemoryBarrierCount, 
-	const ST_RHIBufferMemoryBarrier* pBufferMemoryBarriers, 
-	uint32_t imageMemoryBarrierCount, 
+	RHICommandBuffer* commandBuffer,
+	RHIPipelineStageFlags srcStageMask,
+	RHIPipelineStageFlags dstStageMask,
+	RHIDependencyFlags dependencyFlags,
+	uint32_t memoryBarrierCount,
+	const ST_RHIMemoryBarrier* pMemoryBarriers,
+	uint32_t bufferMemoryBarrierCount,
+	const ST_RHIBufferMemoryBarrier* pBufferMemoryBarriers,
+	uint32_t imageMemoryBarrierCount,
 	const ST_RHIImageMemoryBarrier* pImageMemoryBarriers)
 {
+	// 内存屏障
+
 	//memory_barrier
 	int memoryBarrierSize = memoryBarrierCount;
-	std::vector<VkMemoryBarrier> vk_memory_barrier_list(memoryBarrierSize);
+	std::vector<VkMemoryBarrier> vkMemoryBarrierList(memoryBarrierSize);
 	for (int i = 0; i < memoryBarrierSize; ++i)
 	{
 		const auto& rhiMemoryBarrierElement = pMemoryBarriers[i];
-		auto& vkMemoryBarrierElement = vk_memory_barrier_list[i];
+		auto& vkMemoryBarrierElement = vkMemoryBarrierList[i];
 
 
 		vkMemoryBarrierElement.sType = (VkStructureType)rhiMemoryBarrierElement.m_sType;
@@ -1604,24 +1638,24 @@ void VulkanRHI::CmdPipelineBarrier(
 		vkMemoryBarrierElement.dstAccessMask = (VkAccessFlags)rhiMemoryBarrierElement.m_dstAccessMask;
 	};
 
-	////buffer_memory_barrier
-	//int buffer_memory_barrier_size = bufferMemoryBarrierCount;
-	//std::vector<VkBufferMemoryBarrier> vk_buffer_memory_barrier_list(buffer_memory_barrier_size);
-	//for (int i = 0; i < buffer_memory_barrier_size; ++i)
-	//{
-	//	const auto& rhi_buffer_memory_barrier_element = pBufferMemoryBarriers[i];
-	//	auto& vk_buffer_memory_barrier_element = vk_buffer_memory_barrier_list[i];
+	//buffer_memory_barrier
+	int bufferMemoryBarrierSize = bufferMemoryBarrierCount;
+	std::vector<VkBufferMemoryBarrier> vkBufferMemoryBarrierList(bufferMemoryBarrierSize);
+	for (int i = 0; i < bufferMemoryBarrierSize; ++i)
+	{
+		const auto& rhiBufferMemoryBarrierElement = pBufferMemoryBarriers[i];
+		auto& vkBufferMemoryBarrierElement = vkBufferMemoryBarrierList[i];
 
-	//	vk_buffer_memory_barrier_element.sType = (VkStructureType)rhi_buffer_memory_barrier_element.sType;
-	//	vk_buffer_memory_barrier_element.pNext = (const void*)rhi_buffer_memory_barrier_element.pNext;
-	//	vk_buffer_memory_barrier_element.srcAccessMask = (VkAccessFlags)rhi_buffer_memory_barrier_element.srcAccessMask;
-	//	vk_buffer_memory_barrier_element.dstAccessMask = (VkAccessFlags)rhi_buffer_memory_barrier_element.dstAccessMask;
-	//	vk_buffer_memory_barrier_element.srcQueueFamilyIndex = rhi_buffer_memory_barrier_element.srcQueueFamilyIndex;
-	//	vk_buffer_memory_barrier_element.dstQueueFamilyIndex = rhi_buffer_memory_barrier_element.dstQueueFamilyIndex;
-	//	vk_buffer_memory_barrier_element.buffer = ((VulkanBuffer*)rhi_buffer_memory_barrier_element.buffer)->getResource();
-	//	vk_buffer_memory_barrier_element.offset = (VkDeviceSize)rhi_buffer_memory_barrier_element.offset;
-	//	vk_buffer_memory_barrier_element.size = (VkDeviceSize)rhi_buffer_memory_barrier_element.size;
-	//};
+		vkBufferMemoryBarrierElement.sType = (VkStructureType)rhiBufferMemoryBarrierElement.m_sType;
+		vkBufferMemoryBarrierElement.pNext = (const void*)rhiBufferMemoryBarrierElement.m_pNext;
+		vkBufferMemoryBarrierElement.srcAccessMask = (VkAccessFlags)rhiBufferMemoryBarrierElement.m_srcAccessMask;
+		vkBufferMemoryBarrierElement.dstAccessMask = (VkAccessFlags)rhiBufferMemoryBarrierElement.m_dstAccessMask;
+		vkBufferMemoryBarrierElement.srcQueueFamilyIndex = rhiBufferMemoryBarrierElement.m_srcQueueFamilyIndex;
+		vkBufferMemoryBarrierElement.dstQueueFamilyIndex = rhiBufferMemoryBarrierElement.m_dstQueueFamilyIndex;
+		vkBufferMemoryBarrierElement.buffer = ((VulkanBuffer*)rhiBufferMemoryBarrierElement.m_pBuffer)->GetResource();
+		vkBufferMemoryBarrierElement.offset = (VkDeviceSize)rhiBufferMemoryBarrierElement.m_offset;
+		vkBufferMemoryBarrierElement.size = (VkDeviceSize)rhiBufferMemoryBarrierElement.m_size;
+	};
 
 	////image_memory_barrier
 	//int image_memory_barrier_size = imageMemoryBarrierCount;
@@ -1956,6 +1990,7 @@ bool VulkanRHI::PrepareBeforePass(std::function<void()> passUpdateAfterRecreateS
 	commandBufferBeginInfo.pInheritanceInfo = nullptr;	// 继承信息
 
 	// 开始记录命令
+	// 用于开始录制命令到命令缓冲区的核心函数
 	VkResult resBeginCommandBuffer = _vkBeginCommandBuffer(m_vkCommandBuffers[m_currentFrameIndex], &commandBufferBeginInfo);
 	if (VK_SUCCESS != resBeginCommandBuffer)
 	{

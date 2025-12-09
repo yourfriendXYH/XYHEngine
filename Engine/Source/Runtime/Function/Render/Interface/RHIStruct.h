@@ -692,7 +692,7 @@ struct ST_RHISamplerCreateInfo
 };
 
 // Í¼Ïñ×Ó×ÊÔ´·¶Î§
-struct ST_RHIImageSubresourceRange 
+struct ST_RHIImageSubresourceRange
 {
 	RHIImageAspectFlags m_aspectMask;
 	uint32_t m_baseMipLevel;
@@ -714,6 +714,19 @@ struct ST_RHIImageMemoryBarrier
 	uint32_t m_dstQueueFamilyIndex;
 	RHIImage* m_pImage;
 	ST_RHIImageSubresourceRange m_subresourceRange;
+};
+
+struct ST_RHIBufferMemoryBarrier
+{
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIAccessFlags m_srcAccessMask;
+	RHIAccessFlags m_dstAccessMask;
+	uint32_t m_srcQueueFamilyIndex;
+	uint32_t m_dstQueueFamilyIndex;
+	RHIBuffer* m_pBuffer;
+	RHIDeviceSize m_offset;
+	RHIDeviceSize m_size;
 };
 
 NAMESPACE_XYH_END

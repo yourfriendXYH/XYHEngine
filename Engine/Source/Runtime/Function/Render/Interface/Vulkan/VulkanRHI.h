@@ -16,8 +16,8 @@ public:
 	virtual bool IsPointLightShadowEnabled();	// 是否启用点光源阴影
 
 	// 分配和创建
-	virtual bool AllocateCommandBuffers(const ST_RHICommandBufferAllocateInfo* pAllocateInfo, RHICommandBuffer* &pCommandBuffers);	// 配置命令缓冲区
-	virtual bool AllocateDescriptorSets(const ST_RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet* &pDescriptorSets);	// 配置描述符集
+	virtual bool AllocateCommandBuffers(const ST_RHICommandBufferAllocateInfo* pAllocateInfo, RHICommandBuffer*& pCommandBuffers);	// 配置命令缓冲区
+	virtual bool AllocateDescriptorSets(const ST_RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet*& pDescriptorSets);	// 配置描述符集
 
 	virtual void CreateSwapChain();	// 创建交换链
 
@@ -97,7 +97,7 @@ public:
 
 	virtual bool ResetCommandPoolPFN(RHICommandPool* commandPool, RHICommandPoolResetFlags flags);	// 重置命令池
 
-	virtual bool BeginCommandBufferPFN(RHICommandBuffer* commandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo);	// 开始命令缓冲区
+	virtual bool BeginCommandBufferPFN(RHICommandBuffer* pCommandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo);	// 开始命令缓冲区
 
 	virtual bool EndCommandBufferPFN(RHICommandBuffer* commandBuffer);	// 结束命令缓冲区
 
