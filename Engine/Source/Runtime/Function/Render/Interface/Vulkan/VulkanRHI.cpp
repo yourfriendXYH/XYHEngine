@@ -1622,8 +1622,8 @@ void VulkanRHI::CmdPipelineBarrier(
 	const ST_RHIImageMemoryBarrier* pImageMemoryBarriers)
 {
 	// 内存屏障
-
 	//memory_barrier
+	// 用于全局内存同步（影响所有内存）
 	int memoryBarrierSize = memoryBarrierCount;
 	std::vector<VkMemoryBarrier> vkMemoryBarrierList(memoryBarrierSize);
 	for (int i = 0; i < memoryBarrierSize; ++i)
@@ -1634,11 +1634,13 @@ void VulkanRHI::CmdPipelineBarrier(
 
 		vkMemoryBarrierElement.sType = (VkStructureType)rhiMemoryBarrierElement.m_sType;
 		vkMemoryBarrierElement.pNext = (const void*)rhiMemoryBarrierElement.m_pNext;
-		vkMemoryBarrierElement.srcAccessMask = (VkAccessFlags)rhiMemoryBarrierElement.m_srcAccessMask;
-		vkMemoryBarrierElement.dstAccessMask = (VkAccessFlags)rhiMemoryBarrierElement.m_dstAccessMask;
+		vkMemoryBarrierElement.srcAccessMask = (VkAccessFlags)rhiMemoryBarrierElement.m_srcAccessMask;	// 屏障前必须完成的访问类型
+		vkMemoryBarrierElement.dstAccessMask = (VkAccessFlags)rhiMemoryBarrierElement.m_dstAccessMask;	// 屏障后允许的访问类型
 	};
 
+	// 缓冲区内存屏障
 	//buffer_memory_barrier
+	// 用于特定缓冲区的同步
 	int bufferMemoryBarrierSize = bufferMemoryBarrierCount;
 	std::vector<VkBufferMemoryBarrier> vkBufferMemoryBarrierList(bufferMemoryBarrierSize);
 	for (int i = 0; i < bufferMemoryBarrierSize; ++i)
@@ -1648,54 +1650,57 @@ void VulkanRHI::CmdPipelineBarrier(
 
 		vkBufferMemoryBarrierElement.sType = (VkStructureType)rhiBufferMemoryBarrierElement.m_sType;
 		vkBufferMemoryBarrierElement.pNext = (const void*)rhiBufferMemoryBarrierElement.m_pNext;
-		vkBufferMemoryBarrierElement.srcAccessMask = (VkAccessFlags)rhiBufferMemoryBarrierElement.m_srcAccessMask;
-		vkBufferMemoryBarrierElement.dstAccessMask = (VkAccessFlags)rhiBufferMemoryBarrierElement.m_dstAccessMask;
-		vkBufferMemoryBarrierElement.srcQueueFamilyIndex = rhiBufferMemoryBarrierElement.m_srcQueueFamilyIndex;
-		vkBufferMemoryBarrierElement.dstQueueFamilyIndex = rhiBufferMemoryBarrierElement.m_dstQueueFamilyIndex;
-		vkBufferMemoryBarrierElement.buffer = ((VulkanBuffer*)rhiBufferMemoryBarrierElement.m_pBuffer)->GetResource();
-		vkBufferMemoryBarrierElement.offset = (VkDeviceSize)rhiBufferMemoryBarrierElement.m_offset;
-		vkBufferMemoryBarrierElement.size = (VkDeviceSize)rhiBufferMemoryBarrierElement.m_size;
+		vkBufferMemoryBarrierElement.srcAccessMask = (VkAccessFlags)rhiBufferMemoryBarrierElement.m_srcAccessMask;	// 屏障前必须完成的访问类型
+		vkBufferMemoryBarrierElement.dstAccessMask = (VkAccessFlags)rhiBufferMemoryBarrierElement.m_dstAccessMask;	// 屏障后允许的访问类型
+		vkBufferMemoryBarrierElement.srcQueueFamilyIndex = rhiBufferMemoryBarrierElement.m_srcQueueFamilyIndex;	// 源队列族
+		vkBufferMemoryBarrierElement.dstQueueFamilyIndex = rhiBufferMemoryBarrierElement.m_dstQueueFamilyIndex;	// 目标队列族
+		vkBufferMemoryBarrierElement.buffer = ((VulkanBuffer*)rhiBufferMemoryBarrierElement.m_pBuffer)->GetResource();	// 目标缓冲区
+		vkBufferMemoryBarrierElement.offset = (VkDeviceSize)rhiBufferMemoryBarrierElement.m_offset;	// 起始偏移
+		vkBufferMemoryBarrierElement.size = (VkDeviceSize)rhiBufferMemoryBarrierElement.m_size;	// 大小（VK_WHOLE_SIZE 表示整个缓冲区）
 	};
 
-	////image_memory_barrier
-	//int image_memory_barrier_size = imageMemoryBarrierCount;
-	//std::vector<VkImageMemoryBarrier> vk_image_memory_barrier_list(image_memory_barrier_size);
-	//for (int i = 0; i < image_memory_barrier_size; ++i)
-	//{
-	//	const auto& rhi_image_memory_barrier_element = pImageMemoryBarriers[i];
-	//	auto& vk_image_memory_barrier_element = vk_image_memory_barrier_list[i];
+	// 图像内存屏障
+	// 用于特定图像的同步，最常用
+	int imageMemoryBarrierSize = imageMemoryBarrierCount;
+	std::vector<VkImageMemoryBarrier> vkImageMemoryBarrierList(imageMemoryBarrierSize);
+	for (int i = 0; i < imageMemoryBarrierSize; ++i)
+	{
+		const auto& rhiImageMemoryBarrierElement = pImageMemoryBarriers[i];
+		auto& vkImageMemoryBarrierElement = vkImageMemoryBarrierList[i];
 
-	//	VkImageSubresourceRange image_subresource_range{};
-	//	image_subresource_range.aspectMask = (VkImageAspectFlags)rhi_image_memory_barrier_element.subresourceRange.aspectMask;
-	//	image_subresource_range.baseMipLevel = rhi_image_memory_barrier_element.subresourceRange.baseMipLevel;
-	//	image_subresource_range.levelCount = rhi_image_memory_barrier_element.subresourceRange.levelCount;
-	//	image_subresource_range.baseArrayLayer = rhi_image_memory_barrier_element.subresourceRange.baseArrayLayer;
-	//	image_subresource_range.layerCount = rhi_image_memory_barrier_element.subresourceRange.layerCount;
+		VkImageSubresourceRange imageSubresourceRange{};
+		imageSubresourceRange.aspectMask = (VkImageAspectFlags)rhiImageMemoryBarrierElement.m_subresourceRange.m_aspectMask;
+		imageSubresourceRange.baseMipLevel = rhiImageMemoryBarrierElement.m_subresourceRange.m_baseMipLevel;
+		imageSubresourceRange.levelCount = rhiImageMemoryBarrierElement.m_subresourceRange.m_levelCount;
+		imageSubresourceRange.baseArrayLayer = rhiImageMemoryBarrierElement.m_subresourceRange.m_baseArrayLayer;
+		imageSubresourceRange.layerCount = rhiImageMemoryBarrierElement.m_subresourceRange.m_layerCount;
 
-	//	vk_image_memory_barrier_element.sType = (VkStructureType)rhi_image_memory_barrier_element.sType;
-	//	vk_image_memory_barrier_element.pNext = (const void*)rhi_image_memory_barrier_element.pNext;
-	//	vk_image_memory_barrier_element.srcAccessMask = (VkAccessFlags)rhi_image_memory_barrier_element.srcAccessMask;
-	//	vk_image_memory_barrier_element.dstAccessMask = (VkAccessFlags)rhi_image_memory_barrier_element.dstAccessMask;
-	//	vk_image_memory_barrier_element.oldLayout = (VkImageLayout)rhi_image_memory_barrier_element.oldLayout;
-	//	vk_image_memory_barrier_element.newLayout = (VkImageLayout)rhi_image_memory_barrier_element.newLayout;
-	//	vk_image_memory_barrier_element.srcQueueFamilyIndex = rhi_image_memory_barrier_element.srcQueueFamilyIndex;
-	//	vk_image_memory_barrier_element.dstQueueFamilyIndex = rhi_image_memory_barrier_element.dstQueueFamilyIndex;
-	//	vk_image_memory_barrier_element.image = ((VulkanImage*)rhi_image_memory_barrier_element.image)->getResource();
-	//	vk_image_memory_barrier_element.subresourceRange = image_subresource_range;
-	//};
+		vkImageMemoryBarrierElement.sType = (VkStructureType)rhiImageMemoryBarrierElement.m_sType;
+		vkImageMemoryBarrierElement.pNext = (const void*)rhiImageMemoryBarrierElement.m_pNext;
+		vkImageMemoryBarrierElement.srcAccessMask = (VkAccessFlags)rhiImageMemoryBarrierElement.m_srcAccessMask;
+		vkImageMemoryBarrierElement.dstAccessMask = (VkAccessFlags)rhiImageMemoryBarrierElement.m_dstAccessMask;
+		vkImageMemoryBarrierElement.oldLayout = (VkImageLayout)rhiImageMemoryBarrierElement.m_oldLayout;
+		vkImageMemoryBarrierElement.newLayout = (VkImageLayout)rhiImageMemoryBarrierElement.m_newLayout;
+		vkImageMemoryBarrierElement.srcQueueFamilyIndex = rhiImageMemoryBarrierElement.m_srcQueueFamilyIndex;
+		vkImageMemoryBarrierElement.dstQueueFamilyIndex = rhiImageMemoryBarrierElement.m_dstQueueFamilyIndex;
+		vkImageMemoryBarrierElement.image = ((VulkanImage*)rhiImageMemoryBarrierElement.m_pImage)->GetResource();
+		vkImageMemoryBarrierElement.subresourceRange = imageSubresourceRange;
+	};
 
-	//vkCmdPipelineBarrier(
-	//	((VulkanCommandBuffer*)commandBuffer)->getResource(),
-	//	(RHIPipelineStageFlags)srcStageMask,
-	//	(RHIPipelineStageFlags)dstStageMask,
-	//	(RHIDependencyFlags)dependencyFlags,
-	//	memoryBarrierCount,
-	//	vk_memory_barrier_list.data(),
-	//	bufferMemoryBarrierCount,
-	//	vk_buffer_memory_barrier_list.data(),
-	//	imageMemoryBarrierCount,
-	//	vk_image_memory_barrier_list.data()
-	//);
+	// 同步资源访问和控制执行依赖的核心命令。
+	// 它通过插入管线屏障（Pipeline Barrier）来确保在屏障前后的操作之间建立正确的内存依赖关系和执行顺序。
+	vkCmdPipelineBarrier(
+		((VulkanCommandBuffer*)commandBuffer)->GetResource(),
+		(RHIPipelineStageFlags)srcStageMask,	// 定义哪些阶段的操作必须在屏障之前完成，以及哪些阶段的操作必须等待屏障。
+		(RHIPipelineStageFlags)dstStageMask,
+		(RHIDependencyFlags)dependencyFlags,	// 依赖标志
+		memoryBarrierCount,
+		vkMemoryBarrierList.data(),	
+		bufferMemoryBarrierCount,
+		vkBufferMemoryBarrierList.data(),
+		imageMemoryBarrierCount,
+		vkImageMemoryBarrierList.data()
+	);
 }
 
 bool VulkanRHI::EndCommandBuffer(RHICommandBuffer* commandBuffer)
