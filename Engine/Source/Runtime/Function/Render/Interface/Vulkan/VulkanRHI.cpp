@@ -1677,14 +1677,14 @@ void VulkanRHI::CmdPipelineBarrier(
 
 		vkImageMemoryBarrierElement.sType = (VkStructureType)rhiImageMemoryBarrierElement.m_sType;
 		vkImageMemoryBarrierElement.pNext = (const void*)rhiImageMemoryBarrierElement.m_pNext;
-		vkImageMemoryBarrierElement.srcAccessMask = (VkAccessFlags)rhiImageMemoryBarrierElement.m_srcAccessMask;
-		vkImageMemoryBarrierElement.dstAccessMask = (VkAccessFlags)rhiImageMemoryBarrierElement.m_dstAccessMask;
-		vkImageMemoryBarrierElement.oldLayout = (VkImageLayout)rhiImageMemoryBarrierElement.m_oldLayout;
-		vkImageMemoryBarrierElement.newLayout = (VkImageLayout)rhiImageMemoryBarrierElement.m_newLayout;
-		vkImageMemoryBarrierElement.srcQueueFamilyIndex = rhiImageMemoryBarrierElement.m_srcQueueFamilyIndex;
-		vkImageMemoryBarrierElement.dstQueueFamilyIndex = rhiImageMemoryBarrierElement.m_dstQueueFamilyIndex;
-		vkImageMemoryBarrierElement.image = ((VulkanImage*)rhiImageMemoryBarrierElement.m_pImage)->GetResource();
-		vkImageMemoryBarrierElement.subresourceRange = imageSubresourceRange;
+		vkImageMemoryBarrierElement.srcAccessMask = (VkAccessFlags)rhiImageMemoryBarrierElement.m_srcAccessMask;	// 屏障前的访问类型
+		vkImageMemoryBarrierElement.dstAccessMask = (VkAccessFlags)rhiImageMemoryBarrierElement.m_dstAccessMask;	// 屏障后的访问类型
+		vkImageMemoryBarrierElement.oldLayout = (VkImageLayout)rhiImageMemoryBarrierElement.m_oldLayout;	// 屏障前的布局
+		vkImageMemoryBarrierElement.newLayout = (VkImageLayout)rhiImageMemoryBarrierElement.m_newLayout;	// 屏障后的布局
+		vkImageMemoryBarrierElement.srcQueueFamilyIndex = rhiImageMemoryBarrierElement.m_srcQueueFamilyIndex;	// 源队列族
+		vkImageMemoryBarrierElement.dstQueueFamilyIndex = rhiImageMemoryBarrierElement.m_dstQueueFamilyIndex;	// 目标队列族
+		vkImageMemoryBarrierElement.image = ((VulkanImage*)rhiImageMemoryBarrierElement.m_pImage)->GetResource();	// 目标图像
+		vkImageMemoryBarrierElement.subresourceRange = imageSubresourceRange;	// 子资源范围
 	};
 
 	// 同步资源访问和控制执行依赖的核心命令。

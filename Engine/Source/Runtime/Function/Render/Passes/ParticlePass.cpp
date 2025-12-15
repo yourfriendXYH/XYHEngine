@@ -1,4 +1,4 @@
-#include "ParticlePass.h"
+ï»¿#include "ParticlePass.h"
 #include <Runtime\Core\Macro.h>
 #include <ParticleKickoffComp.h>
 #include <ParticleEmitComp.h>
@@ -17,12 +17,12 @@ void ParticlePass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 	const ST_ParticlePassInitInfo* pParticlePassInitInfo = static_cast<const ST_ParticlePassInitInfo*>(initInfo);
 	assert(pParticlePassInitInfo != nullptr);
-	m_pParticleManager = pParticlePassInitInfo->m_pParticleManager;	// »ñÈ¡Á£×Ó¹ÜÀíÆ÷
+	m_pParticleManager = pParticlePassInitInfo->m_pParticleManager;	// è·å–ç²’å­ç®¡ç†å™¨
 }
 
 void ParticlePass::PreparePassData(std::shared_ptr<RenderResourceBase> pRenderResource)
 {
-	// Ã¿Ö¡Ö´ĞĞ£¨³õÊ¼»¯²¿·ÖäÖÈ¾Êı¾İ£©
+	// æ¯å¸§æ‰§è¡Œï¼ˆåˆå§‹åŒ–éƒ¨åˆ†æ¸²æŸ“æ•°æ®ï¼‰
 	const RenderResource* pVulkanResource = static_cast<const RenderResource*>(pRenderResource.get());
 	if (pVulkanResource)
 	{
@@ -32,13 +32,13 @@ void ParticlePass::PreparePassData(std::shared_ptr<RenderResourceBase> pRenderRe
 		m_particleBillboardPerframeStorageBufferObject = pVulkanResource->m_particleBillboardPerframeStorageBufferObject;
 		memcpy(m_pParticleBillboardUniformBufferMapped, &m_particleBillboardPerframeStorageBufferObject, sizeof(ST_ParticleBillboardPerframeStorageBufferObject));
 
-		// ½»»»Á´ÊÓ¿ÚÊı¾İ
+		// äº¤æ¢é“¾è§†å£æ•°æ®
 		m_viewportParams = *m_pRHI->GetSwapchainInfo().m_pViewport;
 
-		// ¸üĞÂ m_ubo Êı¾İ
+		// æ›´æ–° m_ubo æ•°æ®
 		UpdateUniformBuffer();
 
-		// ¸üĞÂ·¢ÉäÆ÷µÄ±ä»»Êı¾İ
+		// æ›´æ–°å‘å°„å™¨çš„å˜æ¢æ•°æ®
 		UpdateEmitterTransform();
 	}
 }
@@ -50,46 +50,46 @@ void ParticlePass::SetRenderCommandBufferHandle(RHICommandBuffer* commandBuffer)
 
 void ParticlePass::SetDepthAndNormalImage(RHIImage* pDepthImage, RHIImage* pNormalImage)
 {
-	// MainCameraPassµÄÉî¶ÈÍ¼ÏñºÍ·¨ÏßÍ¼Ïñ
+	// MainCameraPassçš„æ·±åº¦å›¾åƒå’Œæ³•çº¿å›¾åƒ
 	m_pSrcDepthImage = pDepthImage;
 	m_pSrcNormalImage = pNormalImage;
 }
 
 void ParticlePass::SetupParticlePass()
 {
-	PrepareUniformBuffer();	// ×ÅÉ«Æ÷²¿·Ö»º³åÊı¾İ´´½¨
+	PrepareUniformBuffer();	// ç€è‰²å™¨éƒ¨åˆ†ç¼“å†²æ•°æ®åˆ›å»º
 
-	SetupDescriptorSetLayout();	// ÃèÊö·û¼¯²¼¾Ö´´½¨
+	SetupDescriptorSetLayout();	// æè¿°ç¬¦é›†å¸ƒå±€åˆ›å»º
 
-	SetupPipelines();	// äÖÈ¾¹ÜÏß´´½¨
+	SetupPipelines();	// æ¸²æŸ“ç®¡çº¿åˆ›å»º
 
-	SetupAttachments();	// Image¸½¼ş´´½¨
+	SetupAttachments();	// Imageé™„ä»¶åˆ›å»º
 
-	// ÃüÁî»º³å´´½¨
+	// å‘½ä»¤ç¼“å†²åˆ›å»º
 	ST_RHICommandBufferAllocateInfo cmdBufAllocateInfo{};
 	cmdBufAllocateInfo.m_sType = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	cmdBufAllocateInfo.m_pCommandPool = m_pRHI->GetCommandPoor();
 	cmdBufAllocateInfo.m_level = RHI_COMMAND_BUFFER_LEVEL_PRIMARY;
-	cmdBufAllocateInfo.m_commandBufferCount = 1;	// ´Î¼¶ÃüÁî»º³åÇø
+	cmdBufAllocateInfo.m_commandBufferCount = 1;	// æ¬¡çº§å‘½ä»¤ç¼“å†²åŒº
 	if (RHI_SUCCESS != m_pRHI->AllocateCommandBuffers(&cmdBufAllocateInfo, m_pComputeCommandBuffer))
 		throw std::runtime_error("alloc compute command buffer");
 	if (RHI_SUCCESS != m_pRHI->AllocateCommandBuffers(&cmdBufAllocateInfo, m_pCopyCommandBuffer))
 		throw std::runtime_error("alloc copy command buffer");
 
-	// Õ¤À¸´´½¨
+	// æ …æ åˆ›å»º
 	ST_RHIFenceCreateInfo fenceCreateInfo{};
 	fenceCreateInfo.m_sType = RHI_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	fenceCreateInfo.m_flags = 0;	// ³õÊ¼×´Ì¬£ºÎ´´¥·¢
+	fenceCreateInfo.m_flags = 0;	// åˆå§‹çŠ¶æ€ï¼šæœªè§¦å‘
 	if (RHI_SUCCESS != m_pRHI->CreateFence(&fenceCreateInfo, m_pFence))
 		throw std::runtime_error("create fence");
 }
 
 void ParticlePass::CopyNormalAndDepthImage()
 {
-	// ÉÏÒ»¸öË÷Òı
+	// ä¸Šä¸€ä¸ªç´¢å¼•
 	uint8_t lastIndex = (m_pRHI->GetCurrentFrameIndex() + m_pRHI->GetMaxFramesInFlight() - 1) % m_pRHI->GetMaxFramesInFlight();
 
-	// µÈ´ıÉÏÒ»¸öÖ¡»º³åµÄÕ¤À¸
+	// ç­‰å¾…ä¸Šä¸€ä¸ªå¸§ç¼“å†²çš„æ …æ 
 	m_pRHI->WaitForFencesPFN(1, &(m_pRHI->GetFenceList()[lastIndex]), VK_TRUE, UINT64_MAX);
 
 	ST_RHICommandBufferBeginInfo commandBufferBeginInfo{};
@@ -100,7 +100,7 @@ void ParticlePass::CopyNormalAndDepthImage()
 	bool resBeginCommandBuffer = m_pRHI->BeginCommandBufferPFN(m_pCopyCommandBuffer, &commandBufferBeginInfo);
 	assert(RHI_SUCCESS == resBeginCommandBuffer);
 
-	// ¸´ÖÆÁ£×ÓµÄÉî¶ÈÍ¼Ïñ
+	// å¤åˆ¶ç²’å­çš„æ·±åº¦å›¾åƒ
 	float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	m_pRHI->PushEvent(m_pCopyCommandBuffer, "Copy Depth Image for Particle", color);
 	// depth image
@@ -193,14 +193,15 @@ void ParticlePass::CopyNormalAndDepthImage()
 	}
 	m_pRHI->PopEvent(m_pCopyCommandBuffer); // end depth image copy label
 
-	// ¸´ÖÆÁ£×ÓµÄ·¨ÏßÍ¼Ïñ
+	// å¤åˆ¶ç²’å­çš„æ³•çº¿å›¾åƒ
 	m_pRHI->PushEvent(m_pCopyCommandBuffer, "Copy Normal Image for Particle", color);
 	// color image
 	subresourceRange = { RHI_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 	imagememorybarrier.m_subresourceRange = subresourceRange;
 	{
 		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_UNDEFINED;
-		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;	// ä¼ è¾“ç›®æ ‡å¸ƒå±€
+		// ç›´æ¥ä¼ è¾“å†™å…¥
 		imagememorybarrier.m_srcAccessMask = 0;
 		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_TRANSFER_WRITE_BIT;
 		imagememorybarrier.m_pImage = m_pDstDepthImage;
@@ -218,7 +219,8 @@ void ParticlePass::CopyNormalAndDepthImage()
 			&imagememorybarrier);
 
 		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_UNDEFINED;
-		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;	// ä¼ è¾“æºå¸ƒå±€
+		// åªæœ‰ é¢œè‰²é™„ä»¶å†™å…¥ å®Œæˆï¼Œæ‰èƒ½ ä¼ è¾“è¯»å–
 		imagememorybarrier.m_srcAccessMask = RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_TRANSFER_READ_BIT;
 		imagememorybarrier.m_pImage = m_pSrcDepthImage;
@@ -244,8 +246,9 @@ void ParticlePass::CopyNormalAndDepthImage()
 			m_pRHI->GetSwapchainInfo().m_extent.m_width,
 			m_pRHI->GetSwapchainInfo().m_extent.m_height);
 
-		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;	// ä¼ è¾“æºå¸ƒå±€
+		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ç€è‰²å™¨é‡‡æ ·ä¼˜åŒ–å¸ƒå±€
+		// åªæœ‰ ä¼ è¾“å†™å…¥ å®Œæˆï¼Œæ‰èƒ½ é¢œè‰²é™„ä»¶è¯»å– å’Œ ç€è‰²å™¨è¯»å–
 		imagememorybarrier.m_srcAccessMask = RHI_ACCESS_TRANSFER_WRITE_BIT;
 		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT | RHI_ACCESS_SHADER_READ_BIT;
 
@@ -262,8 +265,9 @@ void ParticlePass::CopyNormalAndDepthImage()
 			&imagememorybarrier);
 
 		imagememorybarrier.m_pImage = m_pDstDepthImage;
-		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_GENERAL;
+		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;	// ä¼ è¾“ç›®æ ‡å¸ƒå±€
+		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_GENERAL;	// é€šç”¨å¸ƒå±€
+		// åªæœ‰ ä¼ è¾“å†™å…¥ å®Œæˆï¼Œæ‰èƒ½ ç€è‰²å™¨è¯»å–
 		imagememorybarrier.m_srcAccessMask = RHI_ACCESS_TRANSFER_WRITE_BIT;
 		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_SHADER_READ_BIT;
 
@@ -314,7 +318,7 @@ void ParticlePass::SetRenderPassHandle(RHIRenderPass* pRenderPass)
 
 void ParticlePass::UpdateAfterFramebufferRecreate()
 {
-	// ÖØÖÃÉî¶ÈÍ¼Ïñ
+	// é‡ç½®æ·±åº¦å›¾åƒ
 	m_pRHI->DestroyImage(m_pDstDepthImage);
 	m_pRHI->FreeMemory(m_pDstDepthImageMemory);
 	m_pRHI->CreateImage(
@@ -330,7 +334,7 @@ void ParticlePass::UpdateAfterFramebufferRecreate()
 		1,
 		1);
 
-	// ÖØÖÃ·¨ÏßÍ¼Ïñ
+	// é‡ç½®æ³•çº¿å›¾åƒ
 	m_pRHI->DestroyImage(m_pDstNormalImage);
 	m_pRHI->FreeMemory(m_pDstNormalImageMemory);
 	m_pRHI->CreateImage(
@@ -364,7 +368,7 @@ void ParticlePass::UpdateAfterFramebufferRecreate()
 		1,
 		m_pSrcNormalImageView);
 
-	// ¸üĞÂÁ£×Ó·¢ÉäÆ÷µÄÃèÊö·û¼¯£¨0¡¢1£©
+	// æ›´æ–°ç²’å­å‘å°„å™¨çš„æè¿°ç¬¦é›†ï¼ˆ0ã€1ï¼‰
 	UpdateDescriptorSet();
 }
 
@@ -378,11 +382,11 @@ void ParticlePass::CreateEmitter(int id, const ST_ParticleEmitterDesc& desc)
 
 void ParticlePass::InitializeEmitters()
 {
-	AllocateDescriptorSet();	// ·ÖÅä·¢ÉäÆ÷ÃèÊö·û¼¯ÄÚ´æ
+	AllocateDescriptorSet();	// åˆ†é…å‘å°„å™¨æè¿°ç¬¦é›†å†…å­˜
 
-	UpdateDescriptorSet();	// ¸üĞÂÁ£×Ó·¢ÉäÆ÷µÄÃèÊö·û¼¯£¨0¡¢1£©
+	UpdateDescriptorSet();	// æ›´æ–°ç²’å­å‘å°„å™¨çš„æè¿°ç¬¦é›†ï¼ˆ0ã€1ï¼‰
 
-	SetupParticleDescriptorSet();	// ÉèÖÃµÚÈı¸öÃèÊö·û¼¯£¨2£©
+	SetupParticleDescriptorSet();	// è®¾ç½®ç¬¬ä¸‰ä¸ªæè¿°ç¬¦é›†ï¼ˆ2ï¼‰
 }
 
 void ParticlePass::SetTickIndices(const std::vector<ParticleEmitterID>& tickIndices)
@@ -399,34 +403,34 @@ void ParticlePass::Draw()
 
 void ParticlePass::PrepareUniformBuffer()
 {
-	// ·ÖÅä ¾ØÕóÊı¾İ µÄÄÚ´æ
+	// åˆ†é… çŸ©é˜µæ•°æ® çš„å†…å­˜
 	RHIDeviceMemory* pDeviceMemory;
 	m_pRHI->CreateBuffer(
-		sizeof(m_particleCollisionPerframeStorageBufferObject), // ÄÚ´æ´óĞ¡
+		sizeof(m_particleCollisionPerframeStorageBufferObject), // å†…å­˜å¤§å°
 		RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 		RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		m_pSceneUniformBuffer,
 		pDeviceMemory);
 
-	if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceMemory, 0, RHI_WHOLE_SIZE, 0, &m_pSceneUniformBufferMapped))    // Ó³Éä´ÓÆ«ÒÆÁ¿µ½ÄÚ´æÄ©Î²µÄÕû¸öÇøÓò
+	if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceMemory, 0, RHI_WHOLE_SIZE, 0, &m_pSceneUniformBufferMapped))    // æ˜ å°„ä»åç§»é‡åˆ°å†…å­˜æœ«å°¾çš„æ•´ä¸ªåŒºåŸŸ
 	{
 		throw std::runtime_error("map billboard uniform buffer");
 	}
 
-	// ·ÖÅäÄÚ´æ Á£×ÓÉú³ÉµÄ²ÎÊı
+	// åˆ†é…å†…å­˜ ç²’å­ç”Ÿæˆçš„å‚æ•°
 	RHIDeviceMemory* pDeviceUniformMemory;
 	m_pRHI->CreateBufferAndInitialize(
 		RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 		RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		m_pComputeUniformBuffer,
 		pDeviceUniformMemory,
-		sizeof(m_ubo)); // ÄÚ´æ´óĞ¡
-	if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceUniformMemory, 0, RHI_WHOLE_SIZE, 0, &m_pParticleComputeBufferMapped))  // Ó³Éä´ÓÆ«ÒÆÁ¿µ½ÄÚ´æÄ©Î²µÄÕû¸öÇøÓò
+		sizeof(m_ubo)); // å†…å­˜å¤§å°
+	if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceUniformMemory, 0, RHI_WHOLE_SIZE, 0, &m_pParticleComputeBufferMapped))  // æ˜ å°„ä»åç§»é‡åˆ°å†…å­˜æœ«å°¾çš„æ•´ä¸ªåŒºåŸŸ
 	{
 		throw std::runtime_error("map buffer");
 	}
 
-	// Á£×ÓÉú³ÉµÄÊôĞÔ
+	// ç²’å­ç”Ÿæˆçš„å±æ€§
 	const GlobalParticleResource& globalRes = m_pParticleManager->GetGlobalParticleRes();
 	m_ubo.m_emitGap = globalRes.m_emitGap;
 	m_ubo.m_timeStep = globalRes.m_timeStep;
@@ -448,7 +452,7 @@ void ParticlePass::PrepareUniformBuffer()
 	m_ubo.m_viewport.w = static_cast<uint32_t>(m_viewportParams.m_height);
 	m_ubo.m_extent.x = static_cast<float>(m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_width);
 	m_ubo.m_extent.y = static_cast<float>(m_pRHI->GetSwapchainInfo().m_pScissor->m_extent.m_height);
-	// ¸øÄÚ´æ¸³Öµ
+	// ç»™å†…å­˜èµ‹å€¼
 	memcpy(m_pParticleComputeBufferMapped, &m_ubo, sizeof(m_ubo));
 
 	{
@@ -460,7 +464,7 @@ void ParticlePass::PrepareUniformBuffer()
 			m_pParticleBillboardUniformBuffer,
 			pDeviceMemory);
 
-		if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceMemory, 0, RHI_WHOLE_SIZE, 0, &m_pParticleBillboardUniformBufferMapped))    // Ó³Éä´ÓÆ«ÒÆÁ¿µ½ÄÚ´æÄ©Î²µÄÕû¸öÇøÓò
+		if (RHI_SUCCESS != m_pRHI->MapMemory(pDeviceMemory, 0, RHI_WHOLE_SIZE, 0, &m_pParticleBillboardUniformBufferMapped))    // æ˜ å°„ä»åç§»é‡åˆ°å†…å­˜æœ«å°¾çš„æ•´ä¸ªåŒºåŸŸ
 		{
 			throw std::runtime_error("map billboard uniform buffer");
 		}
@@ -495,7 +499,7 @@ void ParticlePass::SetupAttachments()
 			m_pPiccoloLogoTextureResource->m_format);
 	}
 
-	// Éî¶È
+	// æ·±åº¦
 	m_pRHI->CreateImage(
 		m_pRHI->GetSwapchainInfo().m_extent.m_width,
 		m_pRHI->GetSwapchainInfo().m_extent.m_height,
@@ -509,7 +513,7 @@ void ParticlePass::SetupAttachments()
 		1,
 		1);
 
-	// ·¨Ïß
+	// æ³•çº¿
 	m_pRHI->CreateImage(
 		m_pRHI->GetSwapchainInfo().m_extent.m_width,
 		m_pRHI->GetSwapchainInfo().m_extent.m_height,
@@ -720,11 +724,11 @@ void ParticlePass::SetupDescriptorSetLayout()
 
 void ParticlePass::SetupPipelines()
 {
-	m_renderPipelines.resize(2u);	// Ò»¸ö¼ÆËã¹ÜÏß£¬Ò»¸ö»æÖÆ¹ÜÏß
+	m_renderPipelines.resize(2u);	// ä¸€ä¸ªè®¡ç®—ç®¡çº¿ï¼Œä¸€ä¸ªç»˜åˆ¶ç®¡çº¿
 
 	// compute pipeline
 	{
-		// ¼ÆËã¹ÜÏß²¼¾Ö
+		// è®¡ç®—ç®¡çº¿å¸ƒå±€
 		RHIDescriptorSetLayout* descriptorset_layouts[2] = { m_descriptorInfos[0].m_pDescriptorSetLayout, m_descriptorInfos[1].m_pDescriptorSetLayout };
 		ST_RHIPipelineLayoutCreateInfo pipeline_layout_create_info{};
 		pipeline_layout_create_info.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -738,7 +742,7 @@ void ParticlePass::SetupPipelines()
 		LOG_INFO("compute pipe layout done");
 	}
 
-	// specializationInfoÔİÊ±Ã»ÓĞÊ¹ÓÃ
+	// specializationInfoæš‚æ—¶æ²¡æœ‰ä½¿ç”¨
 	struct ST_SpecializationData
 	{
 		uint32_t BUFFER_ELEMENT_COUNT = 32;
@@ -762,24 +766,24 @@ void ParticlePass::SetupPipelines()
 
 	ST_RHIPipelineShaderStageCreateInfo shaderStage = {};
 	shaderStage.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	shaderStage.m_stage = RHI_SHADER_STAGE_COMPUTE_BIT;	// ¼ÆËã×ÅÉ«Æ÷
+	shaderStage.m_stage = RHI_SHADER_STAGE_COMPUTE_BIT;	// è®¡ç®—ç€è‰²å™¨
 	shaderStage.m_pName = "main";
 
-	// ¿ªÊ¼
+	// å¼€å§‹
 	{
 		shaderStage.m_module = m_pRHI->CreateShaderModule(PARTICLE_KICKOFF_COMP);
 		shaderStage.m_pSpecializationInfo = nullptr;
 		assert(shaderStage.m_module != RHI_NULL_HANDLE);
 
 		computePipelineCreateInfo.m_pStages = &shaderStage;
-		// ´´½¨¼ÆËã¹ÜÏß
+		// åˆ›å»ºè®¡ç®—ç®¡çº¿
 		if (RHI_SUCCESS != m_pRHI->CreateComputePipelines(/*pipelineCache*/ nullptr, 1, &computePipelineCreateInfo, m_pKickoffPipeline))
 		{
 			throw std::runtime_error("create particle kickoff pipe");
 		}
 	}
 
-	// ·¢³ö
+	// å‘å‡º
 	{
 		shaderStage.m_module = m_pRHI->CreateShaderModule(PARTICLE_EMIT_COMP);
 		shaderStage.m_pSpecializationInfo = nullptr;
@@ -792,7 +796,7 @@ void ParticlePass::SetupPipelines()
 		}
 	}
 
-	// Ä£Äâ
+	// æ¨¡æ‹Ÿ
 	{
 		shaderStage.m_module = m_pRHI->CreateShaderModule(PARTICLE_SIMULATE_COMP);
 		shaderStage.m_pSpecializationInfo = nullptr;
@@ -805,10 +809,10 @@ void ParticlePass::SetupPipelines()
 		}
 	}
 
-	// Á£×Ó¹ã¸æÅÆ ÊÇÒ»ÖÖäÖÈ¾¼¼Êõ£¬ËüÈ·±£Ò»¸öÍ¨³£´ú±íÁ£×ÓµÄ¶şÎ¬ËÄ±ßĞÎ£¨¼´¡°¹ã¸æÅÆ¡±£©Ê¼ÖÕÃæÏòÉãÏñ»ú¡£
-	// Äã¿ÉÒÔ°ÑËüÏëÏó³ÉÔÚ3DÊÀ½çÀï·ÅÖÃÒ»ÕÅ×ÜÊÇÕı¶Ô×ÅÄãµÄÖ½Æ¬»òÍ¼Æ¬£¬ÎŞÂÛÄãÈçºÎÒÆ¶¯ÊÓ½Ç¡£
+	// ç²’å­å¹¿å‘Šç‰Œ æ˜¯ä¸€ç§æ¸²æŸ“æŠ€æœ¯ï¼Œå®ƒç¡®ä¿ä¸€ä¸ªé€šå¸¸ä»£è¡¨ç²’å­çš„äºŒç»´å››è¾¹å½¢ï¼ˆå³â€œå¹¿å‘Šç‰Œâ€ï¼‰å§‹ç»ˆé¢å‘æ‘„åƒæœºã€‚
+	// ä½ å¯ä»¥æŠŠå®ƒæƒ³è±¡æˆåœ¨3Dä¸–ç•Œé‡Œæ”¾ç½®ä¸€å¼ æ€»æ˜¯æ­£å¯¹ç€ä½ çš„çº¸ç‰‡æˆ–å›¾ç‰‡ï¼Œæ— è®ºä½ å¦‚ä½•ç§»åŠ¨è§†è§’ã€‚
 	{
-		// ÃèÊö·û¼¯
+		// æè¿°ç¬¦é›†
 		RHIDescriptorSetLayout* descriptorsetLayouts[1] = { m_descriptorInfos[2].m_pDescriptorSetLayout };
 		ST_RHIPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
 		pipelineLayoutCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -820,19 +824,19 @@ void ParticlePass::SetupPipelines()
 			throw std::runtime_error("create particle billboard pipeline layout");
 		}
 
-		// ×ÅÉ«Æ÷½×¶Î
+		// ç€è‰²å™¨é˜¶æ®µ
 		RHIShader* pVertShaderModule = m_pRHI->CreateShaderModule(PARTICLEBILLBOARD_VERT);
 		RHIShader* pFragShaderModule = m_pRHI->CreateShaderModule(PARTICLEBILLBOARD_FRAG);
 
 		ST_RHIPipelineShaderStageCreateInfo vertPipelineShaderStageCreateInfo{};
 		vertPipelineShaderStageCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		vertPipelineShaderStageCreateInfo.m_stage = RHI_SHADER_STAGE_VERTEX_BIT;	// ¶¥µã×ÅÉ«Æ÷
+		vertPipelineShaderStageCreateInfo.m_stage = RHI_SHADER_STAGE_VERTEX_BIT;	// é¡¶ç‚¹ç€è‰²å™¨
 		vertPipelineShaderStageCreateInfo.m_module = pVertShaderModule;
 		vertPipelineShaderStageCreateInfo.m_pName = "main";
 
 		ST_RHIPipelineShaderStageCreateInfo fragPipelineShaderStageCreateInfo{};
 		fragPipelineShaderStageCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		fragPipelineShaderStageCreateInfo.m_stage = RHI_SHADER_STAGE_FRAGMENT_BIT;	// Æ¬¶Î×ÅÉ«Æ÷
+		fragPipelineShaderStageCreateInfo.m_stage = RHI_SHADER_STAGE_FRAGMENT_BIT;	// ç‰‡æ®µç€è‰²å™¨
 		fragPipelineShaderStageCreateInfo.m_module = pFragShaderModule;
 		fragPipelineShaderStageCreateInfo.m_pName = "main";
 
@@ -841,7 +845,7 @@ void ParticlePass::SetupPipelines()
 			fragPipelineShaderStageCreateInfo
 		};
 
-		// ¶¥µã²¼¾Ö
+		// é¡¶ç‚¹å¸ƒå±€
 		ST_RHIPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
 		vertexInputStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		vertexInputStateCreateInfo.m_vertexBindingDescriptionCount = 0;
@@ -849,13 +853,13 @@ void ParticlePass::SetupPipelines()
 		vertexInputStateCreateInfo.m_vertexAttributeDescriptionCount = 0;
 		vertexInputStateCreateInfo.m_pVertexAttributeDescriptions = NULL;
 
-		// ÊäÈë×°Åä
+		// è¾“å…¥è£…é…
 		ST_RHIPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo{};
 		inputAssemblyCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		inputAssemblyCreateInfo.m_topology = RHI_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;	// ÍØÆË
+		inputAssemblyCreateInfo.m_topology = RHI_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;	// æ‹“æ‰‘
 		inputAssemblyCreateInfo.m_primitiveRestartEnable = RHI_FALSE;
 
-		// ÊÓ¿ÚĞÅÏ¢
+		// è§†å£ä¿¡æ¯
 		ST_RHIPipelineViewportStateCreateInfo viewportStateCreateInfo{};
 		viewportStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		viewportStateCreateInfo.m_viewportCount = 1;
@@ -863,7 +867,7 @@ void ParticlePass::SetupPipelines()
 		viewportStateCreateInfo.m_scissorCount = 1;
 		viewportStateCreateInfo.m_pScissors = m_pRHI->GetSwapchainInfo().m_pScissor;
 
-		// ¹âÕ¤»¯ĞÅÏ¢
+		// å…‰æ …åŒ–ä¿¡æ¯
 		ST_RHIPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo{};
 		rasterizationStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		rasterizationStateCreateInfo.m_depthClampEnable = RHI_FALSE;
@@ -877,13 +881,13 @@ void ParticlePass::SetupPipelines()
 		rasterizationStateCreateInfo.m_depthBiasClamp = 0.0f;
 		rasterizationStateCreateInfo.m_depthBiasSlopeFactor = 0.0f;
 
-		// ²ÉÑùĞÅÏ¢
+		// é‡‡æ ·ä¿¡æ¯
 		ST_RHIPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{};
 		multisampleStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		multisampleStateCreateInfo.m_sampleShadingEnable = RHI_FALSE;
 		multisampleStateCreateInfo.m_rasterizationSamples = RHI_SAMPLE_COUNT_1_BIT;
 
-		// ÑÕÉ«»ìºÏĞÅÏ¢
+		// é¢œè‰²æ··åˆä¿¡æ¯
 		ST_RHIPipelineColorBlendAttachmentState colorBlendAttachments[1] = {};
 		colorBlendAttachments[0].m_colorWriteMask = RHI_COLOR_COMPONENT_R_BIT | RHI_COLOR_COMPONENT_G_BIT | RHI_COLOR_COMPONENT_B_BIT | RHI_COLOR_COMPONENT_A_BIT;
 		colorBlendAttachments[0].m_blendEnable = RHI_TRUE;
@@ -905,7 +909,7 @@ void ParticlePass::SetupPipelines()
 		colorBlendStateCreateInfo.m_blendConstants[2] = 0.0f;
 		colorBlendStateCreateInfo.m_blendConstants[3] = 0.0f;
 
-		// Éî¶ÈÄ£°å
+		// æ·±åº¦æ¨¡æ¿
 		ST_RHIPipelineDepthStencilStateCreateInfo depthStencilCreateInfo{};
 		depthStencilCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		depthStencilCreateInfo.m_depthTestEnable = RHI_TRUE;
@@ -914,7 +918,7 @@ void ParticlePass::SetupPipelines()
 		depthStencilCreateInfo.m_depthBoundsTestEnable = RHI_FALSE;
 		depthStencilCreateInfo.m_stencilTestEnable = RHI_FALSE;
 
-		// ¶¯Ì¬Êı¾İ£¨¿ÉÔÚäÖÈ¾Ö´ĞĞÊ±ĞŞ¸Ä£©
+		// åŠ¨æ€æ•°æ®ï¼ˆå¯åœ¨æ¸²æŸ“æ‰§è¡Œæ—¶ä¿®æ”¹ï¼‰
 		ERHIDynamicState dynamicStates[] = { RHI_DYNAMIC_STATE_VIEWPORT, RHI_DYNAMIC_STATE_SCISSOR };
 		ST_RHIPipelineDynamicStateCreateInfo dynamicStateCreateInfo{};
 		dynamicStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -938,7 +942,7 @@ void ParticlePass::SetupPipelines()
 		pipelineInfo.m_pBasePipelineHandle = RHI_NULL_HANDLE;
 		pipelineInfo.m_pDynamicState = &dynamicStateCreateInfo;
 
-		// ´´½¨ÓÃÓÚÁ£×ÓÏÔÊ¾µÄ¹ÜÏß
+		// åˆ›å»ºç”¨äºç²’å­æ˜¾ç¤ºçš„ç®¡çº¿
 		if (m_pRHI->CreateGraphicsPipelines(RHI_NULL_HANDLE, 1, &pipelineInfo, m_renderPipelines[1].m_pipeline) !=
 			RHI_SUCCESS)
 		{
@@ -1011,7 +1015,7 @@ void ParticlePass::AllocateDescriptorSet()
 
 void ParticlePass::UpdateDescriptorSet()
 {
-	// ¸üĞÂÃ¿Ò»¸ö·¢ÉäÆ÷µÄÃèÊö·û¼¯
+	// æ›´æ–°æ¯ä¸€ä¸ªå‘å°„å™¨çš„æè¿°ç¬¦é›†
 	for (int eid = 0; eid < m_emitterCount; ++eid)
 	{
 		// compute part
@@ -1153,7 +1157,7 @@ void ParticlePass::UpdateDescriptorSet()
 			ST_RHIDescriptorImageInfo piccoloTextureImageInfo = {};
 			piccoloTextureImageInfo.m_pSampler = pSampler;
 			piccoloTextureImageInfo.m_pImageView = m_pPiccoloLogoTextureImageView;
-			piccoloTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ×ÅÉ«Æ÷Ö»¶Á
+			piccoloTextureImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ç€è‰²å™¨åªè¯»
 
 			{
 				ST_RHIWriteDescriptorSet& descriptorSet = computeWriteDescriptorSets[10];
@@ -1165,18 +1169,18 @@ void ParticlePass::UpdateDescriptorSet()
 				descriptorSet.m_descriptorCount = 1;
 			}
 
-			// ¸üĞÂÃèÊö·û¼¯Êı¾İ
+			// æ›´æ–°æè¿°ç¬¦é›†æ•°æ®
 			m_pRHI->UpdateDescriptorSets(static_cast<uint32_t>(computeWriteDescriptorSets.size()), computeWriteDescriptorSets.data(), 0, NULL);
 		}
 
 		{
-			// Ğ´ÈëµÄÃèÊö·û¼¯Êı¾İÊı×é
+			// å†™å…¥çš„æè¿°ç¬¦é›†æ•°æ®æ•°ç»„
 			ST_RHIWriteDescriptorSet descriptorInputAttachmentWritesInfo[2] = { {}, {} };
 
 			ST_RHIDescriptorImageInfo gbufferNormalDescriptorImageInfo = {};
 			gbufferNormalDescriptorImageInfo.m_pSampler = nullptr;
 			gbufferNormalDescriptorImageInfo.m_pImageView = m_pSrcNormalImageView;
-			gbufferNormalDescriptorImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_GENERAL;	// ´æ´¢Í¼Ïñ
+			gbufferNormalDescriptorImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_GENERAL;	// å­˜å‚¨å›¾åƒ
 			{
 
 				ST_RHIWriteDescriptorSet& gbufferNormalDescriptorInputAttachmentWriteInfo = descriptorInputAttachmentWritesInfo[0];
@@ -1214,7 +1218,7 @@ void ParticlePass::UpdateDescriptorSet()
 			ST_RHIDescriptorImageInfo depthDescriptorImageInfo = {};
 			depthDescriptorImageInfo.m_pSampler = sampler;
 			depthDescriptorImageInfo.m_pImageView = m_pSrcDepthImageView;
-			depthDescriptorImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ×ÅÉ«Æ÷Ö»¶Á
+			depthDescriptorImageInfo.m_imageLayout = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;	// ç€è‰²å™¨åªè¯»
 
 			{
 				ST_RHIWriteDescriptorSet& depthDescriptorInputAttachmentWriteInfo = descriptorInputAttachmentWritesInfo[1];
@@ -1228,7 +1232,7 @@ void ParticlePass::UpdateDescriptorSet()
 				depthDescriptorInputAttachmentWriteInfo.m_pImageInfo = &depthDescriptorImageInfo;
 			}
 
-			// ¸üĞÂµÚ¶ş¸öÃèÊö·û¼¯Êı¾İ
+			// æ›´æ–°ç¬¬äºŒä¸ªæè¿°ç¬¦é›†æ•°æ®
 			m_pRHI->UpdateDescriptorSets(sizeof(descriptorInputAttachmentWritesInfo) / sizeof(descriptorInputAttachmentWritesInfo[0]), descriptorInputAttachmentWritesInfo, 0, NULL);
 		}
 	}
@@ -1236,7 +1240,7 @@ void ParticlePass::UpdateDescriptorSet()
 
 void ParticlePass::SetupParticleDescriptorSet()
 {
-	// ¸üĞÂµÚÈı¸öÃèÊö·û¼¯ĞÅÏ¢
+	// æ›´æ–°ç¬¬ä¸‰ä¸ªæè¿°ç¬¦é›†ä¿¡æ¯
 	for (int eid = 0; eid < m_emitterCount; ++eid)
 	{
 		ST_RHIDescriptorSetAllocateInfo particleBillboardGlobalDescriptorSetAllocInfo;
@@ -1316,7 +1320,7 @@ void ParticlePass::SetupParticleDescriptorSet()
 		particleBillboardDescriptorWritesInfo[2].m_descriptorCount = 1;
 		particleBillboardDescriptorWritesInfo[2].m_pImageInfo = &particleTextureImageInfo;
 
-		// ¸üĞÂµÚÈı¸öÃèÊö·û¼¯Êı¾İ
+		// æ›´æ–°ç¬¬ä¸‰ä¸ªæè¿°ç¬¦é›†æ•°æ®
 		m_pRHI->UpdateDescriptorSets(sizeof(particleBillboardDescriptorWritesInfo) / sizeof(particleBillboardDescriptorWritesInfo[0]), particleBillboardDescriptorWritesInfo, 0, NULL);
 	}
 }
