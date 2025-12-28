@@ -156,6 +156,7 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 	pVulkanRHI->WaitForFences();
 	pVulkanRHI->ResetCommandPool();
 
+	// 开始录制命令
 	bool recreateSwapchain = pVulkanRHI->PrepareBeforePass(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// 在渲染通道更新后重建交换链???
 	if (recreateSwapchain)
 		return;
@@ -183,7 +184,9 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 	// 渲染测试
 	//g_runtime_global_context.m_debugdraw_manager->draw(vulkan_rhi->m_current_swapchain_image_index);
 
+	// 结束命令，提交渲染
 	pVulkanRHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// 提交渲染
+
 	pParticlePassPtr->CopyNormalAndDepthImage();	// 复制法线和深度图像
 	pParticlePassPtr->Simulate();	// ???
 }

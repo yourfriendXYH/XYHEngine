@@ -68,6 +68,7 @@ void MainCameraPass::Draw(ColorGradingPass& colorGradingPass, FXAAPass& fxaaPass
 		renderPassBeginInfo.m_renderArea.m_offset = { 0, 0 };
 		renderPassBeginInfo.m_renderArea.m_extent = m_pRHI->GetSwapchainInfo().m_extent;
 
+		// 附件清除值
 		UN_RHIClearValue clearValues[_main_camera_pass_attachment_count];
 		clearValues[_main_camera_pass_gbuffer_a].m_color = { {0.0f, 0.0f, 0.0f, 0.0f} };
 		clearValues[_main_camera_pass_gbuffer_b].m_color = { {0.0f, 0.0f, 0.0f, 0.0f} };
@@ -2212,7 +2213,7 @@ void MainCameraPass::DrawDeferredLighting()
 
 	(*reinterpret_cast<ST_MeshPerframeStorageBufferObject*>(reinterpret_cast<uintptr_t>(m_pGlobalRenderResource->m_storageBuffer.m_pGlobalUploadRingbufferMemoryPointer) + perframeDynamicOffset)) = m_meshPerframeStorageBufferObject;
 
-	RHIDescriptorSet* descriptorSets[3] = { 
+	RHIDescriptorSet* descriptorSets[3] = {
 		m_descriptorInfos[_mesh_global].m_pDescriptorSet,
 		m_descriptorInfos[_deferred_lighting].m_pDescriptorSet,
 		m_descriptorInfos[_skybox].m_pDescriptorSet
@@ -2303,10 +2304,10 @@ void MainCameraPass::DrawAxis()
 	m_axisStorageBufferObject.m_selectedAxis = static_cast<uint32_t>(m_selectedAxis);
 	m_axisStorageBufferObject.m_modelMatrix = s_visibleNodes.m_pAxisNode->m_modelMatrix;
 
-	RHIBuffer* vertexBuffers[3] = { 
+	RHIBuffer* vertexBuffers[3] = {
 		s_visibleNodes.m_pAxisNode->m_refMesh->m_meshVertexPositionBuffer,
 		s_visibleNodes.m_pAxisNode->m_refMesh->m_meshVertexVaryingEnableBlendingBuffer,
-		s_visibleNodes.m_pAxisNode->m_refMesh->m_meshVertexVaryingBuffer 
+		s_visibleNodes.m_pAxisNode->m_refMesh->m_meshVertexVaryingBuffer
 	};
 
 	RHIDeviceSize offsets[3] = { 0, 0, 0 };

@@ -1367,12 +1367,17 @@ void VulkanRHI::CmdBeginRenderPassPFN(RHICommandBuffer* commandBuffer, const ST_
 	VkRenderPassBeginInfo vkRenderPassBeginInfo{};
 	vkRenderPassBeginInfo.sType = (VkStructureType)pRenderPassBegin->m_sType;
 	vkRenderPassBeginInfo.pNext = pRenderPassBegin->m_pNext;
-	vkRenderPassBeginInfo.renderPass = ((VulkanRenderPass*)pRenderPassBegin->m_pRenderPass)->GetResource();
-	vkRenderPassBeginInfo.framebuffer = ((VulkanFramebuffer*)pRenderPassBegin->m_pFramebuffer)->GetResource();
-	vkRenderPassBeginInfo.renderArea = rect2d;
-	vkRenderPassBeginInfo.clearValueCount = pRenderPassBegin->m_clearValueCount;
-	vkRenderPassBeginInfo.pClearValues = vkClearValueList.data();
+	vkRenderPassBeginInfo.renderPass = ((VulkanRenderPass*)pRenderPassBegin->m_pRenderPass)->GetResource();	// 渲染通道对象
+	vkRenderPassBeginInfo.framebuffer = ((VulkanFramebuffer*)pRenderPassBegin->m_pFramebuffer)->GetResource();	// 帧缓冲对象
+	vkRenderPassBeginInfo.renderArea = rect2d;	// 渲染区域
+	vkRenderPassBeginInfo.clearValueCount = pRenderPassBegin->m_clearValueCount;	// 清除值数量
+	vkRenderPassBeginInfo.pClearValues = vkClearValueList.data();	// 清除值数组
 
+	// 开始渲染通道（Render Pass）的核心命令，它定义了渲染操作的开始和帧缓冲的附着信息。
+	// commandBuffer：记录命令的命令缓冲区，	必须处于录制状态
+	// contents：指定子通道内容类型
+	// VK_SUBPASS_CONTENTS_INLINE：子通道命令在主命令缓冲区中录制
+	// VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS：执行次级命令缓冲区
 	return _vkCmdBeginRenderPass(((VulkanCommandBuffer*)commandBuffer)->GetResource(), &vkRenderPassBeginInfo, (VkSubpassContents)contents);
 }
 
