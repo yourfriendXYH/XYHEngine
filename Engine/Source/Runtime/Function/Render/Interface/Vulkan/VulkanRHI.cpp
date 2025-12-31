@@ -1314,9 +1314,23 @@ bool VulkanRHI::BeginCommandBufferPFN(RHICommandBuffer* pCommandBuffer, const ST
 	}
 }
 
-bool VulkanRHI::EndCommandBufferPFN(RHICommandBuffer* commandBuffer)
+bool VulkanRHI::EndCommandBufferPFN(RHICommandBuffer* pCommandBuffer)
 {
-	return false;
+	// 于结束命令记录的核心函数
+	// 作用:
+	// 标记命令记录完成
+	// 使命令缓冲区进入可执行状态
+	// 可以提交到队列执行
+	VkResult result = _vkEndCommandBuffer(((VulkanCommandBuffer*)pCommandBuffer)->GetResource());
+	if (result == VK_SUCCESS)
+	{
+		return true;
+	}
+	else
+	{
+		LOG_ERROR("_vkEndCommandBuffer failed!");
+		return false;
+	}
 }
 
 void VulkanRHI::CmdBeginRenderPassPFN(RHICommandBuffer* commandBuffer, const ST_RHIRenderPassBeginInfo* pRenderPassBegin, ERHISubpassContents contents)
@@ -1818,9 +1832,134 @@ void VulkanRHI::UpdateDescriptorSets(uint32_t descriptorWriteCount, const ST_RHI
 	vkUpdateDescriptorSets(m_device, descriptorWriteCount, vkWriteDescriptorSetList.data(), descriptorCopyCount, vkCopyDescriptorSetList.data());
 }
 
-bool VulkanRHI::QueueSubmit(RHIQueue* queue, uint32_t submitCount, const ST_RHISubmitInfo* pSubmits, RHIFence* fence)
+bool VulkanRHI::QueueSubmit(RHIQueue* pQueue, uint32_t submitCount, const ST_RHISubmitInfo* pSubmits, RHIFence* pFence)
 {
-	return false;
+	//submit_info
+	int commandBufferSizeTotal = 0;
+	int semaphoreSizeTotal = 0;	// 信号量大小
+	int signalSemaphoreSizeTotal = 0;
+	int pipelineStageFlagsSizeTotal = 0;
+
+	int submitInfoSize = submitCount;
+	for (int i = 0; i < submitInfoSize; ++i)
+	{
+		const auto& rhiSubmitInfoElement = pSubmits[i];
+		commandBufferSizeTotal += rhiSubmitInfoElement.m_commandBufferCount;
+		semaphoreSizeTotal += rhiSubmitInfoElement.m_waitSemaphoreCount;
+		signalSemaphoreSizeTotal += rhiSubmitInfoElement.m_signalSemaphoreCount;
+		pipelineStageFlagsSizeTotal += rhiSubmitInfoElement.m_waitSemaphoreCount;	// ???
+	}
+	std::vector<VkCommandBuffer> vkCommandBufferListExternal(commandBufferSizeTotal);
+	std::vector<VkSemaphore> vkSemaphoreListExternal(semaphoreSizeTotal);
+	std::vector<VkSemaphore> vkSignalSemaphoreListExternal(signalSemaphoreSizeTotal);
+	std::vector<VkPipelineStageFlags> vkPipelineStageFlagsListExternal(pipelineStageFlagsSizeTotal);
+
+	int commandBufferSizeCurrent = 0;
+	int semaphoreSizeCurrent = 0;
+	int signalSemaphoreSizeCurrent = 0;
+	int pipelineStageFlagsSizeCurrent = 0;
+
+	std::vector<VkSubmitInfo> vkSubmitInfoList(submitInfoSize);
+	for (int i = 0; i < submitInfoSize; ++i)
+	{
+		const auto& rhiSubmitInfoElement = pSubmits[i];
+		auto& vkSubmitInfoElement = vkSubmitInfoList[i];
+
+		vkSubmitInfoElement.sType = (VkStructureType)rhiSubmitInfoElement.m_sType;
+		vkSubmitInfoElement.pNext = (const void*)rhiSubmitInfoElement.m_pNext;
+
+		//command_buffer
+		if (rhiSubmitInfoElement.m_commandBufferCount > 0)
+		{
+			vkSubmitInfoElement.commandBufferCount = rhiSubmitInfoElement.m_commandBufferCount;
+			vkSubmitInfoElement.pCommandBuffers = &vkCommandBufferListExternal[commandBufferSizeCurrent];
+			int commandBufferSize = rhiSubmitInfoElement.m_commandBufferCount;
+			for (int i = 0; i < commandBufferSize; ++i)
+			{
+				const auto& rhiCommandBufferElement = rhiSubmitInfoElement.m_pCommandBuffers[i];
+				auto& vkCommandBufferElement = vkCommandBufferListExternal[commandBufferSizeCurrent];
+
+				vkCommandBufferElement = ((VulkanCommandBuffer*)rhiCommandBufferElement)->GetResource();
+
+				commandBufferSizeCurrent++;
+			};
+		}
+
+		//semaphore
+		if (rhiSubmitInfoElement.m_waitSemaphoreCount > 0)
+		{
+			vkSubmitInfoElement.waitSemaphoreCount = rhiSubmitInfoElement.m_waitSemaphoreCount;
+			vkSubmitInfoElement.pWaitSemaphores = &vkSemaphoreListExternal[semaphoreSizeCurrent];
+			int semaphoreSize = rhiSubmitInfoElement.m_waitSemaphoreCount;
+			for (int i = 0; i < semaphoreSize; ++i)
+			{
+				const auto& rhiSemaphoreElement = rhiSubmitInfoElement.m_pWaitSemaphores[i];
+				auto& vkSemaphoreElement = vkSemaphoreListExternal[semaphoreSizeCurrent];
+
+				vkSemaphoreElement = ((VulkanSemaphore*)rhiSemaphoreElement)->GetResource();
+
+				semaphoreSizeCurrent++;
+			};
+		}
+
+		//signal_semaphore
+		if (rhiSubmitInfoElement.m_signalSemaphoreCount > 0)
+		{
+			vkSubmitInfoElement.signalSemaphoreCount = rhiSubmitInfoElement.m_signalSemaphoreCount;
+			vkSubmitInfoElement.pSignalSemaphores = &vkSignalSemaphoreListExternal[signalSemaphoreSizeCurrent];
+			int signalSemaphoreSize = rhiSubmitInfoElement.m_signalSemaphoreCount;
+			for (int i = 0; i < signalSemaphoreSize; ++i)
+			{
+				const auto& rhiSignalSemaphoreElement = rhiSubmitInfoElement.m_pSignalSemaphores[i];
+				auto& vkSignalSemaphoreElement = vkSignalSemaphoreListExternal[signalSemaphoreSizeCurrent];
+
+				vkSignalSemaphoreElement = ((VulkanSemaphore*)rhiSignalSemaphoreElement)->GetResource();
+
+				signalSemaphoreSizeCurrent++;
+			};
+		}
+
+		//pipeline_stage_flags
+		if (rhiSubmitInfoElement.m_waitSemaphoreCount > 0)
+		{
+			vkSubmitInfoElement.pWaitDstStageMask = &vkPipelineStageFlagsListExternal[pipelineStageFlagsSizeCurrent];
+			int pipelineStageFlagsSize = rhiSubmitInfoElement.m_waitSemaphoreCount;
+			for (int i = 0; i < pipelineStageFlagsSize; ++i)
+			{
+				const auto& rhiPipelineStageFlagsElement = rhiSubmitInfoElement.m_pWaitDstStageMask[i];
+				auto& vkPipelineStageFlagsElement = vkPipelineStageFlagsListExternal[pipelineStageFlagsSizeCurrent];
+
+				vkPipelineStageFlagsElement = (VkPipelineStageFlags)rhiPipelineStageFlagsElement;
+
+				pipelineStageFlagsSizeCurrent++;
+			};
+		}
+	};
+
+	if ((commandBufferSizeTotal != commandBufferSizeCurrent) || (semaphoreSizeTotal != semaphoreSizeCurrent) || 
+		(signalSemaphoreSizeTotal != signalSemaphoreSizeCurrent) || (pipelineStageFlagsSizeTotal != pipelineStageFlagsSizeCurrent))
+	{
+		LOG_ERROR("submit info is not right!");
+		return false;
+	}
+	
+	VkFence vkFence = VK_NULL_HANDLE;
+	if (pFence != nullptr)
+	{
+		vkFence = ((VulkanFence*)pFence)->GetResource();
+	}
+
+	VkResult result = vkQueueSubmit(((VulkanQueue*)pQueue)->GetResource(), submitCount, vkSubmitInfoList.data(), vkFence);
+
+	if (result == VK_SUCCESS)
+	{
+		return true;
+	}
+	else
+	{
+		LOG_ERROR("vkQueueSubmit failed!");
+		return false;
+	}
 }
 
 bool VulkanRHI::QueueWaitIdle(RHIQueue* queue)

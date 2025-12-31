@@ -285,9 +285,11 @@ void ParticlePass::CopyNormalAndDepthImage()
 	}
 	m_pRHI->PopEvent(m_pCopyCommandBuffer);
 
+	// 结束命令记录
 	bool resEndCommandBuffer = m_pRHI->EndCommandBufferPFN(m_pCopyCommandBuffer);
 	assert(RHI_SUCCESS == resEndCommandBuffer);
 
+	// 重置上一个帧缓冲的栅栏
 	bool resResetFences = m_pRHI->ResetFencesPFN(1, &m_pRHI->GetFenceList()[lastIndex]);
 	assert(RHI_SUCCESS == resResetFences);
 

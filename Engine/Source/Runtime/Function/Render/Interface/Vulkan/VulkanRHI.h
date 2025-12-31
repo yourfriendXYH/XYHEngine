@@ -99,7 +99,7 @@ public:
 
 	virtual bool BeginCommandBufferPFN(RHICommandBuffer* pCommandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo);	// 开始命令缓冲区
 
-	virtual bool EndCommandBufferPFN(RHICommandBuffer* commandBuffer);	// 结束命令缓冲区
+	virtual bool EndCommandBufferPFN(RHICommandBuffer* pCommandBuffer);	// 结束命令缓冲区
 
 	virtual void CmdBeginRenderPassPFN(RHICommandBuffer* commandBuffer, const ST_RHIRenderPassBeginInfo* pRenderPassBegin, ERHISubpassContents contents);	// 开始渲染通道
 
@@ -158,7 +158,7 @@ public:
 
 	virtual void UpdateDescriptorSets(uint32_t descriptorWriteCount, const ST_RHIWriteDescriptorSet* pDescriptorWrites, uint32_t descriptorCopyCount, const ST_RHICopyDescriptorSet* pDescriptorCopies);	// 更新描述符集
 
-	virtual bool QueueSubmit(RHIQueue* queue, uint32_t submitCount, const ST_RHISubmitInfo* pSubmits, RHIFence* fence);	// 提交到队列
+	virtual bool QueueSubmit(RHIQueue* pQueue, uint32_t submitCount, const ST_RHISubmitInfo* pSubmits, RHIFence* pFence);	// 提交到队列
 
 	virtual bool QueueWaitIdle(RHIQueue* queue);	// 队列等待空闲
 
