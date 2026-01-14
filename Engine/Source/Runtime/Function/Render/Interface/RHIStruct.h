@@ -321,7 +321,7 @@ struct ST_RHISubpassDescription
 	ERHIPipelineBindPoint m_pipelineBindPoint;	// 管线绑定点
 	uint32_t m_inputAttachmentCount;	// 输入附件数量
 	const ST_RHIAttachmentReference* m_pInputAttachments;
-	uint32_t m_colorAttachmentCount;
+	uint32_t m_colorAttachmentCount;	// 输出附件数量
 	const ST_RHIAttachmentReference* m_pColorAttachments;
 	const ST_RHIAttachmentReference* m_pResolveAttachments;
 	const ST_RHIAttachmentReference* m_pDepthStencilAttachment;
