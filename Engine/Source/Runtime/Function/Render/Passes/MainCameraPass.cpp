@@ -2168,6 +2168,7 @@ void MainCameraPass::DrawMeshGbuffer()
 						perDrawcallVertexBlendingDynamicOffset = 0;
 					}
 
+					// 动态偏移量
 					uint32_t dynamicOffsets[3] = {
 						perframeDynamicOffset,
 						perdrawcallDynamicOffset,
@@ -2196,6 +2197,7 @@ void MainCameraPass::DrawMeshGbuffer()
 
 void MainCameraPass::DrawDeferredLighting()
 {
+	// 使用延迟光照管线
 	m_pRHI->CmdBindPipelinePFN(m_pRHI->GetCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipelines[_render_pipeline_type_deferred_lighting].m_pipeline);
 	m_pRHI->CmdSetViewportPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pViewport);
 	m_pRHI->CmdSetScissorPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pScissor);

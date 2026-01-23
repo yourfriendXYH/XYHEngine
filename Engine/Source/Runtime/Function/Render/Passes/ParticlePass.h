@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Common.h>
 #include "Runtime/Function/Render/RenderPass.h"
 #include "Runtime/Function/Render/RenderResource.h"
@@ -45,81 +45,82 @@ public:
 	void FreeUpBatch(std::shared_ptr<RHI> rhi) {};
 };
 
-// É«µ÷Ó³ÉääÖÈ¾Í¨µÀ
+// è‰²è°ƒæ˜ å°„æ¸²æŸ“é€šé“
 class ParticlePass : public RenderPass
 {
 public:
-	// ³õÊ¼»¯£¨´«ÈëÈ«¾Ö×ÊÔ´¡¢Á£×Ó¹ÜÀíÆ÷£©
+	// åˆå§‹åŒ–ï¼ˆä¼ å…¥å…¨å±€èµ„æºã€ç²’å­ç®¡ç†å™¨ï¼‰
 	void Initialize(const ST_RenderPassInitInfo* initInfo) override final;
 
-	// Ã¿Ö¡Ö´ĞĞ£¨³õÊ¼»¯²¿·ÖäÖÈ¾Êı¾İ£©
+	// æ¯å¸§æ‰§è¡Œï¼ˆåˆå§‹åŒ–éƒ¨åˆ†æ¸²æŸ“æ•°æ®ï¼‰
 	void PreparePassData(std::shared_ptr<RenderResourceBase> pRenderResource) override final;
 
-	// ÉèÖÃäÖÈ¾ÃüÁî»º³åÇøÖ¸Õë£¨Ã¿Ö¡Ö´ĞĞ£©
+	// è®¾ç½®æ¸²æŸ“å‘½ä»¤ç¼“å†²åŒºæŒ‡é’ˆï¼ˆæ¯å¸§æ‰§è¡Œï¼‰
 	void SetRenderCommandBufferHandle(RHICommandBuffer* commandBuffer);
 
-	// £¨Ã¿Ö¡äÖÈ¾½áÊøºóµ÷ÓÃ£©
+	// ï¼ˆæ¯å¸§æ¸²æŸ“ç»“æŸåè°ƒç”¨ï¼‰
 	void CopyNormalAndDepthImage();
-	// £¨Ã¿Ö¡äÖÈ¾½áÊøºóµ÷ÓÃ£©
+	// ï¼ˆæ¯å¸§æ¸²æŸ“ç»“æŸåè°ƒç”¨ï¼‰
 	void Simulate();
 
-	// Á£×ÓPass²¿·ÖÊı¾İ´´½¨
-	// ³õÊ¼»¯Ê±µ÷ÓÃ
+	// ç²’å­Passéƒ¨åˆ†æ•°æ®åˆ›å»º
+	// åˆå§‹åŒ–æ—¶è°ƒç”¨
 	void SetupParticlePass();
 
-	// »ñÈ¡MainCameraPassµÄ²¿·ÖÊı¾İ
-	// ´ÓMainCameraPassÉÏ»ñÈ¡Éî¶ÈºÍ·¨ÏßµÄImage
+	// è·å–MainCameraPassçš„éƒ¨åˆ†æ•°æ®
+	// ä»MainCameraPassä¸Šè·å–æ·±åº¦å’Œæ³•çº¿çš„Image
 	void SetDepthAndNormalImage(RHIImage* pDepthImage, RHIImage* pNormalImage);
-	// »ñÈ¡MainCameraPassµÄRenderPassÖ¸Õë
+	// è·å–MainCameraPassçš„RenderPassæŒ‡é’ˆ
 	void SetRenderPassHandle(RHIRenderPass* pRenderPass);
 
-	// ½»»»Á´ÖØĞÂ´´½¨ºó£¬ÖØÖÃ²¿·ÖÊı¾İ
+	// äº¤æ¢é“¾é‡æ–°åˆ›å»ºåï¼Œé‡ç½®éƒ¨åˆ†æ•°æ®
 	void UpdateAfterFramebufferRecreate();
 
-	// ÉèÖÃÁ£×Ó·¢ÉäÆ÷ÊıÁ¿£¨Ã¿Ö¡µ÷ÓÃ£©
+	// æ¯å¸§æ‰§è¡Œå¼€å§‹æ—¶è°ƒç”¨
+	// è®¾ç½®ç²’å­å‘å°„å™¨æ•°é‡ï¼ˆæ¯å¸§è°ƒç”¨ï¼‰
 	void SetEmitterCount(int count);
-	// ´´½¨Á£×Ó·¢ÉäÆ÷£¨Ã¿Ö¡µ÷ÓÃ£©
+	// åˆ›å»ºç²’å­å‘å°„å™¨ï¼ˆæ¯å¸§è°ƒç”¨ï¼‰
 	void CreateEmitter(int id, const ST_ParticleEmitterDesc& desc);
-	// ³õÊ¼»¯Á£×Ó·¢ÉäÆ÷£¨Ã¿Ö¡ÅĞ¶ÏÊÇ·ñ¸üĞÂ£©
+	// åˆå§‹åŒ–ç²’å­å‘å°„å™¨ï¼ˆæ¯å¸§åˆ¤æ–­æ˜¯å¦æ›´æ–°ï¼‰
 	void InitializeEmitters();
-	// £¨Ã¿Ö¡µ÷ÓÃ£©
+	// ï¼ˆæ¯å¸§è°ƒç”¨ï¼‰
 	void SetTickIndices(const std::vector<ParticleEmitterID>& tickIndices);
-	// £¨Ã¿Ö¡µ÷ÓÃ£©
+	// ï¼ˆæ¯å¸§è°ƒç”¨ï¼‰
 	void SetTransformIndices(const std::vector<ST_ParticleEmitterTransformDesc>& transformIndices);
 
-	// »æÖÆÁ£×ÓĞ§¹û
+	// ç»˜åˆ¶ç²’å­æ•ˆæœ
 	void Draw() override final;
 
 private:
 
-	// ×¼±¸Í³Ò»»º³åÇø
-	// ÓÃÓÚ´«µİÔÚ¶à´Î»æÖÆµ÷ÓÃÖĞ±£³Ö²»±ä»ò±ä»¯»ºÂıµÄÊı¾İ
+	// å‡†å¤‡ç»Ÿä¸€ç¼“å†²åŒº
+	// ç”¨äºä¼ é€’åœ¨å¤šæ¬¡ç»˜åˆ¶è°ƒç”¨ä¸­ä¿æŒä¸å˜æˆ–å˜åŒ–ç¼“æ…¢çš„æ•°æ®
 	void PrepareUniformBuffer();
 
-	// ´´½¨ÃèÊö·û²¼¾Ö
+	// åˆ›å»ºæè¿°ç¬¦å¸ƒå±€
 	void SetupDescriptorSetLayout();
 
-	// ´´½¨Í¼ĞÎ¹ÜÏß¡¢¼ÆËã¹ÜÏß
+	// åˆ›å»ºå›¾å½¢ç®¡çº¿ã€è®¡ç®—ç®¡çº¿
 	void SetupPipelines();
 
-	// ´´½¨¸½¼ş
+	// åˆ›å»ºé™„ä»¶
 	void SetupAttachments();
 
-	// ¸üĞÂ m_ubo Êı¾İ
+	// æ›´æ–° m_ubo æ•°æ®
 	void UpdateUniformBuffer();
 
-	// ¸üĞÂ·¢ÉäÆ÷µÄ±ä»»Êı¾İ
+	// æ›´æ–°å‘å°„å™¨çš„å˜æ¢æ•°æ®
 	void UpdateEmitterTransform();
 
-	// ·¢ÉäÆ÷ÃèÊö·û¼¯·ÖÅä
+	// å‘å°„å™¨æè¿°ç¬¦é›†åˆ†é…
 	void AllocateDescriptorSet();
 
-	// ¸üĞÂÁ£×Ó·¢ÉäÆ÷µÄÃèÊö·û¼¯Êı¾İ
-	// 1. Ã¿Ö¡Ö´ĞĞProcessSwapData·½·¨»áµ÷ÓÃ
-	// 2. Ö¡»º³åÖØĞÂ´´½¨Ê±»áµ÷ÓÃ
+	// æ›´æ–°ç²’å­å‘å°„å™¨çš„æè¿°ç¬¦é›†æ•°æ®
+	// 1. æ¯å¸§æ‰§è¡ŒProcessSwapDataæ–¹æ³•ä¼šè°ƒç”¨
+	// 2. å¸§ç¼“å†²é‡æ–°åˆ›å»ºæ—¶ä¼šè°ƒç”¨
 	void UpdateDescriptorSet();
 
-	// ÉèÖÃÁ£×Ó·¢ÉäÆ÷µÄÃèÊö·û¼¯
+	// è®¾ç½®ç²’å­å‘å°„å™¨çš„æè¿°ç¬¦é›†
 	void SetupParticleDescriptorSet();
 
 private:
@@ -132,14 +133,14 @@ private:
 	RHIFence* m_pFence = nullptr;
 
 	ST_ParticleBillboardPerframeStorageBufferObject m_particleBillboardPerframeStorageBufferObject;	// 
-	ST_ParticleCollisionPerframeStorageBufferObject m_particleCollisionPerframeStorageBufferObject;	// Á£×Ó¿ØÖÆÊı¾İ
+	ST_ParticleCollisionPerframeStorageBufferObject m_particleCollisionPerframeStorageBufferObject;	// ç²’å­æ§åˆ¶æ•°æ®
 
-	// ÄÚ´æÊôĞÔ
+	// å†…å­˜å±æ€§
 	RHIBuffer* m_pSceneUniformBuffer = nullptr;
 	RHIBuffer* m_pComputeUniformBuffer = nullptr;
 	RHIBuffer* m_pParticleBillboardUniformBuffer = nullptr;
 
-	// ÄÚ´æÓ³ÉäÊ×µØÖ·Ö¸Õë
+	// å†…å­˜æ˜ å°„é¦–åœ°å€æŒ‡é’ˆ
 	void* m_pSceneUniformBufferMapped = nullptr;
 	void* m_pParticleComputeBufferMapped = nullptr;
 	void* m_pParticleBillboardUniformBufferMapped = nullptr;
@@ -165,17 +166,17 @@ private:
 	} m_ubo;
 
 
-	ST_RHIViewport m_viewportParams;	// ½»»»Á´ÊÓ¿ÚÊôĞÔ
+	ST_RHIViewport m_viewportParams;	// äº¤æ¢é“¾è§†å£å±æ€§
 
-	// ¹ÜÏß¶ÔÏó
-	RHIPipeline* m_pKickoffPipeline = nullptr;	// ¿ªÊ¼
-	RHIPipeline* m_pEmitPipeline = nullptr;	// ·¢³ö
-	RHIPipeline* m_pSimulatePipeline = nullptr;	// Ä£Äâ
+	// ç®¡çº¿å¯¹è±¡
+	RHIPipeline* m_pKickoffPipeline = nullptr;	// å¼€å§‹
+	RHIPipeline* m_pEmitPipeline = nullptr;	// å‘å‡º
+	RHIPipeline* m_pSimulatePipeline = nullptr;	// æ¨¡æ‹Ÿ
 
-	// MainCameraPassµÄäÖÈ¾Í¨µÀÖ¸Õë
+	// MainCameraPassçš„æ¸²æŸ“é€šé“æŒ‡é’ˆ
 	RHIRenderPass* m_pRenderPass = nullptr;
 
-	// Á£×Ó»æÖÆµÄimage
+	// ç²’å­ç»˜åˆ¶çš„image
 	RHIImage* m_pParticleBillboardTextureImage = nullptr;
 	RHIImageView* m_pParticleBillboardTextureImageView = nullptr;
 	VmaAllocation m_particleBillboardTextureVmaAllocation;
@@ -185,6 +186,7 @@ private:
 	RHIImageView* m_pPiccoloLogoTextureImageView = nullptr;
 	VmaAllocation m_piccoloLogoTextureVmaAllocation;
 
+	// MainCameraPassçš„æ·±åº¦å›¾åƒå’Œæ³•çº¿å›¾åƒ
 	RHIImage* m_pSrcDepthImage = nullptr;
 	RHIImage* m_pSrcNormalImage = nullptr;
 

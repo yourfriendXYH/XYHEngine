@@ -204,7 +204,7 @@ void ParticlePass::CopyNormalAndDepthImage()
 		// 直接传输写入
 		imagememorybarrier.m_srcAccessMask = 0;
 		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_TRANSFER_WRITE_BIT;
-		imagememorybarrier.m_pImage = m_pDstDepthImage;
+		imagememorybarrier.m_pImage = m_pDstNormalImage;
 
 		m_pRHI->CmdPipelineBarrier(
 			m_pCopyCommandBuffer,
@@ -223,7 +223,7 @@ void ParticlePass::CopyNormalAndDepthImage()
 		// 只有 颜色附件写入 完成，才能 传输读取
 		imagememorybarrier.m_srcAccessMask = RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		imagememorybarrier.m_dstAccessMask = RHI_ACCESS_TRANSFER_READ_BIT;
-		imagememorybarrier.m_pImage = m_pSrcDepthImage;
+		imagememorybarrier.m_pImage = m_pSrcNormalImage;
 
 		m_pRHI->CmdPipelineBarrier(
 			m_pCopyCommandBuffer,
@@ -239,9 +239,9 @@ void ParticlePass::CopyNormalAndDepthImage()
 
 		m_pRHI->CmdCopyImageToImage(
 			m_pCopyCommandBuffer,
-			m_pSrcDepthImage,
+			m_pSrcNormalImage,
 			RHI_IMAGE_ASPECT_COLOR_BIT,
-			m_pDstDepthImage,
+			m_pDstNormalImage,
 			RHI_IMAGE_ASPECT_COLOR_BIT,
 			m_pRHI->GetSwapchainInfo().m_extent.m_width,
 			m_pRHI->GetSwapchainInfo().m_extent.m_height);
@@ -264,7 +264,7 @@ void ParticlePass::CopyNormalAndDepthImage()
 			1,
 			&imagememorybarrier);
 
-		imagememorybarrier.m_pImage = m_pDstDepthImage;
+		imagememorybarrier.m_pImage = m_pDstNormalImage;
 		imagememorybarrier.m_oldLayout = RHI_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;	// 传输目标布局
 		imagememorybarrier.m_newLayout = RHI_IMAGE_LAYOUT_GENERAL;	// 通用布局
 		// 只有 传输写入 完成，才能 着色器读取
@@ -401,6 +401,32 @@ void ParticlePass::SetTransformIndices(const std::vector<ST_ParticleEmitterTrans
 
 void ParticlePass::Draw()
 {
+	for (int i = 0; i < m_emitterCount; ++i)
+	{
+		float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		m_pRHI->PushEvent(m_pRenderCommandBuffer, "ParticleBillboard", color);
+		// 绑定粒子的图形管线，索引0是计算管线
+		m_pRHI->CmdBindPipelinePFN(m_pRenderCommandBuffer, RHI_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipelines[1].m_pipeline);
+		m_pRHI->CmdSetViewportPFN(m_pRenderCommandBuffer, 0, 1, m_pRHI->GetSwapchainInfo().m_pViewport);
+		m_pRHI->CmdSetScissorPFN(m_pRenderCommandBuffer, 0, 1, m_pRHI->GetSwapchainInfo().m_pScissor);
+
+		// 绑定描述符集
+		m_pRHI->CmdBindDescriptorSetsPFN(
+			m_pRenderCommandBuffer,
+			RHI_PIPELINE_BIND_POINT_GRAPHICS,
+			m_renderPipelines[1].m_pipelineLayout,
+			0,
+			1,
+			&m_descriptorInfos[i * 3 + 2].m_pDescriptorSet,
+			0,
+			nullptr
+		);
+
+		// 绘制
+		m_pRHI->CmdDraw(m_pRenderCommandBuffer, 4, m_emitterBufferBatches[i].m_numParticle, 0, 0);
+
+		m_pRHI->PopEvent(m_pRenderCommandBuffer);
+	}
 }
 
 void ParticlePass::PrepareUniformBuffer()
