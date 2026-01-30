@@ -36,6 +36,8 @@ public:
 
 	std::shared_ptr<RenderCamera> GetRenderCamera() const;
 
+private:
+	void ProcessSwapData();
 
 private:
 

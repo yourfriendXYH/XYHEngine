@@ -42,7 +42,7 @@ public:
 	ST_ParticleEmitterDesc m_emitterDesc;
 
 	uint32_t m_numParticle{ 0 };
-	void FreeUpBatch(std::shared_ptr<RHI> rhi) {};
+	void FreeUpBatch(std::shared_ptr<RHI> rhi);
 };
 
 // 色调映射渲染通道
@@ -165,6 +165,16 @@ private:
 		Vector4 m_extent;   // width, height, near, far
 	} m_ubo;
 
+	struct ST_Particle
+	{
+		Vector3 m_pos;
+		float m_life;
+		Vector3 m_vel;
+		float m_sizeX;
+		Vector3 m_acc;
+		float m_sizeY;
+		Vector4 m_color;
+	};
 
 	ST_RHIViewport m_viewportParams;	// 交换链视口属性
 
@@ -198,11 +208,32 @@ private:
 	RHIImageView* m_pSrcDepthImageView = nullptr;
 	RHIImageView* m_pSrcNormalImageView = nullptr;
 
+	// ???
+	struct ST_IndirectArgumemt
+	{
+		ST_uVec4 m_emitArgument;
+		ST_uVec4 m_simulateArgument;
+		int m_aliveFlapBit;
+	};
+
+	// 粒子计数器
+	struct ST_ParticleCounter
+	{
+		int m_deadCount;
+		int m_aliveCount;
+		int m_aliveCountAfterSim;	// 计算后的存活数
+		int m_emitCount;	// 发射数量
+	};
+
+	static constexpr bool s_verboseParticleAliveInfo{ false };
+
 	std::vector<ST_ParticleEmitterTransformDesc> m_emitterTransformIndices;
 
-	std::vector<ParticleEmitterBufferBatch> m_emitterBufferBatches;
+	std::vector<ParticleEmitterBufferBatch> m_emitterBufferBatches;	// 发射器缓冲区批次
 
 	int m_emitterCount;
+
+	std::vector<ParticleEmitterID> m_emitterTickIndices;
 };
 
 NAMESPACE_XYH_END

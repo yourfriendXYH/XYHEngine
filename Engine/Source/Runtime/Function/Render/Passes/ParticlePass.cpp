@@ -8,6 +8,7 @@
 
 #include <Runtime/Function/Render/RenderSystem.h>
 #include <Runtime/Function/Render/RenderCamera.h>
+#include <Runtime/Function/Particle/ParticleCommon.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -311,6 +312,13 @@ void ParticlePass::CopyNormalAndDepthImage()
 
 void ParticlePass::Simulate()
 {
+	// 执行计算着色器
+	for (auto i : m_emitterTickIndices)
+	{
+
+	}
+	m_emitterTickIndices.clear();
+	m_emitterTransformIndices.clear();
 }
 
 void ParticlePass::SetRenderPassHandle(RHIRenderPass* pRenderPass)
@@ -376,10 +384,278 @@ void ParticlePass::UpdateAfterFramebufferRecreate()
 
 void ParticlePass::SetEmitterCount(int count)
 {
+	for (size_t i = 0; i < m_emitterBufferBatches.size(); ++i)
+	{
+		m_emitterBufferBatches[i].FreeUpBatch(m_pRHI);
+	}
+	m_emitterCount = count;
+	m_emitterBufferBatches.resize(m_emitterCount);
 }
 
 void ParticlePass::CreateEmitter(int id, const ST_ParticleEmitterDesc& desc)
 {
+	const VkDeviceSize counterBufferSize = sizeof(ST_ParticleCounter);
+	ST_ParticleCounter counter;
+	counter.m_aliveCount = m_emitterBufferBatches[id].m_numParticle;
+	counter.m_deadCount = s_maxParticles - m_emitterBufferBatches[id].m_numParticle;
+	counter.m_emitCount = 0;
+	counter.m_aliveCountAfterSim = m_emitterBufferBatches[id].m_numParticle;
+
+	if constexpr (s_verboseParticleAliveInfo)
+	{
+		LOG_INFO("Emitter {} info:", id);
+		LOG_INFO("Dead {}, Alive {}, After sim {}, Emit {}",
+			counter.m_deadCount,
+			counter.m_aliveCount,
+			counter.m_aliveCountAfterSim,
+			counter.m_emitCount);
+	}
+
+	{
+		// ???
+		const VkDeviceSize indirectArgumentSize = sizeof(ST_IndirectArgumemt);
+		struct ST_IndirectArgumemt indirectArgument = {};
+		indirectArgument.m_aliveFlapBit = 1;
+		m_pRHI->CreateBufferAndInitialize(
+			RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
+			RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+			m_emitterBufferBatches[id].m_pIndirectDispatchArgumentBuffer,
+			m_emitterBufferBatches[id].m_pIndirectDispatchArgumentMemory,
+			indirectArgumentSize,
+			&indirectArgument,
+			indirectArgumentSize);
+
+		// ???
+		const VkDeviceSize aliveListSize = 4 * sizeof(uint32_t) * s_maxParticles;
+		std::vector<int> aliveindices(s_maxParticles * 4, 0);
+		for (int i = 0; i < s_maxParticles; ++i)
+			aliveindices[i * 4] = i;
+		m_pRHI->CreateBufferAndInitialize(
+			RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+			RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+			m_emitterBufferBatches[id].m_pAliveListBuffer,
+			m_emitterBufferBatches[id].m_pAliveListMemory,
+			aliveListSize,
+			aliveindices.data(),
+			aliveListSize);
+		m_pRHI->CreateBufferAndInitialize(
+			RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+			RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			m_emitterBufferBatches[id].m_pAliveListNextBuffer,
+			m_emitterBufferBatches[id].m_pAliveListNextMemory,
+			aliveListSize);
+
+		// ???
+		const VkDeviceSize deadListSize = 4 * sizeof(uint32_t) * s_maxParticles;
+		std::vector<int32_t> deadindices(s_maxParticles * 4, 0);
+		for (int32_t i = 0; i < s_maxParticles; ++i)
+			deadindices[i * 4] = s_maxParticles - 1 - i;
+		m_pRHI->CreateBufferAndInitialize(
+			RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+			RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+			m_emitterBufferBatches[id].m_pDeadListBuffer,
+			m_emitterBufferBatches[id].m_pDeadListMemory,
+			deadListSize,
+			deadindices.data(),
+			deadListSize);
+	}
+
+	RHIFence* fence = nullptr;
+	ST_ParticleCounter counterNext{};
+	{
+		m_pRHI->CreateBufferAndInitialize(
+			RHI_BUFFER_USAGE_TRANSFER_SRC_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT,
+			RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+			m_emitterBufferBatches[id].m_pCounterHostBuffer,
+			m_emitterBufferBatches[id].m_pCounterHostMemory,
+			counterBufferSize,
+			&counter,
+			sizeof(counter));
+		// 将刷新写入主要可见缓冲区
+		void* mapped;
+		m_pRHI->MapMemory(m_emitterBufferBatches[id].m_pCounterHostMemory, 0, RHI_WHOLE_SIZE, 0, &mapped);
+		m_pRHI->FlushMappedMemoryRanges(nullptr, m_emitterBufferBatches[id].m_pCounterHostMemory, 0, RHI_WHOLE_SIZE);
+		m_pRHI->UnmapMemory(m_emitterBufferBatches[id].m_pCounterHostMemory);
+
+		m_pRHI->CreateBufferAndInitialize(
+			RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_SRC_BIT |
+			RHI_BUFFER_USAGE_TRANSFER_DST_BIT,
+			RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			m_emitterBufferBatches[id].m_pCounterDeviceBuffer,
+			m_emitterBufferBatches[id].m_pCounterDeviceMemory,
+			counterBufferSize);
+
+		// Copy to staging buffer
+		ST_RHICommandBufferAllocateInfo cmdBufAllocateInfo{};
+		cmdBufAllocateInfo.m_sType = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdBufAllocateInfo.m_pCommandPool = m_pRHI->GetCommandPoor();
+		cmdBufAllocateInfo.m_level = RHI_COMMAND_BUFFER_LEVEL_PRIMARY;
+		cmdBufAllocateInfo.m_commandBufferCount = 1;
+		RHICommandBuffer* pCopyCmd;
+		if (RHI_SUCCESS != m_pRHI->AllocateCommandBuffers(&cmdBufAllocateInfo, pCopyCmd))
+		{
+			throw std::runtime_error("alloc command buffer");
+		}
+		ST_RHICommandBufferBeginInfo cmdBufInfo{};
+		cmdBufInfo.m_sType = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		if (RHI_SUCCESS != m_pRHI->BeginCommandBuffer(pCopyCmd, &cmdBufInfo))
+		{
+			throw std::runtime_error("begin command buffer");
+		}
+
+		ST_RHIBufferCopy copyRegion = {};
+		copyRegion.m_srcOffset = 0;
+		copyRegion.m_dstOffset = 0;
+		copyRegion.m_size = counterBufferSize;
+		m_pRHI->CmdCopyBuffer(
+			pCopyCmd,
+			m_emitterBufferBatches[id].m_pCounterHostBuffer,
+			m_emitterBufferBatches[id].m_pCounterDeviceBuffer,
+			1,
+			&copyRegion);
+
+		if (RHI_SUCCESS != m_pRHI->EndCommandBuffer(pCopyCmd))
+		{
+			throw std::runtime_error("buffer copy");
+		}
+
+		// 提交拷贝命令
+		ST_RHISubmitInfo submitInfo{};
+		submitInfo.m_sType = RHI_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.m_commandBufferCount = 1;
+		submitInfo.m_pCommandBuffers = &pCopyCmd;
+		ST_RHIFenceCreateInfo fenceInfo{};
+		fenceInfo.m_sType = RHI_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceInfo.m_flags = 0;
+		if (RHI_SUCCESS != m_pRHI->CreateFence(&fenceInfo, fence))
+		{
+			throw std::runtime_error("create fence");
+		}
+		// Submit to the queue
+		if (RHI_SUCCESS != m_pRHI->QueueSubmit(m_pRHI->GetComputeQueue(), 1, &submitInfo, fence))
+		{
+			throw std::runtime_error("queue submit");
+		}
+
+		if (RHI_SUCCESS != m_pRHI->WaitForFencesPFN(1, &fence, RHI_TRUE, UINT64_MAX))
+		{
+			throw std::runtime_error("wait fence submit");
+		}
+		m_pRHI->DestroyFence(fence);
+		m_pRHI->FreeCommandBuffers(m_pRHI->GetCommandPoor(), 1, pCopyCmd);
+	}
+
+	const VkDeviceSize staggingBuferSize = s_maxParticles * sizeof(ST_Particle);
+	m_emitterBufferBatches[id].m_emitterDesc = desc;
+	{
+		m_pRHI->CreateBufferAndInitialize(
+			RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+			RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+			RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			m_emitterBufferBatches[id].m_pParticleComponentResBuffer,
+			m_emitterBufferBatches[id].m_pParticleComponentResMemory,
+			sizeof(ST_ParticleEmitterDesc),
+			&m_emitterBufferBatches[id].m_emitterDesc,
+			sizeof(ST_ParticleEmitterDesc));
+
+		if (RHI_SUCCESS != m_pRHI->MapMemory(
+			m_emitterBufferBatches[id].m_pParticleComponentResMemory,
+			0,
+			RHI_WHOLE_SIZE,
+			0,
+			&m_emitterBufferBatches[id].m_pEmitterDescMapped))
+		{
+			throw std::runtime_error("map emitter component res buffer");
+		}
+
+		m_pRHI->CreateBufferAndInitialize(
+			RHI_BUFFER_USAGE_TRANSFER_SRC_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT,
+			RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+			m_emitterBufferBatches[id].m_pPositionHostBuffer,
+			m_emitterBufferBatches[id].m_pPositionHostMemory,
+			staggingBuferSize);
+		// Flush writes to host visible buffer
+		void* mapped;
+		m_pRHI->MapMemory(m_emitterBufferBatches[id].m_pPositionHostMemory, 0, RHI_WHOLE_SIZE, 0, &mapped);
+		m_pRHI->FlushMappedMemoryRanges(nullptr, m_emitterBufferBatches[id].m_pPositionHostMemory, 0, RHI_WHOLE_SIZE);
+		m_pRHI->UnmapMemory(m_emitterBufferBatches[id].m_pPositionHostMemory);
+
+		//
+		m_pRHI->CreateBufferAndInitialize(
+			RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_SRC_BIT |
+			RHI_BUFFER_USAGE_TRANSFER_DST_BIT,
+			RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			m_emitterBufferBatches[id].m_pPositionDeviceBuffer,
+			m_emitterBufferBatches[id].m_pPositionDeviceMemory,
+			staggingBuferSize);
+
+		m_pRHI->CreateBufferAndInitialize(RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_SRC_BIT |
+			RHI_BUFFER_USAGE_TRANSFER_DST_BIT,
+			RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			m_emitterBufferBatches[id].m_pPositionRenderBuffer,
+			m_emitterBufferBatches[id].m_pPositionRenderMemory,
+			staggingBuferSize);
+
+		// Copy to staging buffer
+		ST_RHICommandBufferAllocateInfo cmdBufAllocateInfo{};
+		cmdBufAllocateInfo.m_sType = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdBufAllocateInfo.m_pCommandPool = m_pRHI->GetCommandPoor();
+		cmdBufAllocateInfo.m_level = RHI_COMMAND_BUFFER_LEVEL_PRIMARY;
+		cmdBufAllocateInfo.m_commandBufferCount = 1;
+		RHICommandBuffer* pCopyCmd;
+		if (RHI_SUCCESS != m_pRHI->AllocateCommandBuffers(&cmdBufAllocateInfo, pCopyCmd))
+		{
+			throw std::runtime_error("alloc command buffer");
+		}
+		ST_RHICommandBufferBeginInfo cmdBufInfo{};
+		cmdBufInfo.m_sType = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		if (RHI_SUCCESS != m_pRHI->BeginCommandBuffer(pCopyCmd, &cmdBufInfo))
+		{
+			throw std::runtime_error("begin command buffer");
+		}
+
+		ST_RHIBufferCopy copyRegion = {};
+		copyRegion.m_srcOffset = 0;
+		copyRegion.m_dstOffset = 0;
+		copyRegion.m_size = staggingBuferSize;
+		m_pRHI->CmdCopyBuffer(
+			pCopyCmd,
+			m_emitterBufferBatches[id].m_pPositionHostBuffer,
+			m_emitterBufferBatches[id].m_pPositionDeviceBuffer,
+			1,
+			&copyRegion);
+
+		if (RHI_SUCCESS != m_pRHI->EndCommandBuffer(pCopyCmd))
+		{
+			throw std::runtime_error("buffer copy");
+		}
+
+		ST_RHISubmitInfo submitInfo{};
+		submitInfo.m_sType = RHI_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.m_commandBufferCount = 1;
+		submitInfo.m_pCommandBuffers = &pCopyCmd;
+		ST_RHIFenceCreateInfo fenceInfo{};
+		fenceInfo.m_sType = RHI_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceInfo.m_flags = 0;
+		if (RHI_SUCCESS != m_pRHI->CreateFence(&fenceInfo, fence))
+		{
+			throw std::runtime_error("create fence");
+		}
+
+		// Submit to the queue
+		if (RHI_SUCCESS != m_pRHI->QueueSubmit(m_pRHI->GetComputeQueue(), 1, &submitInfo, fence))
+		{
+			throw std::runtime_error("queue submit");
+		}
+
+		if (RHI_SUCCESS != m_pRHI->WaitForFencesPFN(1, &fence, RHI_TRUE, UINT64_MAX))
+		{
+			throw std::runtime_error("wait fence submit");
+		}
+
+		m_pRHI->DestroyFence(fence);
+		m_pRHI->FreeCommandBuffers(m_pRHI->GetCommandPoor(), 1, pCopyCmd);
+	}
 }
 
 void ParticlePass::InitializeEmitters()
@@ -393,10 +669,12 @@ void ParticlePass::InitializeEmitters()
 
 void ParticlePass::SetTickIndices(const std::vector<ParticleEmitterID>& tickIndices)
 {
+	m_emitterTickIndices = tickIndices;
 }
 
 void ParticlePass::SetTransformIndices(const std::vector<ST_ParticleEmitterTransformDesc>& transformIndices)
 {
+	m_emitterTransformIndices = transformIndices;
 }
 
 void ParticlePass::Draw()
@@ -405,6 +683,7 @@ void ParticlePass::Draw()
 	{
 		float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 		m_pRHI->PushEvent(m_pRenderCommandBuffer, "ParticleBillboard", color);
+
 		// 绑定粒子的图形管线，索引0是计算管线
 		m_pRHI->CmdBindPipelinePFN(m_pRenderCommandBuffer, RHI_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipelines[1].m_pipeline);
 		m_pRHI->CmdSetViewportPFN(m_pRenderCommandBuffer, 0, 1, m_pRHI->GetSwapchainInfo().m_pViewport);
@@ -1351,6 +1630,31 @@ void ParticlePass::SetupParticleDescriptorSet()
 		// 更新第三个描述符集数据
 		m_pRHI->UpdateDescriptorSets(sizeof(particleBillboardDescriptorWritesInfo) / sizeof(particleBillboardDescriptorWritesInfo[0]), particleBillboardDescriptorWritesInfo, 0, NULL);
 	}
+}
+
+void ParticleEmitterBufferBatch::FreeUpBatch(std::shared_ptr<RHI> pRHI)
+{
+	pRHI->FreeMemory(m_pCounterHostMemory);
+	pRHI->FreeMemory(m_pPositionHostMemory);
+	pRHI->FreeMemory(m_pPositionDeviceMemory);
+	pRHI->FreeMemory(m_pCounterDeviceMemory);
+	pRHI->FreeMemory(m_pIndirectDispatchArgumentMemory);
+	pRHI->FreeMemory(m_pAliveListMemory);
+	pRHI->FreeMemory(m_pAliveListNextMemory);
+	pRHI->FreeMemory(m_pDeadListMemory);
+	pRHI->FreeMemory(m_pParticleComponentResMemory);
+	pRHI->FreeMemory(m_pPositionRenderMemory);
+
+	pRHI->DestroyBuffer(m_pPositionRenderBuffer);
+	pRHI->DestroyBuffer(m_pPositionDeviceBuffer);
+	pRHI->DestroyBuffer(m_pPositionHostBuffer);
+	pRHI->DestroyBuffer(m_pCounterDeviceBuffer);
+	pRHI->DestroyBuffer(m_pCounterHostBuffer);
+	pRHI->DestroyBuffer(m_pIndirectDispatchArgumentBuffer);
+	pRHI->DestroyBuffer(m_pAliveListBuffer);
+	pRHI->DestroyBuffer(m_pAliveListNextBuffer);
+	pRHI->DestroyBuffer(m_pDeadListBuffer);
+	pRHI->DestroyBuffer(m_pParticleComponentResBuffer);
 }
 
 NAMESPACE_XYH_END

@@ -729,4 +729,11 @@ struct ST_RHIBufferMemoryBarrier
 	RHIDeviceSize m_size;
 };
 
+struct ST_RHIBufferCopy
+{
+	RHIDeviceSize m_srcOffset;
+	RHIDeviceSize m_dstOffset;
+	RHIDeviceSize m_size;
+};
+
 NAMESPACE_XYH_END

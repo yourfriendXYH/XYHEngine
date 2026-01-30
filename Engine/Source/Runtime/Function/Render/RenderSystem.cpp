@@ -56,9 +56,19 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 
 void RenderSystem::Tick(float deltaTime)
 {
+	// 在逻辑上下文和渲染上下文中交换数据
+	ProcessSwapData();
+
+	// 切换命令缓冲区
+	m_pRHI->PrepareContext();
 
 	// 准备渲染用到的资源和数据
 	m_pRenderPipeline->PreparePassData(m_pRenderResource);
+
+	if (m_renderPipelineType == ERENDER_PIPELINE_TYPE::DEFERRED_PIPELINE)
+	{
+		m_pRenderPipeline->DeferredRender(m_pRHI, m_pRenderResource);
+	}
 }
 
 void RenderSystem::Clear()
@@ -68,6 +78,10 @@ void RenderSystem::Clear()
 std::shared_ptr<RenderCamera> RenderSystem::GetRenderCamera() const
 {
 	return m_pRenderCamera;
+}
+
+void RenderSystem::ProcessSwapData()
+{
 }
 
 NAMESPACE_XYH_END

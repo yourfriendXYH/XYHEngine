@@ -425,5 +425,8 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Particle\EmitterIdAllocator.h">
       <Filter>Engine\Source\Runtime\Function\Particle</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Particle\ParticleCommon.h">
+      <Filter>Engine\Source\Runtime\Function\Particle</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

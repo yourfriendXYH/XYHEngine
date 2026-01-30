@@ -2346,6 +2346,12 @@ void VulkanRHI::InvalidateMappedMemoryRanges(void* pNext, RHIDeviceMemory* memor
 
 void VulkanRHI::FlushMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size)
 {
+	VkMappedMemoryRange mappedRange{};
+	mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+	mappedRange.memory = ((VulkanDeviceMemory*)memory)->GetResource();
+	mappedRange.offset = offset;
+	mappedRange.size = size;
+	vkFlushMappedMemoryRanges(m_device, 1, &mappedRange);
 }
 
 RHISemaphore*& VulkanRHI::GetTextureCopySemaphore(uint32_t index)

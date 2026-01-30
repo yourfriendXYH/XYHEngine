@@ -26,6 +26,12 @@ struct ST_LevelResourceDesc
 	ST_LevelColorGradingResourceDesc m_colorGradingResourceDesc;	// 颜色分级资源描述
 };
 
+enum ESwapDataType : uint8_t
+{
+	LogicSwapDataType = 0,
+	RenderSwapDataType,
+	SwapDataTypeCount
+};
 
 class RenderSwapContext
 {
