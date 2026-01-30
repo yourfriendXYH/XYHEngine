@@ -1,29 +1,47 @@
-#pragma once
+ï»¿#pragma once
 #include <Common.h>
 #include <string>
 #include "../../Resource/ResourceType/Global/GlobalRendering.h"
 
 NAMESPACE_XYH_BEGIN
 
-/// ¹Ø¿¨IBL×ÊÔ´ÃèÊö
+/// å…³å¡IBLèµ„æºæè¿°
 struct ST_LevelIBLResourceDesc
 {
-	SkyBoxIrradianceMap m_skyboxIrradianceMap;  // Ìì¿ÕºĞ·øÕÕ¶ÈÌùÍ¼
-	SkyBoxSpecularMap m_skyboxSpecularMap;  // Ìì¿ÕºĞ¸ß¹âÌùÍ¼
-	std::string m_brdfMap;	// BRDFÌùÍ¼
+	SkyBoxIrradianceMap m_skyboxIrradianceMap;  // å¤©ç©ºç›’è¾ç…§åº¦è´´å›¾
+	SkyBoxSpecularMap m_skyboxSpecularMap;  // å¤©ç©ºç›’é«˜å…‰è´´å›¾
+	std::string m_brdfMap;	// BRDFè´´å›¾
 };
 
-/// ¹Ø¿¨ÑÕÉ«·Ö¼¶×ÊÔ´ÃèÊö
+/// å…³å¡é¢œè‰²åˆ†çº§èµ„æºæè¿°
 struct ST_LevelColorGradingResourceDesc
 {
-	std::string m_colorGradingMap;	// ÑÕÉ«·Ö¼¶ÌùÍ¼
+	std::string m_colorGradingMap;	// é¢œè‰²åˆ†çº§è´´å›¾
 };
 
-// ¹Ø¿¨×ÊÔ´ÃèÊö
+// å…³å¡èµ„æºæè¿°
 struct ST_LevelResourceDesc
 {
-	ST_LevelIBLResourceDesc m_iblResourceDesc;	// IBL×ÊÔ´ÃèÊö
-	ST_LevelColorGradingResourceDesc m_colorGradingResourceDesc;	// ÑÕÉ«·Ö¼¶×ÊÔ´ÃèÊö
+	ST_LevelIBLResourceDesc m_iblResourceDesc;	// IBLèµ„æºæè¿°
+	ST_LevelColorGradingResourceDesc m_colorGradingResourceDesc;	// é¢œè‰²åˆ†çº§èµ„æºæè¿°
+};
+
+struct ST_RenderSwapData
+{
+    std::optional<ST_LevelResourceDesc> m_levelResourceDesc;
+    //std::optional<GameObjectResourceDesc>  m_game_object_resource_desc;
+    //std::optional<GameObjectResourceDesc>  m_game_object_to_delete;
+    //std::optional<CameraSwapData>          m_camera_swap_data;
+    //std::optional<ParticleSubmitRequest>   m_particle_submit_request;
+    //std::optional<EmitterTickRequest>      m_emitter_tick_request;
+    //std::optional<EmitterTransformRequest> m_emitter_transform_request;
+
+    //void addDirtyGameObject(GameObjectDesc&& desc);
+    //void addDeleteGameObject(GameObjectDesc&& desc);
+
+    //void addNewParticleEmitter(ParticleEmitterDesc& desc);
+    //void addTickParticleEmitter(ParticleEmitterID id);
+    //void updateParticleTransform(ParticleEmitterTransformDesc& desc);
 };
 
 enum ESwapDataType : uint8_t
@@ -37,7 +55,37 @@ class RenderSwapContext
 {
 public:
 
+    ST_RenderSwapData& GetLogicSwapData();
+
+    ST_RenderSwapData& GetRenderSwapData();
+
+    void SwapLogicRenderData();
+
+    void ResetLevelRsourceSwapData();
+
+    void ResetGameObjectResourceSwapData();
+
+    void ResetGameObjectToDelete();
+
+    void ResetCameraSwapData();
+
+    void ResetPartilceBatchSwapData();
+
+    void ResetEmitterTickSwapData();
+
+    void ResetEmitterTransformSwapData();
+
 private:
+
+    bool IsReadyToSwap() const;
+
+    void Swap();
+
+private:
+	uint8_t m_logicSwapDataIndex = ESwapDataType::LogicSwapDataType;
+	uint8_t m_RenderSwapDataIndex = ESwapDataType::RenderSwapDataType;
+
+    ST_RenderSwapData m_swapData[ESwapDataType::SwapDataTypeCount];
 
 };
 
