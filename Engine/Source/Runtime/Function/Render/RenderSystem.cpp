@@ -75,6 +75,12 @@ void RenderSystem::Clear()
 {
 }
 
+void RenderSystem::SwapLogicRenderData()
+{
+	// 重置渲染数据，并将逻辑数据和渲染数据的索引交换
+	m_swapContext.SwapLogicRenderData();
+}
+
 std::shared_ptr<RenderCamera> RenderSystem::GetRenderCamera() const
 {
 	return m_pRenderCamera;
@@ -82,6 +88,30 @@ std::shared_ptr<RenderCamera> RenderSystem::GetRenderCamera() const
 
 void RenderSystem::ProcessSwapData()
 {
+	ST_RenderSwapData& swapData = m_swapContext.GetRenderSwapData();
+
+	if (swapData.m_levelResourceDesc.has_value())
+	{
+		m_pRenderResource->UploadGlobalRenderResource(m_pRHI, *swapData.m_levelResourceDesc);
+
+		m_swapContext.ResetLevelRsourceSwapData();
+	}
+
+	if (swapData.m_gameObjectResourceDesc.has_value())
+	{
+		while (!swapData.m_gameObjectResourceDesc->IsEmpty())
+		{
+			// 遍历GameObject的Part
+			GameObjectDesc gObject = swapData.m_gameObjectResourceDesc->GetNextProcessObject();
+			for (size_t partIndex = 0; partIndex < gObject.GetObjectParts().size(); ++partIndex)
+			{
+				const GameObjectPartDesc& gameObjectPart = gObject.GetObjectParts()[partIndex];
+				ST_GameObjectPartId partId = { gObject.GetId(), partIndex };
+			}
+
+			swapData.m_gameObjectResourceDesc->Pop();	// 弹出第一个
+		}
+	}
 }
 
 NAMESPACE_XYH_END

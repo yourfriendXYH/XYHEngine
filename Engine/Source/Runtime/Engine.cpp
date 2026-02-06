@@ -1,5 +1,6 @@
 #include "Engine.h"
 #include <string>
+#include <Runtime/Function/Render/RenderSystem.h>
 #include "Function/GlobalContext.h"
 
 NAMESPACE_XYH_BEGIN
@@ -36,6 +37,12 @@ void XYHEngine::Run()
 
 void XYHEngine::TickOneFrame()
 {
+
+	//数据交换
+	g_runtimeGlobalContext.m_pRenderSystem->SwapLogicRenderData();
+
+	// 执行渲染
+
 }
 
 int XYHEngine::GetFPS()

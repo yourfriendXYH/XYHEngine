@@ -28,6 +28,7 @@ public:
 	void Tick(float deltaTime);
 	void Clear();
 
+	// 将逻辑数据变为渲染数据
 	void SwapLogicRenderData();	// 交换逻辑渲染数据
 
 	RenderSwapContext& GetSwapContext();	// 获取渲染交换上下文
