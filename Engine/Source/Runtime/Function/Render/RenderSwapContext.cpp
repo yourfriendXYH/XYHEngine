@@ -4,12 +4,12 @@ NAMESPACE_XYH_BEGIN
 
 ST_RenderSwapData& RenderSwapContext::GetLogicSwapData()
 {
-    m_swapData[m_logicSwapDataIndex];
+    return m_swapData[m_logicSwapDataIndex];
 }
 
 ST_RenderSwapData& RenderSwapContext::GetRenderSwapData()
 {
-    m_swapData[m_renderSwapDataIndex];
+    return m_swapData[m_renderSwapDataIndex];
 }
 
 void RenderSwapContext::SwapLogicRenderData()

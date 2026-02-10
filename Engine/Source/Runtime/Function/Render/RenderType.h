@@ -1727,14 +1727,17 @@ public:
 
 struct ST_MeshSourceDesc    // 网格资源描述
 {
+public:
 	bool operator==(const ST_MeshSourceDesc& rhs) const { return m_meshFile == rhs.m_meshFile; }
 	size_t GetHashValue() const { return std::hash<std::string> {}(m_meshFile); }
 
+public:
 	std::string m_meshFile; // 网格文件路径
 };
 
 struct ST_MaterialSourceDesc
 {
+public:
 	bool operator==(const ST_MaterialSourceDesc& rhs) const
 	{
 		return m_baseColorFile == rhs.m_baseColorFile &&
@@ -1756,6 +1759,7 @@ struct ST_MaterialSourceDesc
 		return hash;
 	}
 
+public:
 	std::string m_baseColorFile;    // 基础颜色贴图文件路径
 	std::string m_metallicRoughnessFile;    // 金属度-粗糙度贴图文件路径
 	std::string m_normalFile;   // 法线贴图文件路径

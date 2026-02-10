@@ -45,12 +45,12 @@ struct ST_GameObjectResourceDesc
 
     bool IsEmpty() const
     {
-        m_gameObjectDescs.empty();
+        return m_gameObjectDescs.empty();
     }
 
     GameObjectDesc& GetNextProcessObject()
     {
-        m_gameObjectDescs.front();
+        return m_gameObjectDescs.front();
     }
 
     // 双端队列
@@ -73,7 +73,7 @@ struct ST_ParticleSubmitRequest
 
     unsigned int GetEmitterCount() const
     {
-        m_emitterDescs.size();
+        return static_cast<unsigned int>(m_emitterDescs.size());
     }
 
     const ST_ParticleEmitterDesc& GetEmitterDesc(unsigned int index)
@@ -104,7 +104,7 @@ public:
 
     unsigned int GetEmitterCount() const
     {
-        return m_transformDescs.size();
+        return static_cast<unsigned int>(m_transformDescs.size());
     }
 
     const ST_ParticleEmitterTransformDesc& GetNextEmitterTransformDesc(unsigned int index)

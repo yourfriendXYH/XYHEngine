@@ -117,6 +117,7 @@ public:
 private:
 	std::shared_ptr<ParticlePass> m_pParticlePass;	// 粒子渲染通道
 
+	// MainCamera没有使用基类RenderPass中的Framebuffer指针
 	std::vector<RHIFramebuffer*> m_swapchainFramebuffers;	// 交换链帧缓冲
 };
 
