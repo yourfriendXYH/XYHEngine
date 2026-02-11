@@ -1,7 +1,8 @@
-#include "RenderScene.h"
+ï»¿#include "RenderScene.h"
 #include "RenderResource.h"
 #include "RenderCamera.h"
 #include "RenderPass.h"
+#include <set>
 
 NAMESPACE_XYH_BEGIN
 
@@ -11,7 +12,7 @@ void RenderScene::Clear()
 
 void RenderScene::UpdateVisibleObjects(std::shared_ptr<RenderResource> renderResource, std::shared_ptr<RenderCamera> camera)
 {
-	// ¸üĞÂ¿É¼û¶ÔÏó
+	// æ›´æ–°å¯è§å¯¹è±¡
 	UpdateVisibleObjectsDirectionalLight(renderResource, camera);
 	UpdateVisibleObjectsPointLight(renderResource);
 	UpdateVisibleObjectsMainCamera(renderResource, camera);
@@ -59,34 +60,31 @@ GObjectID RenderScene::GetGObjectIDByMeshID(uint32_t meshId) const
 
 void RenderScene::DeleteEntityByGObjectID(GObjectID goId)
 {
+	std::set<uint32_t> deletePartGUIDs;	// éœ€è¦åˆ é™¤çš„GUID
 	for (auto it = m_meshObjectIdMap.begin(); it != m_meshObjectIdMap.end(); it++)
 	{
 		if (it->second == goId)
 		{
 			m_meshObjectIdMap.erase(it);
-			break;	// ??? Ö»É¾³ıÒ»¸öÂğ£¬ÊÇ·ñ´æÔÚÒ»¶Ô¶à
+
+			deletePartGUIDs.insert(it->first);
 		}
 	}
 
-	// É¾³ıÓÎÏ·¶ÔÏóµÄäÖÈ¾ÊµÌå
-	ST_GameObjectPartId partId = { goId, 0 };
-	size_t findGUID;
-	if (m_instanceIdAllocator.GetElementGuid(partId, findGUID))
+	// åˆ é™¤GameObjectåŒ…å«çš„æ‰€æœ‰RenderEntity
+	// åˆ é™¤æ¸¸æˆå¯¹è±¡çš„æ¸²æŸ“å®ä½“
+	for (auto it = m_renderEntities.begin(); it != m_renderEntities.end(); it++)
 	{
-		for (auto it = m_renderEntities.begin(); it != m_renderEntities.end(); it++)
+		if (deletePartGUIDs.find(it->m_instanceId) != deletePartGUIDs.end())
 		{
-			if (it->m_instanceId == findGUID)
-			{
-				m_renderEntities.erase(it);
-				break;
-			}
+			m_renderEntities.erase(it);
 		}
 	}
 }
 
 void RenderScene::ClearForLevelReloading()
 {
-	// Çå³ı³¡¾°Êı¾İ
+	// æ¸…é™¤åœºæ™¯æ•°æ®
 	m_instanceIdAllocator.clear();
 	m_meshObjectIdMap.clear();
 	m_renderEntities.clear();

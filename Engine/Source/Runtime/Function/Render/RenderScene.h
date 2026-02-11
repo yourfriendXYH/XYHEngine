@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <optional>
 #include <Common.h>
 #include "Light.h"
@@ -13,47 +13,47 @@ NAMESPACE_XYH_BEGIN
 class RenderResource;
 class RenderCamera;
 
-class RenderScene	// äÖÈ¾³¡¾°
+class RenderScene	// æ¸²æŸ“åœºæ™¯
 {
 public:
-	void Clear();	// Çå³ı³¡¾°Êı¾İ
+	void Clear();	// æ¸…é™¤åœºæ™¯æ•°æ®
 
 	void UpdateVisibleObjects(std::shared_ptr<RenderResource> renderResource, std::shared_ptr<RenderCamera> camera);
 
-	// ÔÚäÖÈ¾Í¨µÀÖĞÉèÖÃ¿É¼û½ÚµãµÄÖ¸Õë
+	// åœ¨æ¸²æŸ“é€šé“ä¸­è®¾ç½®å¯è§èŠ‚ç‚¹çš„æŒ‡é’ˆ
 	void SetVisibleNodesReference();
 
 	GuidAllocator<ST_GameObjectPartId>& GetInstanceIdAllocator();
-	GuidAllocator<ST_MeshSourceDesc>& GetMeshAssetIdAllocator();	// »ñÈ¡Íø¸ñ×ÊÔ´ID·ÖÅäÆ÷
+	GuidAllocator<ST_MeshSourceDesc>& GetMeshAssetIdAllocator();	// è·å–ç½‘æ ¼èµ„æºIDåˆ†é…å™¨
 
-	GuidAllocator<ST_MaterialSourceDesc>& GetMaterialAssetIdAllocator();	// »ñÈ¡²ÄÖÊ×ÊÔ´ID·ÖÅäÆ÷
+	GuidAllocator<ST_MaterialSourceDesc>& GetMaterialAssetIdAllocator();	// è·å–æè´¨èµ„æºIDåˆ†é…å™¨
 
-	void AddInstanceIdToMap(uint32_t instanceId, GObjectID goId);	// ½«ÊµÀıIDÌí¼Óµ½Ó³ÉäÖĞ
-	GObjectID GetGObjectIDByMeshID(uint32_t meshId) const;	// ¸ù¾İÍø¸ñID»ñÈ¡ÓÎÏ·¶ÔÏóID
-	void DeleteEntityByGObjectID(GObjectID goId);	// ¸ù¾İÓÎÏ·¶ÔÏóIDÉ¾³ıÊµÌå
+	void AddInstanceIdToMap(uint32_t instanceId, GObjectID goId);	// å°†å®ä¾‹IDæ·»åŠ åˆ°æ˜ å°„ä¸­
+	GObjectID GetGObjectIDByMeshID(uint32_t meshId) const;	// æ ¹æ®ç½‘æ ¼IDè·å–æ¸¸æˆå¯¹è±¡ID
+	void DeleteEntityByGObjectID(GObjectID goId);	// æ ¹æ®æ¸¸æˆå¯¹è±¡IDåˆ é™¤å®ä½“
 
-	void ClearForLevelReloading();	// ÇåÀíÓÃÓÚ¹Ø¿¨ÖØĞÂ¼ÓÔØµÄ×ÊÔ´
+	void ClearForLevelReloading();	// æ¸…ç†ç”¨äºå…³å¡é‡æ–°åŠ è½½çš„èµ„æº
 
 public:
-	ST_AmbientLight m_ambientLight;	// »·¾³¹â
-	ST_DirectionalLight m_directionalLight;	// Ö±Éä¹â
-	PointLightList m_pointLightList;	// µã¹âÔ´ÁĞ±í
+	ST_AmbientLight m_ambientLight;	// ç¯å¢ƒå…‰
+	ST_DirectionalLight m_directionalLight;	// ç›´å°„å…‰
+	PointLightList m_pointLightList;	// ç‚¹å…‰æºåˆ—è¡¨
 
-	std::vector<RenderEntity> m_renderEntities;	// äÖÈ¾ÊµÌåÁĞ±í
+	std::vector<RenderEntity> m_renderEntities;	// æ¸²æŸ“å®ä½“åˆ—è¡¨
 
-	std::optional<RenderEntity> m_renderAxis;	// äÖÈ¾×ø±êÖá
+	std::optional<RenderEntity> m_renderAxis;	// æ¸²æŸ“åæ ‡è½´
 
-	std::vector<ST_RenderMeshNode> m_directionalLightVisibleMeshNodes;	// Ö±Éä¹â¿É¼ûÍø¸ñ½ÚµãÁĞ±í
-	std::vector<ST_RenderMeshNode> m_pointLightsVisibleMeshNodes;	// µã¹âÔ´¿É¼ûÍø¸ñ½ÚµãÁĞ±í
-	std::vector<ST_RenderMeshNode> m_mainCameraVisibleMeshNodes;	// Ö÷ÉãÏñ»ú¿É¼ûÍø¸ñ½ÚµãÁĞ±í
-	ST_RenderAxisNode m_axisNode;	// ×ø±êÖá½Úµã
+	std::vector<ST_RenderMeshNode> m_directionalLightVisibleMeshNodes;	// ç›´å°„å…‰å¯è§ç½‘æ ¼èŠ‚ç‚¹åˆ—è¡¨
+	std::vector<ST_RenderMeshNode> m_pointLightsVisibleMeshNodes;	// ç‚¹å…‰æºå¯è§ç½‘æ ¼èŠ‚ç‚¹åˆ—è¡¨
+	std::vector<ST_RenderMeshNode> m_mainCameraVisibleMeshNodes;	// ä¸»æ‘„åƒæœºå¯è§ç½‘æ ¼èŠ‚ç‚¹åˆ—è¡¨
+	ST_RenderAxisNode m_axisNode;	// åæ ‡è½´èŠ‚ç‚¹
 
 private:
-	void UpdateVisibleObjectsDirectionalLight(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera);	// ¸üĞÂÖ±Éä¹â¿É¼û¶ÔÏó
-	void UpdateVisibleObjectsPointLight(std::shared_ptr<RenderResource> render_resource);	// ¸üĞÂµã¹âÔ´¿É¼û¶ÔÏó
-	void UpdateVisibleObjectsMainCamera(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera);	// ¸üĞÂÖ÷ÉãÏñ»ú¿É¼û¶ÔÏó
-	void UpdateVisibleObjectsAxis(std::shared_ptr<RenderResource> render_resource);	// ¸üĞÂ×ø±êÖá¿É¼û¶ÔÏó
-	void UpdateVisibleObjectsParticle(std::shared_ptr<RenderResource> render_resource);	// ¸üĞÂÁ£×Ó¿É¼û¶ÔÏó
+	void UpdateVisibleObjectsDirectionalLight(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera);	// æ›´æ–°ç›´å°„å…‰å¯è§å¯¹è±¡
+	void UpdateVisibleObjectsPointLight(std::shared_ptr<RenderResource> render_resource);	// æ›´æ–°ç‚¹å…‰æºå¯è§å¯¹è±¡
+	void UpdateVisibleObjectsMainCamera(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera);	// æ›´æ–°ä¸»æ‘„åƒæœºå¯è§å¯¹è±¡
+	void UpdateVisibleObjectsAxis(std::shared_ptr<RenderResource> render_resource);	// æ›´æ–°åæ ‡è½´å¯è§å¯¹è±¡
+	void UpdateVisibleObjectsParticle(std::shared_ptr<RenderResource> render_resource);	// æ›´æ–°ç²’å­å¯è§å¯¹è±¡
 
 private:
 
@@ -61,7 +61,7 @@ private:
 	GuidAllocator<ST_MeshSourceDesc> m_meshAssetIdAllocator;
 	GuidAllocator<ST_MaterialSourceDesc> m_materialAssetIdAllocator;
 
-	std::unordered_map<uint32_t, GObjectID> m_meshObjectIdMap;	// Íø¸ñ¶ÔÏóIDÓ³Éä
+	std::unordered_map<uint32_t, GObjectID> m_meshObjectIdMap;	// ç½‘æ ¼å¯¹è±¡IDæ˜ å°„
 
 };
 

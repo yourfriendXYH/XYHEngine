@@ -97,6 +97,7 @@ void RenderSystem::ProcessSwapData()
 		m_swapContext.ResetLevelRsourceSwapData();
 	}
 
+	// 游戏对象加载
 	if (swapData.m_gameObjectResourceDesc.has_value())
 	{
 		while (!swapData.m_gameObjectResourceDesc->IsEmpty())
@@ -202,6 +203,24 @@ void RenderSystem::ProcessSwapData()
 		}
 
 		m_swapContext.ResetGameObjectResourceSwapData();	// 重置数据
+	}
+
+	// 游戏对象删除
+	if (swapData.m_gameObjectToDelete.has_value())
+	{
+		while (!swapData.m_gameObjectToDelete->IsEmpty())
+		{
+			const GameObjectDesc& gObject = swapData.m_gameObjectToDelete->GetNextProcessObject();
+			m_pRenderScene->DeleteEntityByGObjectID(gObject.GetId());
+
+			swapData.m_gameObjectToDelete->Pop();
+		}
+	}
+
+	// 相机数据
+	if (swapData.m_cameraSwapData.has_value())
+	{
+
 	}
 }
 
