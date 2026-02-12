@@ -7,6 +7,7 @@
 #include "RenderCamera.h"
 #include "RenderScene.h"
 #include "RenderPipeline.h"
+#include <Runtime/Function/Render/Passes/ParticlePass.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -125,7 +126,7 @@ void RenderSystem::ProcessSwapData()
 				bool isMeshLoaded = m_pRenderScene->GetMeshAssetIdAllocator().HasElement(meshSource);
 
 				ST_RenderMeshData meshData;
-				if (!isMeshLoaded)	// 未加载
+				if (!isMeshLoaded) // 未加载
 				{
 					// 加载网格数据，并获取boundingBox
 					meshData = m_pRenderResource->LoadMeshData(meshSource, renderEntity.m_boundingBox);
@@ -217,10 +218,59 @@ void RenderSystem::ProcessSwapData()
 		}
 	}
 
-	// 相机数据
+	// 相机数据更新
 	if (swapData.m_cameraSwapData.has_value())
 	{
+		if (swapData.m_cameraSwapData->m_fovX.has_value())
+		{
+			// 水平方向视场角
+			// fovX = 2 * atan(tan(fovY / 2) * aspect)
+			// fovY = 2 * atan(tan(fovX / 2) / aspect)
+			m_pRenderCamera->SetFovX(*swapData.m_cameraSwapData->m_fovX);
+		}
 
+		if (swapData.m_cameraSwapData->m_viewMatrix.has_value())
+		{
+			m_pRenderCamera->SetMainViewMatrix(*swapData.m_cameraSwapData->m_viewMatrix);
+		}
+
+		if (swapData.m_cameraSwapData->m_cameraType.has_value())
+		{
+			// 相机类型
+			m_pRenderCamera->SetCurrentCameraType(*swapData.m_cameraSwapData->m_cameraType);
+		}
+
+		m_swapContext.ResetCameraSwapData();
+	}
+
+	// 粒子数据更新
+	std::shared_ptr<ParticlePass> pParticlePass = std::static_pointer_cast<ParticlePass>(m_pRenderPipeline->m_pParticlePass);
+	assert(pParticlePass);
+	if (swapData.m_particleSubmitRequest.has_value())
+	{
+		int emitterCount = swapData.m_particleSubmitRequest->GetEmitterCount();
+		pParticlePass->SetEmitterCount(emitterCount);
+
+		for (int i = 0; i < emitterCount; i++)
+		{
+			const ST_ParticleEmitterDesc& desc = swapData.m_particleSubmitRequest->GetEmitterDesc(i);
+			pParticlePass->CreateEmitter(i, desc);
+		}
+		pParticlePass->InitializeEmitters();
+
+		m_swapContext.ResetPartilceBatchSwapData();
+	}
+	if (swapData.m_emitterTickRequest.has_value())
+	{
+		pParticlePass->SetTickIndices(swapData.m_emitterTickRequest->m_emitterIndices);
+
+		m_swapContext.ResetEmitterTickSwapData();
+	}
+	if (swapData.m_emitterTransformRequest.has_value())
+	{
+		pParticlePass->SetTransformIndices(swapData.m_emitterTransformRequest->m_transformDescs);
+
+		m_swapContext.ResetEmitterTransformSwapData();
 	}
 }
 
