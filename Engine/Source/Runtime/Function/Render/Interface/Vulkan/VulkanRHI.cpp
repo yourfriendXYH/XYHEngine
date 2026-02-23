@@ -19,8 +19,8 @@ void VulkanRHI::Initialize(ST_RHIInitInfo initInfo)
 	m_scissor = { { 0, 0 }, { (uint32_t)windowSize[0], (uint32_t)windowSize[1] } }; // 设置裁剪区域大小
 
 #ifndef NDEBUG	// debug模式下启用验证层和调试工具标签
-	m_enableValidationLayers = true;
-	m_enableDebugUtilsLabel = true;
+	m_enableValidationLayers = false;
+	m_enableDebugUtilsLabel = false;
 #else
 	m_enable_validation_Layers = false;
 	m_enable_debug_utils_label = false;
@@ -1714,7 +1714,7 @@ void VulkanRHI::CmdPipelineBarrier(
 		(RHIPipelineStageFlags)dstStageMask,
 		(RHIDependencyFlags)dependencyFlags,	// 依赖标志
 		memoryBarrierCount,
-		vkMemoryBarrierList.data(),	
+		vkMemoryBarrierList.data(),
 		bufferMemoryBarrierCount,
 		vkBufferMemoryBarrierList.data(),
 		imageMemoryBarrierCount,
@@ -1936,13 +1936,13 @@ bool VulkanRHI::QueueSubmit(RHIQueue* pQueue, uint32_t submitCount, const ST_RHI
 		}
 	};
 
-	if ((commandBufferSizeTotal != commandBufferSizeCurrent) || (semaphoreSizeTotal != semaphoreSizeCurrent) || 
+	if ((commandBufferSizeTotal != commandBufferSizeCurrent) || (semaphoreSizeTotal != semaphoreSizeCurrent) ||
 		(signalSemaphoreSizeTotal != signalSemaphoreSizeCurrent) || (pipelineStageFlagsSizeTotal != pipelineStageFlagsSizeCurrent))
 	{
 		LOG_ERROR("submit info is not right!");
 		return false;
 	}
-	
+
 	VkFence vkFence = VK_NULL_HANDLE;
 	if (pFence != nullptr)
 	{
@@ -2251,6 +2251,10 @@ VulkanRHI::~VulkanRHI()
 
 void VulkanRHI::Clear()
 {
+	if (m_enableValidationLayers)
+	{
+		DestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
+	}
 }
 
 void VulkanRHI::ClearSwapchain()
@@ -2980,6 +2984,15 @@ VkExtent2D VulkanRHI::ChooseSwapchainExtentFromDetails(const VkSurfaceCapabiliti
 		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
 		return actualExtent;
+	}
+}
+
+void VulkanRHI::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
+{
+	auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+	if (nullptr != func)
+	{
+		return func(instance, debugMessenger, pAllocator);
 	}
 }
 

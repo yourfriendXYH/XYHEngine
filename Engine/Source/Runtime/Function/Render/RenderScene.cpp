@@ -3,6 +3,7 @@
 #include "RenderCamera.h"
 #include "RenderPass.h"
 #include <set>
+#include "RenderHelper.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -14,9 +15,13 @@ void RenderScene::UpdateVisibleObjects(std::shared_ptr<RenderResource> renderRes
 {
 	// 更新可见对象
 	UpdateVisibleObjectsDirectionalLight(renderResource, camera);
+
 	UpdateVisibleObjectsPointLight(renderResource);
+
 	UpdateVisibleObjectsMainCamera(renderResource, camera);
+
 	UpdateVisibleObjectsAxis(renderResource);
+
 	UpdateVisibleObjectsParticle(renderResource);
 }
 
@@ -92,6 +97,7 @@ void RenderScene::ClearForLevelReloading()
 
 void RenderScene::UpdateVisibleObjectsDirectionalLight(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera)
 {
+	Matrix4x4 directionalLightProjView = CalculateDirectionalLightCamera(*this, *camera);
 }
 
 void RenderScene::UpdateVisibleObjectsPointLight(std::shared_ptr<RenderResource> render_resource)

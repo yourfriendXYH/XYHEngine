@@ -57,16 +57,27 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 
 void RenderSystem::Tick(float deltaTime)
 {
-	// 在逻辑上下文和渲染上下文中交换数据
+	// 分发渲染数据
 	ProcessSwapData();
 
-	// 切换命令缓冲区
+	// 切换至当前帧的命令缓冲区
 	m_pRHI->PrepareContext();
+
+	// 更新每帧的缓冲区
+	m_pRenderResource->UpdatePerFrameBuffer(m_pRenderScene, m_pRenderCamera);
+
+	// 更新每帧的对象
+	m_pRenderScene->UpdateVisibleObjects(std::static_pointer_cast<RenderResource>(m_pRenderResource), m_pRenderCamera);
 
 	// 准备渲染用到的资源和数据
 	m_pRenderPipeline->PreparePassData(m_pRenderResource);
 
-	if (m_renderPipelineType == ERENDER_PIPELINE_TYPE::DEFERRED_PIPELINE)
+	// 执行渲染流程
+	if (m_renderPipelineType == ERENDER_PIPELINE_TYPE::FORWARD_PIPELINE)	// 前向渲染
+	{
+		// 暂不处理
+	}
+	else if (m_renderPipelineType == ERENDER_PIPELINE_TYPE::DEFERRED_PIPELINE)	// 延迟渲染
 	{
 		m_pRenderPipeline->DeferredRender(m_pRHI, m_pRenderResource);
 	}
@@ -74,12 +85,45 @@ void RenderSystem::Tick(float deltaTime)
 
 void RenderSystem::Clear()
 {
+	if (nullptr != m_pRHI)
+	{
+		m_pRHI->Clear();
+	}
+	m_pRHI.reset();
+
+	if (nullptr != m_pRenderScene)
+	{
+		m_pRenderScene->Clear();
+	}
+	m_pRenderScene.reset();
+
+	if (nullptr != m_pRenderResource)
+	{
+		m_pRenderResource->Clear();
+	}
+	m_pRenderResource.reset();
+
+	if (nullptr != m_pRenderPipeline)
+	{
+		m_pRenderPipeline->Clear();
+	}
+	m_pRenderPipeline.reset();
 }
 
 void RenderSystem::SwapLogicRenderData()
 {
 	// 重置渲染数据，并将逻辑数据和渲染数据的索引交换
 	m_swapContext.SwapLogicRenderData();
+}
+
+RenderSwapContext& RenderSystem::GetSwapContext()
+{
+	return m_swapContext;
+}
+
+std::shared_ptr<RHI> RenderSystem::GetRHI() const
+{
+	return m_pRHI;
 }
 
 std::shared_ptr<RenderCamera> RenderSystem::GetRenderCamera() const

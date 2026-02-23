@@ -25,7 +25,9 @@ public:
 	~RenderSystem();
 
 	void Initialize(ST_RenderSystemInitInfo initInfo);
+
 	void Tick(float deltaTime);
+
 	void Clear();
 
 	// 将逻辑数据变为渲染数据
@@ -38,6 +40,7 @@ public:
 	std::shared_ptr<RenderCamera> GetRenderCamera() const;
 
 private:
+	// 分发渲染数据
 	void ProcessSwapData();
 
 private:
@@ -52,9 +55,9 @@ private:
 
 	std::shared_ptr<RenderScene> m_pRenderScene;	// 渲染场景
 
-	std::shared_ptr<RenderResourceBase> m_pRenderResource;
+	std::shared_ptr<RenderResourceBase> m_pRenderResource;	// 渲染资源
 
-	std::shared_ptr<RenderPipelineBase> m_pRenderPipeline;
+	std::shared_ptr<RenderPipelineBase> m_pRenderPipeline;	// 渲染管线
 };
 
 NAMESPACE_XYH_END

@@ -7,9 +7,13 @@ NAMESPACE_XYH_BEGIN
 void RenderPipelineBase::PreparePassData(std::shared_ptr<RenderResourceBase> pRenderResource)
 {
 	m_pMainCameraPass->PreparePassData(pRenderResource);
+
 	m_pPickPass->PreparePassData(pRenderResource);
+
 	m_pDirectionalLightPass->PreparePassData(pRenderResource);
+
 	m_pPointLightShadowPass->PreparePassData(pRenderResource);
+
 	m_pParticlePass->PreparePassData(pRenderResource);
 
 	// g_runtime_global_context.m_debugdraw_manager->preparePassData(render_resource);

@@ -15,10 +15,12 @@ void RuntimeGlobalContext::InitSystems(const std::string& configFilePath)
 	m_pConfigManager = std::make_shared<ConfigManager>(); // 配置管理器
 	m_pConfigManager->Initialize(configFilePath); // 初始化配置管理器
 
+	// 窗口
 	m_pWindowSystem = std::make_shared<WindowSystem>(); // 窗口系统
 	ST_WindowCreateInfo windowCreateInfo; // 窗口创建信息
 	m_pWindowSystem->Initialize(windowCreateInfo); // 初始化窗口系统
 
+	// 渲染
 	m_pRenderSystem = std::make_shared<RenderSystem>(); // 渲染系统
 	ST_RenderSystemInitInfo renderInitInfo; // 渲染系统初始化信息
 	renderInitInfo.m_pWindowSystem = m_pWindowSystem;

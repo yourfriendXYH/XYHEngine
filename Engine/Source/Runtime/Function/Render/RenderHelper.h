@@ -5,11 +5,50 @@
 
 NAMESPACE_XYH_BEGIN
 
+class RenderScene;
+class RenderCamera;
+
 // œÚ…œ∂‘∆Î
 static inline uint32_t RoundUp(uint32_t value, uint32_t alignment)
 {
 	uint32_t temp = value + alignment - static_cast<uint32_t>(1);
 	return (temp - temp % alignment);
 }
+
+struct ST_BoundingBox
+{
+public:
+	ST_BoundingBox() {}
+
+	ST_BoundingBox(const Vector3& minVec, const Vector3& maxVec)
+	{
+		m_minBound = minVec;
+		m_maxBound = maxVec;
+	}
+
+	void Merge(const ST_BoundingBox& rhs)
+	{
+		m_minBound.makeFloor(rhs.m_minBound);
+		m_maxBound.makeCeil(rhs.m_maxBound);
+	}
+
+	void Merge(const Vector3& point)
+	{
+		m_minBound.makeFloor(point);
+		m_maxBound.makeCeil(point);
+	}
+
+public:
+	Vector3 m_minBound{ std::numeric_limits<float>::max(),
+					   std::numeric_limits<float>::max(),
+					   std::numeric_limits<float>::max() };
+	Vector3 m_maxBound{ std::numeric_limits<float>::min(),
+					   std::numeric_limits<float>::min(),
+					   std::numeric_limits<float>::min() };
+};
+
+Matrix4x4 CalculateDirectionalLightCamera(RenderScene& scene, RenderCamera& camera);
+
+ST_BoundingBox BoundingBoxTransform(ST_BoundingBox const& b, Matrix4x4 const& m);
 
 NAMESPACE_XYH_END

@@ -161,4 +161,22 @@ struct ST_ParticleCollisionPerframeStorageBufferObject	//
 	Matrix4x4 m_projInvMatrix;
 };
 
+// 点光源 缓冲区数据
+struct ST_MeshPointLightShadowPerframeStorageBufferObject
+{
+	uint32_t m_pointLightNum;
+	uint32_t _padding_point_light_num_1;
+	uint32_t _padding_point_light_num_2;
+	uint32_t _padding_point_light_num_3;
+	Vector4  m_pointLightsPositionAndRadius[s_maxPointLightCount];
+};
+
+// GPU拾取 缓冲区数据
+struct ST_MeshInefficientPickPerframeStorageBufferObject
+{
+	Matrix4x4 m_projViewMatrix;
+	uint32_t m_rtWidth;
+	uint32_t m_rtHeight;
+};
+
 NAMESPACE_XYH_END

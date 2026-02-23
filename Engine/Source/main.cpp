@@ -17,12 +17,19 @@ int main(int argc, char** argv)
 
 	XYH::XYHEngine* pEngine = new XYH::XYHEngine();
 
+	// 初始化
 	pEngine->StartEngine(configFilePath.generic_string());
+
+	// 没有实现
 	pEngine->Inititalize();
 
 	XYH::XYHEditor* pEditor = new XYH::XYHEditor();
 	pEditor->Initialize(pEngine);
+
+	// 运行编辑器
+	// 包含渲染运行
 	pEditor->Run();
+
 	pEditor->Clear();
 
 	LOG_DEBUG("XYH");
@@ -33,7 +40,9 @@ int main(int argc, char** argv)
 
 	THREAD_SLEEP(1000);
 
-	pEngine->Clear();
+	pEngine->Clear();	// 没有实现
+
+	// 关闭引擎
 	pEngine->ShutdownEngine();
 
 	return 0;

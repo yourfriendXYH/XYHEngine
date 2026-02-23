@@ -162,8 +162,8 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 		return;
 
 	// 绘制阴影
-	static_cast<DirectionalLightShadowPass*>(m_pDirectionalLightPass.get())->Draw();
-	static_cast<PointLightShadowPass*>(m_pPointLightShadowPass.get())->Draw();
+	static_cast<DirectionalLightShadowPass*>(m_pDirectionalLightPass.get())->Draw();	// 直射光阴影
+	static_cast<PointLightShadowPass*>(m_pPointLightShadowPass.get())->Draw();	// 点光源阴影
 
 	ColorGradingPass& colorGradingPass = *(static_cast<ColorGradingPass*>(m_pColorGradingPass.get()));
 	FXAAPass& fxaaPass = *(static_cast<FXAAPass*>(m_pFxaaPass.get()));

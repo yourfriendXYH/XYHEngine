@@ -82,7 +82,7 @@ public:
 
 	virtual void UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity render_entity, ST_RenderMaterialData material_data) override final; // 上传游戏对象渲染资源（仅材质数据）
 
-	virtual void UpdatePerFrameBuffer(std::shared_ptr<RenderScene> render_scene, std::shared_ptr<RenderCamera> camera) override final; // 更新每帧缓冲区
+	virtual void UpdatePerFrameBuffer(std::shared_ptr<RenderScene> pRenderScene, std::shared_ptr<RenderCamera> pCamera) override final; // 更新每帧缓冲区
 
 	void ResetRingBufferOffset(uint8_t currentFrameIndex);	// 重置环形缓冲区偏移
 
@@ -97,6 +97,12 @@ public:
 
 	ST_ParticleBillboardPerframeStorageBufferObject m_particleBillboardPerframeStorageBufferObject;	// 
 	ST_ParticleCollisionPerframeStorageBufferObject m_particleCollisionPerframeStorageBufferObject;	// 粒子控制数据
+
+	//  点光源阴影的每帧缓冲数据
+	ST_MeshPointLightShadowPerframeStorageBufferObject m_meshPointLightShadowPerframeStorageBufferObject;
+
+	// Pick Pass 数据
+	ST_MeshInefficientPickPerframeStorageBufferObject m_meshInefficientPickPerframeStorageBufferObject;
 
 };
 
