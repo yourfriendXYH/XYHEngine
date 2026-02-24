@@ -44,16 +44,26 @@ public:
 	std::optional<RenderEntity> m_renderAxis;	// 渲染坐标轴
 
 	std::vector<ST_RenderMeshNode> m_directionalLightVisibleMeshNodes;	// 直射光可见网格节点列表
+
 	std::vector<ST_RenderMeshNode> m_pointLightsVisibleMeshNodes;	// 点光源可见网格节点列表
+
 	std::vector<ST_RenderMeshNode> m_mainCameraVisibleMeshNodes;	// 主摄像机可见网格节点列表
+
 	ST_RenderAxisNode m_axisNode;	// 坐标轴节点
 
 private:
-	void UpdateVisibleObjectsDirectionalLight(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera);	// 更新直射光可见对象
-	void UpdateVisibleObjectsPointLight(std::shared_ptr<RenderResource> render_resource);	// 更新点光源可见对象
-	void UpdateVisibleObjectsMainCamera(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera);	// 更新主摄像机可见对象
-	void UpdateVisibleObjectsAxis(std::shared_ptr<RenderResource> render_resource);	// 更新坐标轴可见对象
-	void UpdateVisibleObjectsParticle(std::shared_ptr<RenderResource> render_resource);	// 更新粒子可见对象
+	// 更新直射光可见对象
+	void UpdateVisibleObjectsDirectionalLight(std::shared_ptr<RenderResource> pRenderResource, std::shared_ptr<RenderCamera> pCamera);	
+
+	// 更新点光源可见对象
+	void UpdateVisibleObjectsPointLight(std::shared_ptr<RenderResource> pRenderResource);	
+
+	// 更新主摄像机可见对象
+	void UpdateVisibleObjectsMainCamera(std::shared_ptr<RenderResource> pRenderResource, std::shared_ptr<RenderCamera> pCamera);	
+
+	void UpdateVisibleObjectsAxis(std::shared_ptr<RenderResource> pRenderResource);	// 更新坐标轴可见对象
+
+	void UpdateVisibleObjectsParticle(std::shared_ptr<RenderResource> pRenderResource);	// 更新粒子可见对象
 
 private:
 

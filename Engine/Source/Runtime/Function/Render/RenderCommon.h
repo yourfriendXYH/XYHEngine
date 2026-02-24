@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Common.h>
 #include <Runtime/Core/Math/Matrix4.h>
 #include "RenderType.h"
@@ -8,25 +8,25 @@ NAMESPACE_XYH_BEGIN
 
 struct ST_VulkanMesh
 {
-	bool m_enableVertexBlending;    // ÊÇ·ñÆôÓÃ¶¥µã»ìºÏ
+	bool m_enableVertexBlending;    // æ˜¯å¦å¯ç”¨é¡¶ç‚¹æ··åˆ
 
-	// ¶¥µã»º³åÇø
-	uint32_t m_meshVertexCount; // Íø¸ñ¶¥µãÊıÁ¿
-	RHIBuffer* m_meshVertexPositionBuffer;  // Íø¸ñ¶¥µãÎ»ÖÃ
+	// é¡¶ç‚¹ç¼“å†²åŒº
+	uint32_t m_meshVertexCount; // ç½‘æ ¼é¡¶ç‚¹æ•°é‡
+	RHIBuffer* m_meshVertexPositionBuffer;  // ç½‘æ ¼é¡¶ç‚¹ä½ç½®
 	VmaAllocation m_meshVertexPositionBufferAllocation;
 
-	RHIBuffer* m_meshVertexVaryingEnableBlendingBuffer; // ·¨ÏßºÍÇĞÏß·½Ïò
+	RHIBuffer* m_meshVertexVaryingEnableBlendingBuffer; // æ³•çº¿å’Œåˆ‡çº¿æ–¹å‘
 	VmaAllocation m_meshVertexVaryingEnableBlendingBufferAllocation;
 
-	RHIBuffer* m_meshVertexJointBindingBuffer;  // Íø¸ñ¶¥µã¹Ø½Ú°ó¶¨»º³åÇø
+	RHIBuffer* m_meshVertexJointBindingBuffer;  // ç½‘æ ¼é¡¶ç‚¹å…³èŠ‚ç»‘å®šç¼“å†²åŒº
 	VmaAllocation m_meshVertexJointBindingBufferAllocation;
 
-	RHIDescriptorSet* m_meshVertexBlendingDescriptorSet;    // Íø¸ñ¶¥µãÃèÊö·û¼¯
+	RHIDescriptorSet* m_meshVertexBlendingDescriptorSet;    // ç½‘æ ¼é¡¶ç‚¹æè¿°ç¬¦é›†
 
-	RHIBuffer* m_meshVertexVaryingBuffer;   // ÎÆÀí×ø±ê
+	RHIBuffer* m_meshVertexVaryingBuffer;   // çº¹ç†åæ ‡
 	VmaAllocation m_meshVertexVaryingBufferAllocation;
 
-	// Ë÷Òı»º³åÇø
+	// ç´¢å¼•ç¼“å†²åŒº
 	uint32_t m_meshIndexCount;
 	RHIBuffer* m_meshIndexBuffer;
 	VmaAllocation m_meshIndexBufferAllocation;
@@ -35,41 +35,41 @@ struct ST_VulkanMesh
 // material
 struct ST_VulkanPBRMaterial
 {
-	RHIImage* m_baseColorTextureImage;  // »ù´¡ÑÕÉ«ÎÆÀíÍ¼Ïñ
+	RHIImage* m_baseColorTextureImage;  // åŸºç¡€é¢œè‰²çº¹ç†å›¾åƒ
 	RHIImageView* m_baseColorImageView;
 	VmaAllocation m_baseColorImageAllocation;
 
-	RHIImage* m_metallicRoughnessTextureImage;  // ½ğÊô¶ÈºÍ´Ö²Ú¶ÈÎÆÀíÍ¼Ïñ
+	RHIImage* m_metallicRoughnessTextureImage;  // é‡‘å±åº¦å’Œç²—ç³™åº¦çº¹ç†å›¾åƒ
 	RHIImageView* m_metallicRoughnessImageView;
 	VmaAllocation m_metallicRoughnessImageAllocation;
 
-	RHIImage* m_normalTextureImage;	// ·¨ÏßÎÆÀíÍ¼Ïñ
+	RHIImage* m_normalTextureImage;	// æ³•çº¿çº¹ç†å›¾åƒ
 	RHIImageView* m_normalImageView;
 	VmaAllocation m_normalImageAllocation;
 
-	RHIImage* m_occlusionTextureImage;  // ÕÚµ²ÎÆÀíÍ¼Ïñ
+	RHIImage* m_occlusionTextureImage;  // é®æŒ¡çº¹ç†å›¾åƒ
 	RHIImageView* m_occlusionImageView;
 	VmaAllocation m_occlusionImageAllocation;
 
-	RHIImage* m_emissiveTextureImage;   // ×Ô·¢¹âÎÆÀíÍ¼Ïñ
+	RHIImage* m_emissiveTextureImage;   // è‡ªå‘å…‰çº¹ç†å›¾åƒ
 	RHIImageView* m_emissiveImageView;
 	VmaAllocation m_emissiveImageAllocation;
 
-	RHIBuffer* m_materialUniformBuffer; // ²ÄÖÊÍ³Ò»»º³åÇø
+	RHIBuffer* m_materialUniformBuffer; // æè´¨ç»Ÿä¸€ç¼“å†²åŒº
 	VmaAllocation m_materialUniformBufferAllocation;
 
-	RHIDescriptorSet* m_materialDescriptorSet;  // ²ÄÖÊÃèÊö·û¼¯
+	RHIDescriptorSet* m_materialDescriptorSet;  // æè´¨æè¿°ç¬¦é›†
 };
 
 struct ST_RenderMeshNode
 {
-	const Matrix4x4* m_modelMatrix = nullptr;  // Ä£ĞÍ¾ØÕó
-	const Matrix4x4* m_jointMatrices = nullptr;    // ¹Ø½Ú¾ØÕó
-	uint32_t m_jointCount = 0u; // ¹Ø½ÚÊıÁ¿
-	ST_VulkanMesh* m_refMesh = nullptr;	// Íø¸ñÊı¾İ
-	ST_VulkanPBRMaterial* m_refMaterial = nullptr;	// ²ÄÖÊÊı¾İ
+	const Matrix4x4* m_modelMatrix = nullptr;  // æ¨¡å‹çŸ©é˜µ
+	const Matrix4x4* m_jointMatrices = nullptr;    // å…³èŠ‚çŸ©é˜µ
+	uint32_t m_jointCount = 0u; // å…³èŠ‚æ•°é‡
+	ST_VulkanMesh* m_refMesh = nullptr;	// ç½‘æ ¼æ•°æ®
+	ST_VulkanPBRMaterial* m_refMaterial = nullptr;	// æè´¨æ•°æ®
 	uint32_t m_nodeId;
-	bool m_enableVertexBlending = false;	// ÊÇ·ñÆôÓÃ¶¥µã»ìºÏ
+	bool m_enableVertexBlending = false;	// æ˜¯å¦å¯ç”¨é¡¶ç‚¹æ··åˆ
 };
 
 struct ST_RenderAxisNode
@@ -82,7 +82,7 @@ struct ST_RenderAxisNode
 
 static uint32_t const s_maxPointLightCount = 15u;
 static uint32_t const s_meshPerDrawcallMaxInstanceCount = 64;
-static uint32_t const s_meshVertexBlendingMaxJointCount = 1024; // Ã¿¸öÍø¸ñ¶¥µã»ìºÏµÄ×î´ó¹Ø½ÚÊıÁ¿
+static uint32_t const s_meshVertexBlendingMaxJointCount = 1024; // æ¯ä¸ªç½‘æ ¼é¡¶ç‚¹æ··åˆçš„æœ€å¤§å…³èŠ‚æ•°é‡
 
 struct ST_VulkanSceneDirectionalLight
 {
@@ -125,13 +125,13 @@ struct ST_VulkanMeshInstance
 	Matrix4x4 m_modelMatrix;
 };
 
-// Ã¿¸öÍø¸ñÃ¿´Î»æÖÆµ÷ÓÃµÄ´æ´¢»º³åÇø¶ÔÏó
+// æ¯ä¸ªç½‘æ ¼æ¯æ¬¡ç»˜åˆ¶è°ƒç”¨çš„å­˜å‚¨ç¼“å†²åŒºå¯¹è±¡
 struct ST_MeshPerdrawcallStorageBufferObject
 {
 	ST_VulkanMeshInstance m_meshInstances[s_meshPerDrawcallMaxInstanceCount];
 };
 
-// Ã¿¸öÍø¸ñ¶¥µã»ìºÏµÄ´æ´¢»º³åÇø¶ÔÏó
+// æ¯ä¸ªç½‘æ ¼é¡¶ç‚¹æ··åˆçš„å­˜å‚¨ç¼“å†²åŒºå¯¹è±¡
 struct ST_MeshPerdrawcallVertexBlendingStorageBufferObject
 {
 	Matrix4x4 m_jointMatrices[s_meshVertexBlendingMaxJointCount * s_meshPerDrawcallMaxInstanceCount];
@@ -161,7 +161,7 @@ struct ST_ParticleCollisionPerframeStorageBufferObject	//
 	Matrix4x4 m_projInvMatrix;
 };
 
-// µã¹âÔ´ »º³åÇøÊı¾İ
+// ç‚¹å…‰æº ç¼“å†²åŒºæ•°æ®
 struct ST_MeshPointLightShadowPerframeStorageBufferObject
 {
 	uint32_t m_pointLightNum;
@@ -171,7 +171,12 @@ struct ST_MeshPointLightShadowPerframeStorageBufferObject
 	Vector4  m_pointLightsPositionAndRadius[s_maxPointLightCount];
 };
 
-// GPUÊ°È¡ »º³åÇøÊı¾İ
+struct ST_MeshDirectionalLightShadowPerframeStorageBufferObject
+{
+	Matrix4x4 m_lightProjView;	// ç›´å°„å…‰çŸ©é˜µ
+};
+
+// GPUæ‹¾å– ç¼“å†²åŒºæ•°æ®
 struct ST_MeshInefficientPickPerframeStorageBufferObject
 {
 	Matrix4x4 m_projViewMatrix;

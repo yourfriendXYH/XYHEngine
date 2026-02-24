@@ -95,25 +95,182 @@ void RenderScene::ClearForLevelReloading()
 	m_renderEntities.clear();
 }
 
-void RenderScene::UpdateVisibleObjectsDirectionalLight(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera)
+void RenderScene::UpdateVisibleObjectsDirectionalLight(std::shared_ptr<RenderResource> pRenderResource, std::shared_ptr<RenderCamera> pCamera)
 {
-	Matrix4x4 directionalLightProjView = CalculateDirectionalLightCamera(*this, *camera);
+	Matrix4x4 directionalLightProjView = CalculateDirectionalLightCamera(*this, *pCamera);
+
+	pRenderResource->m_meshPerframeStorageBufferObject.m_directionalLightProjView = directionalLightProjView;
+	pRenderResource->m_meshDirectionalLightShadowPerframeStorageBufferObject.m_lightProjView = directionalLightProjView;
+
+	m_directionalLightVisibleMeshNodes.clear();
+
+	ST_ClusterFrustum frustum = CreateClusterFrustumFromMatrix(directionalLightProjView, -1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
+
+	for (const RenderEntity& entity : m_renderEntities)
+	{
+		ST_BoundingBox meshAssetBoundingBox{ entity.m_boundingBox.GetMinCorner(), entity.m_boundingBox.GetMaxCorner() };
+		// 在视锥体可见范围内
+		if (TiledFrustumIntersectBox(frustum, BoundingBoxTransform(meshAssetBoundingBox, entity.m_modelMatrix)))
+		{
+			m_directionalLightVisibleMeshNodes.emplace_back();
+			ST_RenderMeshNode& refNode = m_directionalLightVisibleMeshNodes.back();
+
+			// 模型矩阵
+			refNode.m_modelMatrix = &entity.m_modelMatrix;
+
+			// 顶点混合
+			assert(entity.m_jointMatrices.size() < s_meshVertexBlendingMaxJointCount);
+			if (!entity.m_jointMatrices.empty())
+			{
+				refNode.m_jointCount = entity.m_jointMatrices.size();
+				refNode.m_jointMatrices = entity.m_jointMatrices.data();
+			}
+
+			// ID
+			refNode.m_nodeId = entity.m_instanceId;
+
+			// 网格
+			ST_VulkanMesh& meshAsset = pRenderResource->GetEntityMesh(entity);
+			refNode.m_refMesh = &meshAsset;
+			refNode.m_enableVertexBlending = entity.m_enableVertexBlending;
+
+			// 材质
+			ST_VulkanPBRMaterial& materialAsset = pRenderResource->GetEntityMaterial(entity);
+			refNode.m_refMaterial = &materialAsset;
+		}
+	}
 }
 
-void RenderScene::UpdateVisibleObjectsPointLight(std::shared_ptr<RenderResource> render_resource)
+void RenderScene::UpdateVisibleObjectsPointLight(std::shared_ptr<RenderResource> pRenderResource)
 {
+	// 清空点光源可见Node
+	m_pointLightsVisibleMeshNodes.clear();
+
+	std::vector<ST_BoundingSphere> pointLightBoundingSpheres;
+	uint32_t pointLightNum = static_cast<uint32_t>(m_pointLightList.m_lights.size());
+	pointLightBoundingSpheres.resize(pointLightNum);
+
+	for (size_t i = 0; i < pointLightNum; i++)
+	{
+		pointLightBoundingSpheres[i].m_center = m_pointLightList.m_lights[i].m_position;
+		pointLightBoundingSpheres[i].m_radius = m_pointLightList.m_lights[i].CalculateRadius();
+	}
+
+	for (const RenderEntity& entity : m_renderEntities)
+	{
+		ST_BoundingBox meshAssetBoundingBox{ entity.m_boundingBox.GetMinCorner(), entity.m_boundingBox.GetMaxCorner() };
+
+		bool intersectWithPointLights = true;
+		for (size_t i = 0; i < pointLightNum; i++)
+		{
+			// 判断包围盒是否在点光源范围内
+			if (!BoxIntersectsWithSphere(BoundingBoxTransform(meshAssetBoundingBox, entity.m_modelMatrix), pointLightBoundingSpheres[i]))
+			{
+				intersectWithPointLights = false;
+				break;
+			}
+		}
+
+		if (intersectWithPointLights)
+		{
+			m_directionalLightVisibleMeshNodes.emplace_back();
+			ST_RenderMeshNode& refNode = m_directionalLightVisibleMeshNodes.back();
+
+			// 模型矩阵
+			refNode.m_modelMatrix = &entity.m_modelMatrix;
+
+			// 顶点混合
+			assert(entity.m_jointMatrices.size() < s_meshVertexBlendingMaxJointCount);
+			if (!entity.m_jointMatrices.empty())
+			{
+				refNode.m_jointCount = entity.m_jointMatrices.size();
+				refNode.m_jointMatrices = entity.m_jointMatrices.data();
+			}
+
+			// ID
+			refNode.m_nodeId = entity.m_instanceId;
+
+			// 网格
+			ST_VulkanMesh& meshAsset = pRenderResource->GetEntityMesh(entity);
+			refNode.m_refMesh = &meshAsset;
+			refNode.m_enableVertexBlending = entity.m_enableVertexBlending;
+
+			// 材质
+			ST_VulkanPBRMaterial& materialAsset = pRenderResource->GetEntityMaterial(entity);
+			refNode.m_refMaterial = &materialAsset;
+		}
+	}
 }
 
-void RenderScene::UpdateVisibleObjectsMainCamera(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera)
+void RenderScene::UpdateVisibleObjectsMainCamera(std::shared_ptr<RenderResource> pRenderResource, std::shared_ptr<RenderCamera> pCamera)
 {
+	m_mainCameraVisibleMeshNodes.clear();
+
+	Matrix4x4 viewMatrix = pCamera->GetViewMatrix();
+	Matrix4x4 projMatrix = pCamera->GetPersProjMatrix();
+	Matrix4x4 projViewMatrix = projMatrix * viewMatrix;
+
+	ST_ClusterFrustum frustum = CreateClusterFrustumFromMatrix(projViewMatrix, -1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
+
+	for (const RenderEntity& entity : m_renderEntities)
+	{
+		ST_BoundingBox meshAssetBoundingBox{ entity.m_boundingBox.GetMinCorner(), entity.m_boundingBox.GetMaxCorner() };
+
+		if (TiledFrustumIntersectBox(frustum, BoundingBoxTransform(meshAssetBoundingBox, entity.m_modelMatrix)))
+		{
+			m_directionalLightVisibleMeshNodes.emplace_back();
+			ST_RenderMeshNode& refNode = m_directionalLightVisibleMeshNodes.back();
+
+			// 模型矩阵
+			refNode.m_modelMatrix = &entity.m_modelMatrix;
+
+			// 顶点混合
+			assert(entity.m_jointMatrices.size() < s_meshVertexBlendingMaxJointCount);
+			if (!entity.m_jointMatrices.empty())
+			{
+				refNode.m_jointCount = entity.m_jointMatrices.size();
+				refNode.m_jointMatrices = entity.m_jointMatrices.data();
+			}
+
+			// ID
+			refNode.m_nodeId = entity.m_instanceId;
+
+			// 网格
+			ST_VulkanMesh& meshAsset = pRenderResource->GetEntityMesh(entity);
+			refNode.m_refMesh = &meshAsset;
+			refNode.m_enableVertexBlending = entity.m_enableVertexBlending;
+
+			// 材质
+			ST_VulkanPBRMaterial& materialAsset = pRenderResource->GetEntityMaterial(entity);
+			refNode.m_refMaterial = &materialAsset;
+		}
+	}
 }
 
-void RenderScene::UpdateVisibleObjectsAxis(std::shared_ptr<RenderResource> render_resource)
+void RenderScene::UpdateVisibleObjectsAxis(std::shared_ptr<RenderResource> pRenderResource)
 {
+	if (m_renderAxis.has_value())
+	{
+		RenderEntity& axis = *m_renderAxis;
+
+		// 模型矩阵
+		m_axisNode.m_modelMatrix = axis.m_modelMatrix;
+
+		// ID
+		m_axisNode.m_nodeId = axis.m_instanceId;
+
+		// 网格
+		ST_VulkanMesh& meshAsset = pRenderResource->GetEntityMesh(axis);
+		m_axisNode.m_refMesh = &meshAsset;
+
+		// 顶点混合
+		m_axisNode.m_enableVertexBlending = axis.m_enableVertexBlending;
+	}
 }
 
-void RenderScene::UpdateVisibleObjectsParticle(std::shared_ptr<RenderResource> render_resource)
+void RenderScene::UpdateVisibleObjectsParticle(std::shared_ptr<RenderResource> pRenderResource)
 {
+	// TODO
 }
 
 NAMESPACE_XYH_END

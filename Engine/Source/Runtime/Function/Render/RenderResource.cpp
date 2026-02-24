@@ -1,4 +1,4 @@
-#include "RenderResource.h"
+ï»¿#include "RenderResource.h"
 #include "RenderScene.h"
 
 NAMESPACE_XYH_BEGIN
@@ -25,13 +25,13 @@ void RenderResource::UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, Re
 
 void RenderResource::UpdatePerFrameBuffer(std::shared_ptr<RenderScene> pRenderScene, std::shared_ptr<RenderCamera> pCamera)
 {
-	// Ïà»úÊôĞÔ
+	// ç›¸æœºå±æ€§
 	Matrix4x4 viewMatrix = pCamera->GetViewMatrix();
 	Matrix4x4 projMatrix = pCamera->GetPersProjMatrix();
 	Vector3 cameraPosition = pCamera->Position();
 	Matrix4x4 projViewMatrix = projMatrix * viewMatrix;
 
-	// »·¾³¹â
+	// ç¯å¢ƒå…‰
 	Vector3 ambientLight = pRenderScene->m_ambientLight.m_irradiance;
 	uint32_t pointLightNum = static_cast<uint32_t>(pRenderScene->m_pointLightList.m_lights.size());
 
@@ -45,13 +45,13 @@ void RenderResource::UpdatePerFrameBuffer(std::shared_ptr<RenderScene> pRenderSc
 	m_meshPerframeStorageBufferObject.m_ambientLight = ambientLight;
 	m_meshPerframeStorageBufferObject.m_pointLightNum = pointLightNum;
 
-	// Ä¿Ç°²¢Ã»ÓĞµã¹âÔ´
+	// ç›®å‰å¹¶æ²¡æœ‰ç‚¹å…‰æº
 	m_meshPointLightShadowPerframeStorageBufferObject.m_pointLightNum = pointLightNum;
 	for (uint32_t i = 0; i < pointLightNum; i++)
 	{
-		Vector3 pointLightPosition = pRenderScene->m_pointLightList.m_lights[i].m_position;	// Î»ÖÃ
-		Vector3 pointLightIntensity = pRenderScene->m_pointLightList.m_lights[i].m_flux / (4.0f * Math_PI);	// ¹âÇ¿
-		float radius = pRenderScene->m_pointLightList.m_lights[i].CalculateRadius();	// µã¹âÔ´°ë¾¶
+		Vector3 pointLightPosition = pRenderScene->m_pointLightList.m_lights[i].m_position;	// ä½ç½®
+		Vector3 pointLightIntensity = pRenderScene->m_pointLightList.m_lights[i].m_flux / (4.0f * Math_PI);	// å…‰å¼º
+		float radius = pRenderScene->m_pointLightList.m_lights[i].CalculateRadius();	// ç‚¹å…‰æºåŠå¾„
 
 		m_meshPerframeStorageBufferObject.m_scenePointLights[i].m_position = pointLightPosition;
 		m_meshPerframeStorageBufferObject.m_scenePointLights[i].m_intensity = pointLightIntensity;
@@ -59,14 +59,14 @@ void RenderResource::UpdatePerFrameBuffer(std::shared_ptr<RenderScene> pRenderSc
 
 		m_meshPointLightShadowPerframeStorageBufferObject.m_pointLightsPositionAndRadius[i] = Vector4(pointLightPosition, radius);
 	}
-	// Ö±Éä¹â
+	// ç›´å°„å…‰
 	m_meshPerframeStorageBufferObject.m_sceneDirectionalLight.m_color = pRenderScene->m_directionalLight.m_color;
 	m_meshPerframeStorageBufferObject.m_sceneDirectionalLight.m_direction = pRenderScene->m_directionalLight.m_direction;
 
 	// Pick Pass
 	m_meshInefficientPickPerframeStorageBufferObject.m_projViewMatrix = projViewMatrix;
 
-	// ¹ã¸æÅÆÁ£×Ó
+	// å¹¿å‘Šç‰Œç²’å­
 	m_particleBillboardPerframeStorageBufferObject.m_projViewMatrix = projViewMatrix;
 	m_particleBillboardPerframeStorageBufferObject.m_rightDirection = pCamera->Right();
 	m_particleBillboardPerframeStorageBufferObject.m_fowardDirection = pCamera->Forward();
@@ -77,6 +77,32 @@ void RenderResource::ResetRingBufferOffset(uint8_t currentFrameIndex)
 {
 	m_globalRenderResource.m_storageBuffer.m_globalUploadRingbuffersEnd[currentFrameIndex] =
 		m_globalRenderResource.m_storageBuffer.m_globalUploadRingbuffersBegin[currentFrameIndex];
+}
+
+ST_VulkanMesh& RenderResource::GetEntityMesh(RenderEntity entity)
+{
+	auto it = m_vulkanMeshes.find(entity.m_meshAssetId);
+	if (it != m_vulkanMeshes.end())
+	{
+		return it->second;
+	}
+	else
+	{
+		throw std::runtime_error("failed to get entity mesh");
+	}
+}
+
+ST_VulkanPBRMaterial& RenderResource::GetEntityMaterial(RenderEntity entity)
+{
+	auto it = m_vulkanPBRMaterials.find(entity.m_materialAssetId);
+	if (it != m_vulkanPBRMaterials.end())
+	{
+		return it->second;
+	}
+	else
+	{
+		throw std::runtime_error("failed to get entity material");
+	}
 }
 
 

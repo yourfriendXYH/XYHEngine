@@ -1,29 +1,30 @@
-#pragma once
+ï»¿#pragma once
 #include <Common.h>
 #include <vk_mem_alloc.h>
+#include <map>
 #include "Interface/RHI.h"
 #include "RenderResourceBase.h"
 #include "RenderCommon.h"
 
 NAMESPACE_XYH_BEGIN
 
-// IBL£¨Image-Based Lighting£¬»ùÓÚÍ¼ÏñµÄÕÕÃ÷£©ÊÇÒ»ÖÖÏÈ½øµÄÈ«¾ÖÕÕÃ÷¼¼Êõ£¬
-// ËüÊ¹ÓÃ»·¾³ÌùÍ¼£¨Í¨³£ÊÇÁ¢·½ÌåÌùÍ¼»òµÈ¾àÖù×´Í¶Ó°Í¼£©À´Ä£Äâ¸´ÔÓµÄ»·¾³¹âÕÕ¡£
+// IBLï¼ˆImage-Based Lightingï¼ŒåŸºäºå›¾åƒçš„ç…§æ˜ï¼‰æ˜¯ä¸€ç§å…ˆè¿›çš„å…¨å±€ç…§æ˜æŠ€æœ¯ï¼Œ
+// å®ƒä½¿ç”¨ç¯å¢ƒè´´å›¾ï¼ˆé€šå¸¸æ˜¯ç«‹æ–¹ä½“è´´å›¾æˆ–ç­‰è·æŸ±çŠ¶æŠ•å½±å›¾ï¼‰æ¥æ¨¡æ‹Ÿå¤æ‚çš„ç¯å¢ƒå…‰ç…§ã€‚
 struct ST_IBLResource
 {
-	// BRDF LUT ÎÆÀí
+	// BRDF LUT çº¹ç†
 	RHIImage* m_pBrdfLUTTextureImage;
 	RHIImageView* m_pBrdfLUTTextureImageView;
 	RHISampler* m_pBrdfLUTTextureSampler;
 	VmaAllocation m_brdfLUTTextureImageAllocation;
 
-	// »·¾³ÌùÍ¼ ÎÆÀí
+	// ç¯å¢ƒè´´å›¾ çº¹ç†
 	RHIImage* m_pIrradianceTextureImage;
 	RHIImageView* m_pIrradianceTextureImageView;
 	RHISampler* m_pIrradianceTextureSampler;
 	VmaAllocation m_irradianceTextureImageAllocation;
 
-	// ·´ÉäÌùÍ¼ ÎÆÀí
+	// åå°„è´´å›¾ çº¹ç†
 	RHIImage* m_pSpecularTextureImage;
 	RHIImageView* m_pSpecularTextureImageView;
 	RHISampler* m_pSpecularTextureSampler;
@@ -43,9 +44,9 @@ struct ST_StorageBuffer
 	uint32_t m_minUniformBufferOffsetAlignment{ 256 };
 	uint32_t m_minStorageBufferOffsetAlignment{ 256 };
 	uint32_t m_maxStorageBufferRange{ 1 << 27 };
-	uint32_t m_nonCoherentAtomSize{ 256 };	// ·ÇÒ»ÖÂĞÔÔ­×Ó´óĞ¡
+	uint32_t m_nonCoherentAtomSize{ 256 };	// éä¸€è‡´æ€§åŸå­å¤§å°
 
-	RHIBuffer* m_pGlobalUploadRingbuffer;	// È«¾ÖÉÏ´«»·ĞÎ»º³åÇø
+	RHIBuffer* m_pGlobalUploadRingbuffer;	// å…¨å±€ä¸Šä¼ ç¯å½¢ç¼“å†²åŒº
 	RHIDeviceMemory* m_pGlobalUploadRingbufferMemory;
 	void* m_pGlobalUploadRingbufferMemoryPointer;
 	std::vector<uint32_t> m_globalUploadRingbuffersBegin;
@@ -57,14 +58,14 @@ struct ST_StorageBuffer
 	RHIDeviceMemory* m_pGlobalNullDescriptorStorageBufferMemory;
 
 	// axis
-	RHIBuffer* m_pAxisInefficientStorageBuffer;	// ×ø±êÖáµÍĞ§´æ´¢»º³åÇø
+	RHIBuffer* m_pAxisInefficientStorageBuffer;	// åæ ‡è½´ä½æ•ˆå­˜å‚¨ç¼“å†²åŒº
 	RHIDeviceMemory* m_pAxisInefficientStorageBufferMemory;
 	void* m_pAxisInefficientStorageBufferMemoryPointer;
 };
 
 struct ST_GlobalRenderResource
 {
-	ST_IBLResource m_iblResource;	// IBL×ÊÔ´
+	ST_IBLResource m_iblResource;	// IBLèµ„æº
 	ST_ColorGradingResource m_colorGradingResource;
 	ST_StorageBuffer m_storageBuffer;
 };
@@ -72,19 +73,23 @@ struct ST_GlobalRenderResource
 class RenderResource : public RenderResourceBase
 {
 public:
-	void Clear() override final;	// ÇåÀíäÖÈ¾×ÊÔ´
+	void Clear() override final;	// æ¸…ç†æ¸²æŸ“èµ„æº
 
-	virtual void UploadGlobalRenderResource(std::shared_ptr<RHI> pRHI, const ST_LevelResourceDesc& levelResourceDesc) override final;	// ÉÏ´«È«¾ÖäÖÈ¾×ÊÔ´
+	virtual void UploadGlobalRenderResource(std::shared_ptr<RHI> pRHI, const ST_LevelResourceDesc& levelResourceDesc) override final;	// ä¸Šä¼ å…¨å±€æ¸²æŸ“èµ„æº
 
-	virtual void UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity renderEntity, ST_RenderMeshData mesh_data, ST_RenderMaterialData material_data) override final;	// ÉÏ´«ÓÎÏ·¶ÔÏóäÖÈ¾×ÊÔ´
+	virtual void UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity renderEntity, ST_RenderMeshData mesh_data, ST_RenderMaterialData material_data) override final;	// ä¸Šä¼ æ¸¸æˆå¯¹è±¡æ¸²æŸ“èµ„æº
 
-	virtual void UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity render_entity, ST_RenderMeshData mesh_data) override final;	// ÉÏ´«ÓÎÏ·¶ÔÏóäÖÈ¾×ÊÔ´£¨½öÍø¸ñÊı¾İ£©
+	virtual void UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity render_entity, ST_RenderMeshData mesh_data) override final;	// ä¸Šä¼ æ¸¸æˆå¯¹è±¡æ¸²æŸ“èµ„æºï¼ˆä»…ç½‘æ ¼æ•°æ®ï¼‰
 
-	virtual void UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity render_entity, ST_RenderMaterialData material_data) override final; // ÉÏ´«ÓÎÏ·¶ÔÏóäÖÈ¾×ÊÔ´£¨½ö²ÄÖÊÊı¾İ£©
+	virtual void UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity render_entity, ST_RenderMaterialData material_data) override final; // ä¸Šä¼ æ¸¸æˆå¯¹è±¡æ¸²æŸ“èµ„æºï¼ˆä»…æè´¨æ•°æ®ï¼‰
 
-	virtual void UpdatePerFrameBuffer(std::shared_ptr<RenderScene> pRenderScene, std::shared_ptr<RenderCamera> pCamera) override final; // ¸üĞÂÃ¿Ö¡»º³åÇø
+	virtual void UpdatePerFrameBuffer(std::shared_ptr<RenderScene> pRenderScene, std::shared_ptr<RenderCamera> pCamera) override final; // æ›´æ–°æ¯å¸§ç¼“å†²åŒº
 
-	void ResetRingBufferOffset(uint8_t currentFrameIndex);	// ÖØÖÃ»·ĞÎ»º³åÇøÆ«ÒÆ
+	void ResetRingBufferOffset(uint8_t currentFrameIndex);	// é‡ç½®ç¯å½¢ç¼“å†²åŒºåç§»
+
+	ST_VulkanMesh& GetEntityMesh(RenderEntity entity);
+
+	ST_VulkanPBRMaterial& GetEntityMaterial(RenderEntity entity);
 
 private:
 
@@ -92,17 +97,24 @@ public:
 
 	ST_GlobalRenderResource m_globalRenderResource;
 
-	ST_MeshPerframeStorageBufferObject m_meshPerframeStorageBufferObject;	// Íø¸ñÃ¿Ö¡´æ´¢»º³åÇø¶ÔÏó
-	ST_AxisStorageBufferObject m_axisStorageBufferObject;	// ×ø±êÖá´æ´¢»º³åÇø¶ÔÏó
+	ST_MeshPerframeStorageBufferObject m_meshPerframeStorageBufferObject;	// ç½‘æ ¼æ¯å¸§å­˜å‚¨ç¼“å†²åŒºå¯¹è±¡
+	ST_AxisStorageBufferObject m_axisStorageBufferObject;	// åæ ‡è½´å­˜å‚¨ç¼“å†²åŒºå¯¹è±¡
 
 	ST_ParticleBillboardPerframeStorageBufferObject m_particleBillboardPerframeStorageBufferObject;	// 
-	ST_ParticleCollisionPerframeStorageBufferObject m_particleCollisionPerframeStorageBufferObject;	// Á£×Ó¿ØÖÆÊı¾İ
+	ST_ParticleCollisionPerframeStorageBufferObject m_particleCollisionPerframeStorageBufferObject;	// ç²’å­æ§åˆ¶æ•°æ®
 
-	//  µã¹âÔ´ÒõÓ°µÄÃ¿Ö¡»º³åÊı¾İ
+	// ç‚¹å…‰æºé˜´å½±çš„æ¯å¸§ç¼“å†²æ•°æ®
 	ST_MeshPointLightShadowPerframeStorageBufferObject m_meshPointLightShadowPerframeStorageBufferObject;
 
-	// Pick Pass Êı¾İ
+	// ç›´å°„å…‰é˜´å½±çš„æ¯å¸§ç¼“å†²æ•°æ®
+	ST_MeshDirectionalLightShadowPerframeStorageBufferObject m_meshDirectionalLightShadowPerframeStorageBufferObject;
+
+	// Pick Pass æ•°æ®
 	ST_MeshInefficientPickPerframeStorageBufferObject m_meshInefficientPickPerframeStorageBufferObject;
+
+	std::map<size_t, ST_VulkanMesh> m_vulkanMeshes;	// ç½‘æ ¼èµ„æº
+
+	std::map<size_t, ST_VulkanPBRMaterial> m_vulkanPBRMaterials;	// æè´¨èµ„æº
 
 };
 
