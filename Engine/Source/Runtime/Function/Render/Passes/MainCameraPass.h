@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Common.h>
 #include "Runtime/Function/Render/RenderPass.h"
 #include "Runtime/Function/Render/Passes/ColorGradingPass.h"
@@ -12,7 +12,7 @@ NAMESPACE_XYH_BEGIN
 
 struct ST_MainCameraPassInitInfo : public ST_RenderPassInitInfo
 {
-	bool m_enableFXAA = false;  // ÊÇ·ñÆôÓÃFXAA
+	bool m_enableFXAA = false;  // æ˜¯å¦å¯ç”¨FXAA
 };
 
 class MainCameraPass : public RenderPass
@@ -20,7 +20,7 @@ class MainCameraPass : public RenderPass
 public:
 	enum ELayoutType : uint8_t
 	{
-		_per_mesh = 0,	// Ã¿¸öÍø¸ñ
+		_per_mesh = 0,	// æ¯ä¸ªç½‘æ ¼
 		_mesh_global,
 		_mesh_per_material,
 		_skybox,
@@ -32,8 +32,8 @@ public:
 
 	enum ERenderPipeLineType : uint8_t
 	{
-		_render_pipeline_type_mesh_gbuffer = 0,	// ÑÓ³ÙäÖÈ¾µÄGBuffer½×¶Î
-		_render_pipeline_type_deferred_lighting,	// ÑÓ³ÙäÖÈ¾µÄ¹âÕÕ¼ÆËã½×¶Î
+		_render_pipeline_type_mesh_gbuffer = 0,	// å»¶è¿Ÿæ¸²æŸ“çš„GBufferé˜¶æ®µ
+		_render_pipeline_type_deferred_lighting,	// å»¶è¿Ÿæ¸²æŸ“çš„å…‰ç…§è®¡ç®—é˜¶æ®µ
 		_render_pipeline_type_mesh_lighting,
 		_render_pipeline_type_skybox,
 		_render_pipeline_type_axis,
@@ -44,12 +44,13 @@ public:
 public:
 	void Initialize(const ST_RenderPassInitInfo* initInfo) override final;
 
+	// å‡†å¤‡éƒ¨åˆ†æ•°æ®
 	void PreparePassData(std::shared_ptr<RenderResourceBase> renderResource) override final;
 
-	// Ç°ÏòäÖÈ¾
+	// å‰å‘æ¸²æŸ“
 	void DrawForward(ColorGradingPass& colorGradingPass, FXAAPass& fxaaPass, ToneMappingPass& toneMappingPass, UIPass& uiPass, CombineUIPass& combineUIPass, ParticlePass& particlePass, uint32_t currentSwapchainImageIndex);
 
-	// ÑÓ³ÙäÖÈ¾
+	// å»¶è¿Ÿæ¸²æŸ“
 	void Draw(ColorGradingPass& colorGradingPass, FXAAPass& fxaaPass, ToneMappingPass& toneMappingPass, UIPass& uiPass, CombineUIPass& combineUIPass, ParticlePass& particlePass, uint32_t currentSwapchainImageIndex);
 
 	void CopyNormalAndDepthImage();
@@ -61,64 +62,64 @@ public:
 	void UpdateAfterFramebufferRecreate();
 
 private:
-	void SetupParticlePass();	// ÉèÖÃÁ£×ÓäÖÈ¾Í¨µÀ
+	void SetupParticlePass();	// è®¾ç½®ç²’å­æ¸²æŸ“é€šé“
 
 	/// <summary>
-	/// ´´½¨Ö¡»º³åÖĞµÄÍ¼Ïñ¼°ÊÓÍ¼
+	/// åˆ›å»ºå¸§ç¼“å†²ä¸­çš„å›¾åƒåŠè§†å›¾
 	/// </summary>
-	void SetupAttachments();	// ÉèÖÃ¸½¼ş
+	void SetupAttachments();	// è®¾ç½®é™„ä»¶
 
-	void SetupRenderPass();	// ÉèÖÃäÖÈ¾Í¨µÀ
+	void SetupRenderPass();	// è®¾ç½®æ¸²æŸ“é€šé“
 
-	void SetupDescriptorSetLayout();	// ÉèÖÃÃèÊö·û¼¯²¼¾Ö
+	void SetupDescriptorSetLayout();	// è®¾ç½®æè¿°ç¬¦é›†å¸ƒå±€
 
-	void SetupPipelines();	// ÉèÖÃ¹ÜÏß
+	void SetupPipelines();	// è®¾ç½®ç®¡çº¿
 
-	void SetupDescriptorSet();	// ÉèÖÃÃèÊö·û¼¯
-	void SetupModelGlobalDescriptorSet();	// ÉèÖÃÄ£ĞÍÈ«¾ÖÃèÊö·û¼¯
-	void SetupSkyboxDescriptorSet();	// ÉèÖÃÌì¿ÕºĞÃèÊö·û¼¯
-	void SetupAxisDescriptorSet();	// ÉèÖÃ×ø±êÖáÃèÊö·û¼¯
-	//void SetupParticleDescriptorSet();	// ÉèÖÃÁ£×ÓÃèÊö·û¼¯
-	void SetupGbufferLightingDescriptorSet();	// ÉèÖÃGBuffer¹âÕÕÃèÊö·û¼¯
+	void SetupDescriptorSet();	// è®¾ç½®æè¿°ç¬¦é›†
+	void SetupModelGlobalDescriptorSet();	// è®¾ç½®æ¨¡å‹å…¨å±€æè¿°ç¬¦é›†
+	void SetupSkyboxDescriptorSet();	// è®¾ç½®å¤©ç©ºç›’æè¿°ç¬¦é›†
+	void SetupAxisDescriptorSet();	// è®¾ç½®åæ ‡è½´æè¿°ç¬¦é›†
+	//void SetupParticleDescriptorSet();	// è®¾ç½®ç²’å­æè¿°ç¬¦é›†
+	void SetupGbufferLightingDescriptorSet();	// è®¾ç½®GBufferå…‰ç…§æè¿°ç¬¦é›†
 
-	void SetupFramebufferDescriptorSet();	// ÉèÖÃÖ¡»º³åÃèÊö·û¼¯
+	void SetupFramebufferDescriptorSet();	// è®¾ç½®å¸§ç¼“å†²æè¿°ç¬¦é›†
 
-	void SetupSwapchainFramebuffers();	// ÉèÖÃ½»»»Á´Ö¡»º³å
+	void SetupSwapchainFramebuffers();	// è®¾ç½®äº¤æ¢é“¾å¸§ç¼“å†²
 
 
 	/// <summary>
-	/// »æÖÆ
+	/// ç»˜åˆ¶
 	/// </summary>
-	void DrawMeshGbuffer();	// »æÖÆÍø¸ñGBuffer£¨ÑÓ³ÙäÖÈ¾Ê¹ÓÃ£©
+	void DrawMeshGbuffer();	// ç»˜åˆ¶ç½‘æ ¼GBufferï¼ˆå»¶è¿Ÿæ¸²æŸ“ä½¿ç”¨ï¼‰
 
-	void DrawDeferredLighting();	// »æÖÆÑÓ³Ù¹âÕÕ£¨ÑÓ³ÙäÖÈ¾Ê¹ÓÃ£©
+	void DrawDeferredLighting();	// ç»˜åˆ¶å»¶è¿Ÿå…‰ç…§ï¼ˆå»¶è¿Ÿæ¸²æŸ“ä½¿ç”¨ï¼‰
 
-	void DrawMeshLighting();	// »æÖÆÍø¸ñ¹âÕÕ£¨Ç°ÏòäÖÈ¾Ê¹ÓÃ£©
+	void DrawMeshLighting();	// ç»˜åˆ¶ç½‘æ ¼å…‰ç…§ï¼ˆå‰å‘æ¸²æŸ“ä½¿ç”¨ï¼‰
 
-	void DrawSkybox();	// »æÖÆÌì¿ÕºĞ
+	void DrawSkybox();	// ç»˜åˆ¶å¤©ç©ºç›’
 
-	void DrawAxis();	// »æÖÆ×ø±êÖá£¨ÑÓ³ÙäÖÈ¾Ê¹ÓÃ£©
+	void DrawAxis();	// ç»˜åˆ¶åæ ‡è½´ï¼ˆå»¶è¿Ÿæ¸²æŸ“ä½¿ç”¨ï¼‰
 
 public:
 
-	RHIImageView* m_pPointLightShadowColorImageView;	// µã¹âÔ´ÒõÓ°Í¼ÏñÊÓÍ¼
-	RHIImageView* m_pDirectionalLightShadowColorImageView;	// ·½Ïò¹âÒõÓ°Í¼ÏñÊÓÍ¼
+	RHIImageView* m_pPointLightShadowColorImageView;	// ç‚¹å…‰æºé˜´å½±å›¾åƒè§†å›¾
+	RHIImageView* m_pDirectionalLightShadowColorImageView;	// æ–¹å‘å…‰é˜´å½±å›¾åƒè§†å›¾
 
-	bool m_isShowAxis = false;  // ÊÇ·ñÏÔÊ¾×ø±êÖá
+	bool m_isShowAxis = false;  // æ˜¯å¦æ˜¾ç¤ºåæ ‡è½´
 
-	size_t m_selectedAxis = 3u;  // Ñ¡ÖĞµÄ×ø±êÖá
+	size_t m_selectedAxis = 3u;  // é€‰ä¸­çš„åæ ‡è½´
 
-	bool m_enableFXAA = false;	// ÊÇ·ñÆôÓÃFXAA
+	bool m_enableFXAA = false;	// æ˜¯å¦å¯ç”¨FXAA
 
-	ST_MeshPerframeStorageBufferObject m_meshPerframeStorageBufferObject;	// Íø¸ñÃ¿Ö¡´æ´¢»º³åÇø¶ÔÏó
+	ST_MeshPerframeStorageBufferObject m_meshPerframeStorageBufferObject;	// ç½‘æ ¼æ¯å¸§å­˜å‚¨ç¼“å†²åŒºå¯¹è±¡
 
-	ST_AxisStorageBufferObject m_axisStorageBufferObject;	// ×ø±êÖá´æ´¢»º³åÇø¶ÔÏó
+	ST_AxisStorageBufferObject m_axisStorageBufferObject;	// åæ ‡è½´å­˜å‚¨ç¼“å†²åŒºå¯¹è±¡
 
 private:
-	std::shared_ptr<ParticlePass> m_pParticlePass;	// Á£×ÓäÖÈ¾Í¨µÀ
+	std::shared_ptr<ParticlePass> m_pParticlePass;	// ç²’å­æ¸²æŸ“é€šé“
 
-	// MainCameraÃ»ÓĞÊ¹ÓÃ»ùÀàRenderPassÖĞµÄFramebufferÖ¸Õë
-	std::vector<RHIFramebuffer*> m_swapchainFramebuffers;	// ½»»»Á´Ö¡»º³å
+	// MainCameraæ²¡æœ‰ä½¿ç”¨åŸºç±»RenderPassä¸­çš„FramebufferæŒ‡é’ˆ
+	std::vector<RHIFramebuffer*> m_swapchainFramebuffers;	// äº¤æ¢é“¾å¸§ç¼“å†²
 };
 
 NAMESPACE_XYH_END

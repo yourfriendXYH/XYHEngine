@@ -75,8 +75,11 @@ void RenderResource::UpdatePerFrameBuffer(std::shared_ptr<RenderScene> pRenderSc
 
 void RenderResource::ResetRingBufferOffset(uint8_t currentFrameIndex)
 {
-	m_globalRenderResource.m_storageBuffer.m_globalUploadRingbuffersEnd[currentFrameIndex] =
-		m_globalRenderResource.m_storageBuffer.m_globalUploadRingbuffersBegin[currentFrameIndex];
+	if (!m_globalRenderResource.m_storageBuffer.m_globalUploadRingbuffersEnd.empty() && !m_globalRenderResource.m_storageBuffer.m_globalUploadRingbuffersBegin.empty())
+	{
+		m_globalRenderResource.m_storageBuffer.m_globalUploadRingbuffersEnd[currentFrameIndex] =
+			m_globalRenderResource.m_storageBuffer.m_globalUploadRingbuffersBegin[currentFrameIndex];
+	}
 }
 
 ST_VulkanMesh& RenderResource::GetEntityMesh(RenderEntity entity)

@@ -357,7 +357,7 @@ struct ST_RHIViewport
 struct ST_RHIRenderPassBeginInfo
 {
 	ERHIStructureType m_sType;
-	const void* m_pNext;
+	const void* m_pNext = nullptr;
 	RHIRenderPass* m_pRenderPass;
 	RHIFramebuffer* m_pFramebuffer;
 	ST_RHIRect2D m_renderArea;

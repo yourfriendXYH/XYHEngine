@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Common.h>
 #include "RenderPipelineBase.h"
 
@@ -7,20 +7,20 @@ NAMESPACE_XYH_BEGIN
 class RenderPipeline : public RenderPipelineBase
 {
 public:
-	virtual void Initialize(RenderPipelineInitInfo initInfo) override final;	// ³õÊ¼»¯äÖÈ¾¹ÜÏß
+	virtual void Initialize(ST_RenderPipelineInitInfo initInfo) override final;	// åˆå§‹åŒ–æ¸²æŸ“ç®¡çº¿
 
-	virtual void ForwardRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource) override final;	// Ç°ÏòäÖÈ¾
+	virtual void ForwardRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource) override final;	// å‰å‘æ¸²æŸ“
 
-	virtual void DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource) override final;	// ÑÓ³ÙäÖÈ¾
+	virtual void DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource) override final;	// å»¶è¿Ÿæ¸²æŸ“
 
-	void PassUpdateAfterRecreateSwapchain();	// ½»»»Á´ÖØ½¨ºó¸üĞÂäÖÈ¾Í¨µÀ
+	void PassUpdateAfterRecreateSwapchain();	// äº¤æ¢é“¾é‡å»ºåæ›´æ–°æ¸²æŸ“é€šé“
 
-	// ÆÁÄ»¿Õ¼äÑ¡Ôñ
-	virtual uint32_t GetGuidOfPickedMesh(const Vector2& pickedUV) override final;	// »ñÈ¡Ê°È¡µÄÍø¸ñµÄGUID
+	// å±å¹•ç©ºé—´é€‰æ‹©
+	virtual uint32_t GetGuidOfPickedMesh(const Vector2& pickedUV) override final;	// è·å–æ‹¾å–çš„ç½‘æ ¼çš„GUID
 
-	void SetAxisVisibleState(bool state);	// ÉèÖÃ×ø±êÖá¿É¼û×´Ì¬
+	void SetAxisVisibleState(bool state);	// è®¾ç½®åæ ‡è½´å¯è§çŠ¶æ€
 
-	void SetSelectedAxis(size_t selectedAxis);	// ÉèÖÃÑ¡ÖĞµÄ×ø±êÖá
+	void SetSelectedAxis(size_t selectedAxis);	// è®¾ç½®é€‰ä¸­çš„åæ ‡è½´
 };
 
 NAMESPACE_XYH_END

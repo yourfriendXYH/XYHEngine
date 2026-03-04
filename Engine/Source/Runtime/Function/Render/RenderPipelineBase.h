@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Common.h>
 #include "RenderPassBase.h"
 #include "Runtime/Core/Math/Vector2.h"
@@ -8,43 +8,43 @@ NAMESPACE_XYH_BEGIN
 class RenderResourceBase;
 class RHI;
 
-// äÖÈ¾¹ÜÏß³õÊ¼»¯ĞÅÏ¢
-struct RenderPipelineInitInfo
+// æ¸²æŸ“ç®¡çº¿åˆå§‹åŒ–ä¿¡æ¯
+struct ST_RenderPipelineInitInfo
 {
-	bool m_enableFXAA = false;	// ÊÇ·ñÆôÓÃFXAA, FXAA ÊÇÒ»ÖÖ¸ßĞ§µÄÆÁÄ»¿Õ¼ä¿¹¾â³İËã·¨£¬ÄÜ¹»ÔÚĞÔÄÜ¿ªÏú½ÏĞ¡µÄÇé¿öÏÂÌáÉı»­ÃæÖÊÁ¿
-	std::shared_ptr<RenderResourceBase> m_renderResource = nullptr;	// äÖÈ¾×ÊÔ´
+	bool m_enableFXAA = false;	// æ˜¯å¦å¯ç”¨FXAA, FXAA æ˜¯ä¸€ç§é«˜æ•ˆçš„å±å¹•ç©ºé—´æŠ—é”¯é½¿ç®—æ³•ï¼Œèƒ½å¤Ÿåœ¨æ€§èƒ½å¼€é”€è¾ƒå°çš„æƒ…å†µä¸‹æå‡ç”»é¢è´¨é‡
+	std::shared_ptr<RenderResourceBase> m_pRenderResource = nullptr;	// æ¸²æŸ“èµ„æº
 };
 
 class RenderPipelineBase
 {
-	friend class RenderSystem;	// äÖÈ¾ÏµÍ³¿ÉÒÔ·ÃÎÊË½ÓĞ³ÉÔ±
+	friend class RenderSystem;	// æ¸²æŸ“ç³»ç»Ÿå¯ä»¥è®¿é—®ç§æœ‰æˆå‘˜
 public:
 	virtual ~RenderPipelineBase() {};
 
-	virtual void Clear() {};	// Çå³ıäÖÈ¾¹ÜÏßÊı¾İ
-	virtual void Initialize(RenderPipelineInitInfo initInfo) = 0;	// ³õÊ¼»¯äÖÈ¾¹ÜÏß
+	virtual void Clear() {};	// æ¸…é™¤æ¸²æŸ“ç®¡çº¿æ•°æ®
+	virtual void Initialize(ST_RenderPipelineInitInfo initInfo) = 0;	// åˆå§‹åŒ–æ¸²æŸ“ç®¡çº¿
 
-	virtual void PreparePassData(std::shared_ptr<RenderResourceBase> pRenderResource);	// ×¼±¸äÖÈ¾Í¨µÀÊı¾İ
+	virtual void PreparePassData(std::shared_ptr<RenderResourceBase> pRenderResource);	// å‡†å¤‡æ¸²æŸ“é€šé“æ•°æ®
 
-	virtual void ForwardRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource);	// Ç°ÏòäÖÈ¾
-	virtual void DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource);	// ÑÓ³ÙäÖÈ¾
+	virtual void ForwardRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource);	// å‰å‘æ¸²æŸ“
+	virtual void DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource);	// å»¶è¿Ÿæ¸²æŸ“
 
 	//void InitializeUIRenderBackend(WindowUI* pWindowUI);
-	virtual uint32_t GetGuidOfPickedMesh(const Vector2& pickedUV) = 0;	// »ñÈ¡Ê°È¡µÄÍø¸ñµÄGUID
+	virtual uint32_t GetGuidOfPickedMesh(const Vector2& pickedUV) = 0;	// è·å–æ‹¾å–çš„ç½‘æ ¼çš„GUID
 
 protected:
-	std::shared_ptr<RHI> m_pRHI = nullptr;	// äÖÈ¾Ó²¼ş½Ó¿Ú
+	std::shared_ptr<RHI> m_pRHI = nullptr;	// æ¸²æŸ“ç¡¬ä»¶æ¥å£
 
-	std::shared_ptr<RenderPassBase> m_pDirectionalLightPass = nullptr;	// Æ½ĞĞ¹âäÖÈ¾Í¨µÀ
-	std::shared_ptr<RenderPassBase> m_pPointLightShadowPass = nullptr;	// µã¹âÔ´ÒõÓ°äÖÈ¾Í¨µÀ
-	std::shared_ptr<RenderPassBase> m_pMainCameraPass = nullptr;	// Ö÷ÉãÏñ»úäÖÈ¾Í¨µÀ
-	std::shared_ptr<RenderPassBase> m_pColorGradingPass = nullptr;	// É«²Ê·Ö¼¶äÖÈ¾Í¨µÀ
-	std::shared_ptr<RenderPassBase> m_pFxaaPass = nullptr;	// FXAA äÖÈ¾Í¨µÀ
-	std::shared_ptr<RenderPassBase> m_pToneMappingPass = nullptr;	// É«µ÷Ó³ÉääÖÈ¾Í¨µÀ
-	std::shared_ptr<RenderPassBase> m_pUIPass = nullptr;	// UI äÖÈ¾Í¨µÀ
-	std::shared_ptr<RenderPassBase> m_pCombineUIPass = nullptr;	// ºÏ²¢UIäÖÈ¾Í¨µÀ
-	std::shared_ptr<RenderPassBase> m_pPickPass = nullptr;	// Ê°È¡äÖÈ¾Í¨µÀ
-	std::shared_ptr<RenderPassBase> m_pParticlePass = nullptr;	// Á£×ÓäÖÈ¾Í¨µÀ
+	std::shared_ptr<RenderPassBase> m_pDirectionalLightPass = nullptr;	// å¹³è¡Œå…‰æ¸²æŸ“é€šé“
+	std::shared_ptr<RenderPassBase> m_pPointLightShadowPass = nullptr;	// ç‚¹å…‰æºé˜´å½±æ¸²æŸ“é€šé“
+	std::shared_ptr<RenderPassBase> m_pMainCameraPass = nullptr;	// ä¸»æ‘„åƒæœºæ¸²æŸ“é€šé“
+	std::shared_ptr<RenderPassBase> m_pColorGradingPass = nullptr;	// è‰²å½©åˆ†çº§æ¸²æŸ“é€šé“
+	std::shared_ptr<RenderPassBase> m_pFxaaPass = nullptr;	// FXAA æ¸²æŸ“é€šé“
+	std::shared_ptr<RenderPassBase> m_pToneMappingPass = nullptr;	// è‰²è°ƒæ˜ å°„æ¸²æŸ“é€šé“
+	std::shared_ptr<RenderPassBase> m_pUIPass = nullptr;	// UI æ¸²æŸ“é€šé“
+	std::shared_ptr<RenderPassBase> m_pCombineUIPass = nullptr;	// åˆå¹¶UIæ¸²æŸ“é€šé“
+	std::shared_ptr<RenderPassBase> m_pPickPass = nullptr;	// æ‹¾å–æ¸²æŸ“é€šé“
+	std::shared_ptr<RenderPassBase> m_pParticlePass = nullptr;	// ç²’å­æ¸²æŸ“é€šé“
 };
 
 NAMESPACE_XYH_END

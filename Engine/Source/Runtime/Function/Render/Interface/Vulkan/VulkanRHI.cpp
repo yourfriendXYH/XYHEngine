@@ -19,8 +19,8 @@ void VulkanRHI::Initialize(ST_RHIInitInfo initInfo)
 	m_scissor = { { 0, 0 }, { (uint32_t)windowSize[0], (uint32_t)windowSize[1] } }; // 设置裁剪区域大小
 
 #ifndef NDEBUG	// debug模式下启用验证层和调试工具标签
-	m_enableValidationLayers = false;
-	m_enableDebugUtilsLabel = false;
+	m_enableValidationLayers = true;
+	m_enableDebugUtilsLabel = true;
 #else
 	m_enable_validation_Layers = false;
 	m_enable_debug_utils_label = false;
@@ -1771,7 +1771,10 @@ void VulkanRHI::UpdateDescriptorSets(uint32_t descriptorWriteCount, const ST_RHI
 			{
 				vkDescriptorImageInfo.sampler = ((VulkanSampler*)rhiWriteDescriptorSetElement.m_pImageInfo->m_pSampler)->GetResource();
 			}
-			vkDescriptorImageInfo.imageView = ((VulkanImageView*)rhiWriteDescriptorSetElement.m_pImageInfo->m_pImageView)->GetResource();
+			if (rhiWriteDescriptorSetElement.m_pImageInfo->m_pImageView != nullptr)
+			{
+				vkDescriptorImageInfo.imageView = ((VulkanImageView*)rhiWriteDescriptorSetElement.m_pImageInfo->m_pImageView)->GetResource();
+			}
 			vkDescriptorImageInfo.imageLayout = (VkImageLayout)rhiWriteDescriptorSetElement.m_pImageInfo->m_imageLayout;
 
 			vkDescriptorImageInfoPtr = &vkDescriptorImageInfo;
@@ -1779,7 +1782,7 @@ void VulkanRHI::UpdateDescriptorSets(uint32_t descriptorWriteCount, const ST_RHI
 		}
 
 		const VkDescriptorBufferInfo* vkDescriptorBufferInfoPtr = nullptr;
-		if (rhiWriteDescriptorSetElement.m_pBufferInfo != nullptr)
+		if (rhiWriteDescriptorSetElement.m_pBufferInfo != nullptr && rhiWriteDescriptorSetElement.m_pBufferInfo->m_pBuffer != nullptr)
 		{
 			auto& vkDescriptorBufferInfo = vkDescriptorBufferInfoList[bufferInfoCurrent];
 			vkDescriptorBufferInfo.buffer = ((VulkanBuffer*)rhiWriteDescriptorSetElement.m_pBufferInfo->m_pBuffer)->GetResource();
@@ -2005,7 +2008,7 @@ RHICommandBuffer* const* VulkanRHI::GetCommandBufferList() const
 
 RHICommandPool* VulkanRHI::GetCommandPoor() const
 {
-	return nullptr;
+	return m_rhiCommandPool;
 }
 
 RHIDescriptorPool* VulkanRHI::GetDescriptorPoor() const

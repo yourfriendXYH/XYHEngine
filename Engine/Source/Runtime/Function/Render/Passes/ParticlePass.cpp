@@ -783,27 +783,33 @@ void ParticlePass::SetupAttachments()
 	// billboard texture
 	{
 		std::shared_ptr<TextureData> m_pParticleBillboardTextureResource = m_pRenderResource->LoadTextureHDR(m_pParticleManager->GetGlobalParticleRes().m_particleBillboardTexturePath);
-		m_pRHI->CreateGlobalImage(
-			m_pParticleBillboardTextureImage,
-			m_pParticleBillboardTextureImageView,
-			m_particleBillboardTextureVmaAllocation,
-			m_pParticleBillboardTextureResource->m_width,
-			m_pParticleBillboardTextureResource->m_height,
-			m_pParticleBillboardTextureResource->m_pixels,
-			m_pParticleBillboardTextureResource->m_format);
+		if (nullptr != m_pParticleBillboardTextureResource)
+		{
+			m_pRHI->CreateGlobalImage(
+				m_pParticleBillboardTextureImage,
+				m_pParticleBillboardTextureImageView,
+				m_particleBillboardTextureVmaAllocation,
+				m_pParticleBillboardTextureResource->m_width,
+				m_pParticleBillboardTextureResource->m_height,
+				m_pParticleBillboardTextureResource->m_pixels,
+				m_pParticleBillboardTextureResource->m_format);
+		}
 	}
 
 	// piccolo texture
 	{
 		std::shared_ptr<TextureData> m_pPiccoloLogoTextureResource = m_pRenderResource->LoadTexture(m_pParticleManager->GetGlobalParticleRes().m_piccoloLogoTexturePath, true);
-		m_pRHI->CreateGlobalImage(
-			m_pPiccoloLogoTextureImage,
-			m_pPiccoloLogoTextureImageView,
-			m_piccoloLogoTextureVmaAllocation,
-			m_pPiccoloLogoTextureResource->m_width,
-			m_pPiccoloLogoTextureResource->m_height,
-			m_pPiccoloLogoTextureResource->m_pixels,
-			m_pPiccoloLogoTextureResource->m_format);
+		if (nullptr != m_pPiccoloLogoTextureResource)
+		{
+			m_pRHI->CreateGlobalImage(
+				m_pPiccoloLogoTextureImage,
+				m_pPiccoloLogoTextureImageView,
+				m_piccoloLogoTextureVmaAllocation,
+				m_pPiccoloLogoTextureResource->m_width,
+				m_pPiccoloLogoTextureResource->m_height,
+				m_pPiccoloLogoTextureResource->m_pixels,
+				m_pPiccoloLogoTextureResource->m_format);
+		}
 	}
 
 	// 深度

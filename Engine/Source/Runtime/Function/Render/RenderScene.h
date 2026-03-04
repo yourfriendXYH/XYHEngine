@@ -18,6 +18,7 @@ class RenderScene	// 渲染场景
 public:
 	void Clear();	// 清除场景数据
 
+	// 更新可见对象
 	void UpdateVisibleObjects(std::shared_ptr<RenderResource> renderResource, std::shared_ptr<RenderCamera> camera);
 
 	// 在渲染通道中设置可见节点的指针

@@ -1,8 +1,9 @@
-#include "GlobalContext.h"
+ï»¿#include "GlobalContext.h"
 #include "../Core/LogSystem.h"
 #include "../Resource/ConfigManager.h"
 #include "Render/RenderSystem.h"
 #include "Render/WindowSystem.h"
+#include <Runtime/Function/Particle/ParticleManager.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -10,31 +11,35 @@ RuntimeGlobalContext g_runtimeGlobalContext;
 
 void RuntimeGlobalContext::InitSystems(const std::string& configFilePath)
 {
-	m_pLogSystem = std::make_shared<LogSystem>(); // ÈÕÖ¾ÏµÍ³
+	m_pLogSystem = std::make_shared<LogSystem>(); // æ—¥å¿—ç³»ç»Ÿ
 
-	m_pConfigManager = std::make_shared<ConfigManager>(); // ÅäÖÃ¹ÜÀíÆ÷
-	m_pConfigManager->Initialize(configFilePath); // ³õÊ¼»¯ÅäÖÃ¹ÜÀíÆ÷
+	m_pConfigManager = std::make_shared<ConfigManager>(); // é…ç½®ç®¡ç†å™¨
+	m_pConfigManager->Initialize(configFilePath); // åˆå§‹åŒ–é…ç½®ç®¡ç†å™¨
 
-	// ´°¿Ú
-	m_pWindowSystem = std::make_shared<WindowSystem>(); // ´°¿ÚÏµÍ³
-	ST_WindowCreateInfo windowCreateInfo; // ´°¿Ú´´½¨ĞÅÏ¢
-	m_pWindowSystem->Initialize(windowCreateInfo); // ³õÊ¼»¯´°¿ÚÏµÍ³
+	// çª—å£
+	m_pWindowSystem = std::make_shared<WindowSystem>(); // çª—å£ç³»ç»Ÿ
+	ST_WindowCreateInfo windowCreateInfo; // çª—å£åˆ›å»ºä¿¡æ¯
+	m_pWindowSystem->Initialize(windowCreateInfo); // åˆå§‹åŒ–çª—å£ç³»ç»Ÿ
 
-	// äÖÈ¾
-	m_pRenderSystem = std::make_shared<RenderSystem>(); // äÖÈ¾ÏµÍ³
-	ST_RenderSystemInitInfo renderInitInfo; // äÖÈ¾ÏµÍ³³õÊ¼»¯ĞÅÏ¢
+	// ç²’å­ç®¡ç†å™¨
+	m_pParticleManager = std::make_shared<ParticleManager>();
+	m_pParticleManager;	// åˆå§‹åŒ–
+
+	// æ¸²æŸ“
+	m_pRenderSystem = std::make_shared<RenderSystem>(); // æ¸²æŸ“ç³»ç»Ÿ
+	ST_RenderSystemInitInfo renderInitInfo; // æ¸²æŸ“ç³»ç»Ÿåˆå§‹åŒ–ä¿¡æ¯
 	renderInitInfo.m_pWindowSystem = m_pWindowSystem;
-	m_pRenderSystem->Initialize(renderInitInfo); // ³õÊ¼»¯äÖÈ¾ÏµÍ³
+	m_pRenderSystem->Initialize(renderInitInfo); // åˆå§‹åŒ–æ¸²æŸ“ç³»ç»Ÿ
 }
 
 void RuntimeGlobalContext::ShutdownSystems()
 {
-	m_pLogSystem.reset(); // ÇåÀíÈÕÖ¾ÏµÍ³
+	m_pLogSystem.reset(); // æ¸…ç†æ—¥å¿—ç³»ç»Ÿ
 
-	m_pRenderSystem->Clear(); // ÇåÀíäÖÈ¾ÏµÍ³
-	m_pRenderSystem.reset(); // ÇåÀíäÖÈ¾ÏµÍ³Ö¸Õë
+	m_pRenderSystem->Clear(); // æ¸…ç†æ¸²æŸ“ç³»ç»Ÿ
+	m_pRenderSystem.reset(); // æ¸…ç†æ¸²æŸ“ç³»ç»ŸæŒ‡é’ˆ
 
-	m_pWindowSystem.reset(); // ÇåÀí´°¿ÚÏµÍ³Ö¸Õë
+	m_pWindowSystem.reset(); // æ¸…ç†çª—å£ç³»ç»ŸæŒ‡é’ˆ
 }
 
 NAMESPACE_XYH_END

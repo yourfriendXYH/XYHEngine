@@ -1,4 +1,4 @@
-#include "RenderPipeline.h"
+ï»¿#include "RenderPipeline.h"
 #include "Passes/PointLightPass.h"
 #include "Passes/DirectionalLightPass.h"
 #include "Passes/MainCameraPass.h"
@@ -15,7 +15,7 @@
 
 NAMESPACE_XYH_BEGIN
 
-void RenderPipeline::Initialize(RenderPipelineInitInfo initInfo)
+void RenderPipeline::Initialize(ST_RenderPipelineInitInfo initInfo)
 {
 	m_pPointLightShadowPass = std::make_shared<PointLightShadowPass>();
 	m_pDirectionalLightPass = std::make_shared<DirectionalLightShadowPass>();
@@ -29,8 +29,8 @@ void RenderPipeline::Initialize(RenderPipelineInitInfo initInfo)
 	m_pParticlePass = std::make_shared<ParticlePass>();
 
 	ST_RenderPassCommonInfo passCommonInfo;
-	passCommonInfo.m_pRHI = m_pRHI;	// ÉèÖÃäÖÈ¾Ó²¼ş½Ó¿Ú
-	passCommonInfo.m_pRenderResource = initInfo.m_renderResource;	// ÉèÖÃäÖÈ¾×ÊÔ´
+	passCommonInfo.m_pRHI = m_pRHI;	// è®¾ç½®æ¸²æŸ“ç¡¬ä»¶æ¥å£
+	passCommonInfo.m_pRenderResource = initInfo.m_pRenderResource;	// è®¾ç½®æ¸²æŸ“èµ„æº
 	m_pPointLightShadowPass->SetCommonInfo(passCommonInfo);
 	m_pDirectionalLightPass->SetCommonInfo(passCommonInfo);
 	m_pMainCameraPass->SetCommonInfo(passCommonInfo);
@@ -51,16 +51,16 @@ void RenderPipeline::Initialize(RenderPipelineInitInfo initInfo)
 
 	ST_ParticlePassInitInfo particlePassInitInfo;
 	particlePassInitInfo.m_pParticleManager = g_runtimeGlobalContext.m_pParticleManager;
-	pParticlePass->Initialize(&particlePassInitInfo);	// ³õÊ¼»¯Á£×ÓäÖÈ¾Í¨µÀ
+	pParticlePass->Initialize(&particlePassInitInfo);	// åˆå§‹åŒ–ç²’å­æ¸²æŸ“é€šé“
 
-	// Á½ÖÖÒõÓ°µÄImageView
-	pMainCameraPass->m_pPointLightShadowColorImageView = std::static_pointer_cast<RenderPass>(m_pPointLightShadowPass)->GetFramebufferImageViews()[0];
-	pMainCameraPass->m_pDirectionalLightShadowColorImageView = std::static_pointer_cast<RenderPass>(m_pDirectionalLightPass)->m_framebuffer.m_attachments[0].m_pView;
+	// ä¸¤ç§é˜´å½±çš„ImageView ï¼ˆTODOï¼‰
+	//pMainCameraPass->m_pPointLightShadowColorImageView = std::static_pointer_cast<RenderPass>(m_pPointLightShadowPass)->GetFramebufferImageViews()[0];
+	//pMainCameraPass->m_pDirectionalLightShadowColorImageView = std::static_pointer_cast<RenderPass>(m_pDirectionalLightPass)->m_framebuffer.m_attachments[0].m_pView;
 
 	ST_MainCameraPassInitInfo mainCameraPassInitInfo;
-	mainCameraPassInitInfo.m_enableFXAA = initInfo.m_enableFXAA;	// ÉèÖÃÊÇ·ñÆôÓÃFXAA, ¿¹¾â³İ
-	pMainCameraPass->SetParticlePass(pParticlePass);	// ÉèÖÃÁ£×ÓäÖÈ¾Í¨µÀ
-	m_pMainCameraPass->Initialize(&mainCameraPassInitInfo);	// ³õÊ¼»¯Ö÷ÉãÏñ»úäÖÈ¾Í¨µÀ
+	mainCameraPassInitInfo.m_enableFXAA = initInfo.m_enableFXAA;	// è®¾ç½®æ˜¯å¦å¯ç”¨FXAA, æŠ—é”¯é½¿
+	pMainCameraPass->SetParticlePass(pParticlePass);	// è®¾ç½®ç²’å­æ¸²æŸ“é€šé“
+	m_pMainCameraPass->Initialize(&mainCameraPassInitInfo);	// åˆå§‹åŒ–ä¸»æ‘„åƒæœºæ¸²æŸ“é€šé“
 
 	pParticlePass->SetupParticlePass();
 
@@ -70,37 +70,37 @@ void RenderPipeline::Initialize(RenderPipelineInitInfo initInfo)
 	//std::static_pointer_cast<DirectionalLightShadowPass>(m_directional_light_pass)
 	//	->setPerMeshLayout(descriptor_layouts[MainCameraPass::LayoutType::_per_mesh]);
 
-	m_pPointLightShadowPass->PostInitialize();	// ºó³õÊ¼»¯µã¹âÔ´ÒõÓ°äÖÈ¾Í¨µÀ
-	m_pDirectionalLightPass->PostInitialize();	// ºó³õÊ¼»¯Æ½ĞĞ¹âäÖÈ¾Í¨µÀ
+	m_pPointLightShadowPass->PostInitialize();	// ååˆå§‹åŒ–ç‚¹å…‰æºé˜´å½±æ¸²æŸ“é€šé“
+	m_pDirectionalLightPass->PostInitialize();	// ååˆå§‹åŒ–å¹³è¡Œå…‰æ¸²æŸ“é€šé“
 
 	ST_ToneMappingPassInitInfo toneMappingInitInfo;
 	//tone_mapping_init_info.render_pass = _main_camera_pass->getRenderPass();
 	//tone_mapping_init_info.input_attachment = _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd];
-	m_pToneMappingPass->Initialize(&toneMappingInitInfo);	// ³õÊ¼»¯É«µ÷Ó³ÉääÖÈ¾Í¨µÀ
+	m_pToneMappingPass->Initialize(&toneMappingInitInfo);	// åˆå§‹åŒ–è‰²è°ƒæ˜ å°„æ¸²æŸ“é€šé“
 
 	ST_ColorGradingPassInitInfo colorGradingInitInfo;
 	//color_grading_init_info.render_pass = _main_camera_pass->getRenderPass();
 	//color_grading_init_info.input_attachment = _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_backup_buffer_even];
-	m_pColorGradingPass->Initialize(&colorGradingInitInfo);	// ³õÊ¼»¯É«²Ê·Ö¼¶äÖÈ¾Í¨µÀ
+	m_pColorGradingPass->Initialize(&colorGradingInitInfo);	// åˆå§‹åŒ–è‰²å½©åˆ†çº§æ¸²æŸ“é€šé“
 
 	ST_UIPassInitInfo uiPassInitInfo;
 	//ui_init_info.render_pass = _main_camera_pass->getRenderPass();
-	m_pUIPass->Initialize(&uiPassInitInfo);	// ³õÊ¼»¯UIäÖÈ¾Í¨µÀ
+	m_pUIPass->Initialize(&uiPassInitInfo);	// åˆå§‹åŒ–UIæ¸²æŸ“é€šé“
 
 	ST_CombineUIPassInitInfo combineUIPassInitInfo;
 	//combine_ui_init_info.render_pass = _main_camera_pass->getRenderPass();
 	//combine_ui_init_info.scene_input_attachment = _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd];
 	//combine_ui_init_info.ui_input_attachment =_main_camera_pass->getFramebufferImageViews()[_main_camera_pass_backup_buffer_even];
-	m_pCombineUIPass->Initialize(&combineUIPassInitInfo);	// ³õÊ¼»¯ºÏ²¢UIäÖÈ¾Í¨µÀ
+	m_pCombineUIPass->Initialize(&combineUIPassInitInfo);	// åˆå§‹åŒ–åˆå¹¶UIæ¸²æŸ“é€šé“
 
 	ST_PickPassInitInfo pickPassInitInfo;
 	//pick_init_info.per_mesh_layout = descriptor_layouts[MainCameraPass::LayoutType::_per_mesh];
-	m_pPickPass->Initialize(&pickPassInitInfo);	// ³õÊ¼»¯Ê°È¡äÖÈ¾Í¨µÀ
+	m_pPickPass->Initialize(&pickPassInitInfo);	// åˆå§‹åŒ–æ‹¾å–æ¸²æŸ“é€šé“
 
 	ST_FXAAPassInitInfo fxaaPassInitInfo;
 	//fxaa_init_info.render_pass = _main_camera_pass->getRenderPass();
 	//fxaa_init_info.input_attachment = _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_post_process_buffer_odd];
-	m_pFxaaPass->Initialize(&fxaaPassInitInfo);	// ³õÊ¼»¯FXAAäÖÈ¾Í¨µÀ
+	m_pFxaaPass->Initialize(&fxaaPassInitInfo);	// åˆå§‹åŒ–FXAAæ¸²æŸ“é€šé“
 }
 
 void RenderPipeline::ForwardRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource)
@@ -108,17 +108,17 @@ void RenderPipeline::ForwardRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<Re
 	VulkanRHI* pVulkanRHI = static_cast<VulkanRHI*>(pRHI.get());
 	RenderResource* pVulkanResource = static_cast<RenderResource*>(pRenderResource.get());
 
-	pVulkanResource->ResetRingBufferOffset(pVulkanRHI->GetCurrentFrameIndex());	// ÖØÖÃ»·ĞÎ»º³åÇøÆ«ÒÆ
+	pVulkanResource->ResetRingBufferOffset(pVulkanRHI->GetCurrentFrameIndex());	// é‡ç½®ç¯å½¢ç¼“å†²åŒºåç§»
 
-	// £¿£¿£¿
+	// ï¼Ÿï¼Ÿï¼Ÿ
 	pVulkanRHI->WaitForFences();
 	pVulkanRHI->ResetCommandPool();
 
-	bool recreateSwapchain = pVulkanRHI->PrepareBeforePass(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// ÔÚäÖÈ¾Í¨µÀ¸üĞÂºóÖØ½¨½»»»Á´???
+	bool recreateSwapchain = pVulkanRHI->PrepareBeforePass(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// åœ¨æ¸²æŸ“é€šé“æ›´æ–°åé‡å»ºäº¤æ¢é“¾???
 	if (recreateSwapchain)
 		return;
 
-	// »æÖÆÒõÓ°
+	// ç»˜åˆ¶é˜´å½±
 	static_cast<DirectionalLightShadowPass*>(m_pDirectionalLightPass.get())->Draw();
 	static_cast<PointLightShadowPass*>(m_pPointLightShadowPass.get())->Draw();
 
@@ -132,17 +132,17 @@ void RenderPipeline::ForwardRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<Re
 	MainCameraPass* pMainCameraPass = static_cast<MainCameraPass*>(m_pMainCameraPass.get());
 	ParticlePass* pParticlePassPtr = static_cast<ParticlePass*>(m_pParticlePass.get());
 
-	// ÉèÖÃäÖÈ¾ÃüÁî»º³åÇøÖ¸Õë
+	// è®¾ç½®æ¸²æŸ“å‘½ä»¤ç¼“å†²åŒºæŒ‡é’ˆ
 	pParticlePassPtr->SetRenderCommandBufferHandle(pMainCameraPass->GetRenderCommandBuffer());
 
-	// Ç°ÏòäÖÈ¾
+	// å‰å‘æ¸²æŸ“
 	pMainCameraPass->DrawForward(colorGradingPass, fxaaPass, toneMappingPass, uiPass, combineUIPass, particlePass, pVulkanRHI->m_currentSwapchainImageIndex);
 
-	// äÖÈ¾²âÊÔ
+	// æ¸²æŸ“æµ‹è¯•
 	//g_runtime_global_context.m_debugdraw_manager->draw(vulkan_rhi->m_current_swapchain_image_index);
 
-	pVulkanRHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// Ìá½»äÖÈ¾
-	pParticlePassPtr->CopyNormalAndDepthImage();	// ¸´ÖÆ·¨ÏßºÍÉî¶ÈÍ¼Ïñ
+	pVulkanRHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// æäº¤æ¸²æŸ“
+	pParticlePassPtr->CopyNormalAndDepthImage();	// å¤åˆ¶æ³•çº¿å’Œæ·±åº¦å›¾åƒ
 	pParticlePassPtr->Simulate();	// ???
 }
 
@@ -151,19 +151,19 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 	VulkanRHI* pVulkanRHI = static_cast<VulkanRHI*>(pRHI.get());
 	RenderResource* pVulkanResource = static_cast<RenderResource*>(pRenderResource.get());
 
-	pVulkanResource->ResetRingBufferOffset(pVulkanRHI->GetCurrentFrameIndex());	// ÖØÖÃ»·ĞÎ»º³åÇøÆ«ÒÆ
+	pVulkanResource->ResetRingBufferOffset(pVulkanRHI->GetCurrentFrameIndex());	// é‡ç½®ç¯å½¢ç¼“å†²åŒºåç§»
 
 	pVulkanRHI->WaitForFences();
 	pVulkanRHI->ResetCommandPool();
 
-	// ¿ªÊ¼Â¼ÖÆÃüÁî
-	bool recreateSwapchain = pVulkanRHI->PrepareBeforePass(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// ÔÚäÖÈ¾Í¨µÀ¸üĞÂºóÖØ½¨½»»»Á´???
+	// å¼€å§‹å½•åˆ¶å‘½ä»¤
+	bool recreateSwapchain = pVulkanRHI->PrepareBeforePass(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// åœ¨æ¸²æŸ“é€šé“æ›´æ–°åé‡å»ºäº¤æ¢é“¾???
 	if (recreateSwapchain)
 		return;
 
-	// »æÖÆÒõÓ°
-	static_cast<DirectionalLightShadowPass*>(m_pDirectionalLightPass.get())->Draw();	// Ö±Éä¹âÒõÓ°
-	static_cast<PointLightShadowPass*>(m_pPointLightShadowPass.get())->Draw();	// µã¹âÔ´ÒõÓ°
+	// ç»˜åˆ¶é˜´å½±
+	static_cast<DirectionalLightShadowPass*>(m_pDirectionalLightPass.get())->Draw();	// ç›´å°„å…‰é˜´å½±
+	static_cast<PointLightShadowPass*>(m_pPointLightShadowPass.get())->Draw();	// ç‚¹å…‰æºé˜´å½±
 
 	ColorGradingPass& colorGradingPass = *(static_cast<ColorGradingPass*>(m_pColorGradingPass.get()));
 	FXAAPass& fxaaPass = *(static_cast<FXAAPass*>(m_pFxaaPass.get()));
@@ -175,19 +175,19 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 	MainCameraPass* pMainCameraPass = static_cast<MainCameraPass*>(m_pMainCameraPass.get());
 	ParticlePass* pParticlePassPtr = static_cast<ParticlePass*>(m_pParticlePass.get());
 
-	// ½«äÖÈ¾ÃüÁî»º³åÇø´«¸øÁ£×Ópass
+	// å°†æ¸²æŸ“å‘½ä»¤ç¼“å†²åŒºä¼ ç»™ç²’å­pass
 	pParticlePassPtr->SetRenderCommandBufferHandle(pMainCameraPass->GetRenderCommandBuffer());
 
-	// ÑÓ³ÙäÖÈ¾
+	// å»¶è¿Ÿæ¸²æŸ“
 	pMainCameraPass->Draw(colorGradingPass, fxaaPass, toneMappingPass, uiPass, combineUIPass, particlePass, pVulkanRHI->m_currentSwapchainImageIndex);
 
-	// äÖÈ¾²âÊÔ
+	// æ¸²æŸ“æµ‹è¯•
 	//g_runtime_global_context.m_debugdraw_manager->draw(vulkan_rhi->m_current_swapchain_image_index);
 
-	// ½áÊøÃüÁî£¬Ìá½»äÖÈ¾
-	pVulkanRHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// Ìá½»äÖÈ¾
+	// ç»“æŸå‘½ä»¤ï¼Œæäº¤æ¸²æŸ“
+	pVulkanRHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// æäº¤æ¸²æŸ“
 
-	pParticlePassPtr->CopyNormalAndDepthImage();	// ¸´ÖÆ·¨ÏßºÍÉî¶ÈÍ¼Ïñ
+	pParticlePassPtr->CopyNormalAndDepthImage();	// å¤åˆ¶æ³•çº¿å’Œæ·±åº¦å›¾åƒ
 	pParticlePassPtr->Simulate();	// ???
 }
 
@@ -201,16 +201,16 @@ void RenderPipeline::PassUpdateAfterRecreateSwapchain()
 	PickPass& pickPass = *(static_cast<PickPass*>(m_pPickPass.get()));
 	ParticlePass& particlePass = *(static_cast<ParticlePass*>(m_pParticlePass.get()));
 
-	mainCameraPass.UpdateAfterFramebufferRecreate();	// Ö÷ÉãÏñ»úäÖÈ¾Í¨µÀ¸üĞÂ
+	mainCameraPass.UpdateAfterFramebufferRecreate();	// ä¸»æ‘„åƒæœºæ¸²æŸ“é€šé“æ›´æ–°
 
-	pickPass.RecreateFramebuffer();	// ÖØ½¨Ê°È¡äÖÈ¾Í¨µÀµÄÖ¡»º³å
-	particlePass.UpdateAfterFramebufferRecreate();	// Á£×ÓäÖÈ¾Í¨µÀ¸üĞÂ
+	pickPass.RecreateFramebuffer();	// é‡å»ºæ‹¾å–æ¸²æŸ“é€šé“çš„å¸§ç¼“å†²
+	particlePass.UpdateAfterFramebufferRecreate();	// ç²’å­æ¸²æŸ“é€šé“æ›´æ–°
 }
 
 uint32_t RenderPipeline::GetGuidOfPickedMesh(const Vector2& pickedUV)
 {
-	// ÆÁÄ»¿Õ¼äÊ°È¡
-	// ¸ù¾İÏñËØµã»ñÈ¡Íø¸ñµÄGUID
+	// å±å¹•ç©ºé—´æ‹¾å–
+	// æ ¹æ®åƒç´ ç‚¹è·å–ç½‘æ ¼çš„GUID
 	PickPass& pickPass = *(static_cast<PickPass*>(m_pPickPass.get()));
 	return pickPass.Pick(pickedUV);
 }
@@ -218,13 +218,13 @@ uint32_t RenderPipeline::GetGuidOfPickedMesh(const Vector2& pickedUV)
 void RenderPipeline::SetAxisVisibleState(bool state)
 {
 	MainCameraPass& mainCameraPass = *(static_cast<MainCameraPass*>(m_pMainCameraPass.get()));
-	mainCameraPass.m_isShowAxis = state;	// ÉèÖÃÊÇ·ñÏÔÊ¾×ø±êÖá
+	mainCameraPass.m_isShowAxis = state;	// è®¾ç½®æ˜¯å¦æ˜¾ç¤ºåæ ‡è½´
 }
 
 void RenderPipeline::SetSelectedAxis(size_t selectedAxis)
 {
 	MainCameraPass& mainCameraPass = *(static_cast<MainCameraPass*>(m_pMainCameraPass.get()));
-	mainCameraPass.m_selectedAxis = selectedAxis;	// ÉèÖÃÑ¡ÖĞµÄ×ø±êÖá
+	mainCameraPass.m_selectedAxis = selectedAxis;	// è®¾ç½®é€‰ä¸­çš„åæ ‡è½´
 }
 
 NAMESPACE_XYH_END

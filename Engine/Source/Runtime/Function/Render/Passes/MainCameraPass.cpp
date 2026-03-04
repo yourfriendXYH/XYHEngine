@@ -341,7 +341,7 @@ void MainCameraPass::SetupRenderPass()
 
 	// 后处理缓冲区 奇数 描述
 	ST_RHIAttachmentDescription& postProcessEvenColorAttachmentDescription = attachments[_main_camera_pass_post_process_buffer_even];
-	postProcessEvenColorAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_post_process_buffer_odd].m_format;	// 图像格式
+	postProcessEvenColorAttachmentDescription.m_format = m_framebuffer.m_attachments[_main_camera_pass_post_process_buffer_even].m_format;	// 图像格式
 	postProcessEvenColorAttachmentDescription.m_samples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;	// 采样数
 	postProcessEvenColorAttachmentDescription.m_loadOp = ERHIAttachmentLoadOp::RHI_ATTACHMENT_LOAD_OP_CLEAR;	// 加载操作 清除
 	postProcessEvenColorAttachmentDescription.m_storeOp = ERHIAttachmentStoreOp::RHI_ATTACHMENT_STORE_OP_DONT_CARE;	// 存储操作 不关心

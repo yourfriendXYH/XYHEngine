@@ -20,6 +20,7 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 {
 	std::shared_ptr<ConfigManager> pConfigManager = g_runtimeGlobalContext.m_pConfigManager;
 
+	// RHI初始化
 	ST_RHIInitInfo rhiInitInfo;
 	rhiInitInfo.m_pWindowSystem = initInfo.m_pWindowSystem;
 	m_pRHI = std::make_shared<VulkanRHI>();
@@ -37,9 +38,11 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 	//level_resource_desc.m_ibl_resource_desc.m_brdf_map = global_rendering_res.m_brdf_map;
 	//level_resource_desc.m_color_grading_resource_desc.m_color_grading_map = global_rendering_res.m_color_grading_map;
 
+	// 渲染资源管理器
 	m_pRenderResource = std::make_shared<RenderResource>();
 	m_pRenderResource->UploadGlobalRenderResource(m_pRHI, levelResourceDesc);	// 上传全局渲染资源
 
+	// 渲染相机
 	// 初始化相机参数
 	m_pRenderCamera = std::make_shared<RenderCamera>();	// 创建渲染相机
 	m_pRenderCamera->LookAt(Vector3(-5.0f, 0.0f, 3.0f), Vector3(-4.0f, 0.0f, 3.0f), Vector3(0.0f, 0.0f, 1.0f));	// 设置相机初始位置和方向
@@ -47,12 +50,20 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 	m_pRenderCamera->m_zNear = 0.1f;		// 设置近裁剪面
 	m_pRenderCamera->SetAspectRatio(1280.0f / 768.0f);	// 设置宽高比
 
+	// 渲染场景
 	m_pRenderScene = std::make_shared<RenderScene>();	// 创建渲染场景
 	m_pRenderScene->m_ambientLight = { Vector3(0.1f, 0.1f, 0.1f) };	// 设置环境光颜色
 	m_pRenderScene->m_directionalLight.m_direction = Vector3(-1.0f, -1.0f, -1.0f).normalisedCopy();	// 设置直射光方向
 	m_pRenderScene->m_directionalLight.m_color = Vector3(1.0f, 1.0f, 1.0f);	// 设置直射光颜色
 	m_pRenderScene->SetVisibleNodesReference();
 
+	// 渲染管线
+	m_pRenderPipeline = std::make_shared<RenderPipeline>();
+	m_pRenderPipeline->m_pRHI = m_pRHI;
+	ST_RenderPipelineInitInfo pipelineInitInfo;
+	pipelineInitInfo.m_enableFXAA = true;	// TODO
+	pipelineInitInfo.m_pRenderResource = m_pRenderResource;
+	m_pRenderPipeline->Initialize(pipelineInitInfo);
 }
 
 void RenderSystem::Tick(float deltaTime)
@@ -67,6 +78,7 @@ void RenderSystem::Tick(float deltaTime)
 	m_pRenderResource->UpdatePerFrameBuffer(m_pRenderScene, m_pRenderCamera);
 
 	// 更新每帧的对象
+	// 可见对象更新
 	m_pRenderScene->UpdateVisibleObjects(std::static_pointer_cast<RenderResource>(m_pRenderResource), m_pRenderCamera);
 
 	// 准备渲染用到的资源和数据
