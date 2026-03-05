@@ -2032,6 +2032,10 @@ void MainCameraPass::DrawMeshGbuffer()
 	m_pRHI->CmdSetViewportPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pViewport);
 	m_pRHI->CmdSetScissorPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pScissor);
 
+	// test
+	if (m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd.empty())
+		return;
+
 	uint32_t perframeDynamicOffset = RoundUp(
 		m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()],
 		m_pGlobalRenderResource->m_storageBuffer.m_minStorageBufferOffsetAlignment
@@ -2202,6 +2206,10 @@ void MainCameraPass::DrawDeferredLighting()
 	m_pRHI->CmdSetViewportPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pViewport);
 	m_pRHI->CmdSetScissorPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pScissor);
 
+	// test
+	if (m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd.empty())
+		return;
+
 	uint32_t perframeDynamicOffset = RoundUp(
 		m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()],
 		m_pGlobalRenderResource->m_storageBuffer.m_minStorageBufferOffsetAlignment
@@ -2248,6 +2256,10 @@ void MainCameraPass::DrawSkybox()
 
 	m_pRHI->CmdBindPipelinePFN(m_pRHI->GetCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipelines[_render_pipeline_type_skybox].m_pipeline);
 
+	// test
+	if (m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd.empty())
+		return;
+
 	// 每帧缓冲的动态偏移量
 	uint32_t perframeDynamicOffset = RoundUp(
 		m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd[m_pRHI->GetCurrentFrameIndex()],
@@ -2280,6 +2292,10 @@ void MainCameraPass::DrawSkybox()
 void MainCameraPass::DrawAxis()
 {
 	if (!m_isShowAxis)
+		return;
+
+	// test
+	if (m_pGlobalRenderResource->m_storageBuffer.m_globalUploadRingbuffersEnd.empty())
 		return;
 
 	// 每帧缓冲的动态偏移量

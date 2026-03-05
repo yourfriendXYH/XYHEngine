@@ -2028,12 +2028,12 @@ ST_QueueFamilyIndices VulkanRHI::GetQueueFamilyIndices() const
 
 RHIQueue* VulkanRHI::GetGraphicsQueue() const
 {
-	return nullptr;
+	return m_graphicsQueue;
 }
 
 RHIQueue* VulkanRHI::GetComputeQueue() const
 {
-	return nullptr;
+	return m_computeQueue;
 }
 
 ST_RHISwapChainDesc VulkanRHI::GetSwapchainInfo()
@@ -2363,9 +2363,7 @@ void VulkanRHI::FlushMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RH
 
 RHISemaphore*& VulkanRHI::GetTextureCopySemaphore(uint32_t index)
 {
-	// TODO: 在此处插入 return 语句
-	RHISemaphore* semaphore = nullptr;
-	return semaphore;
+	return m_imageAvailableForTexturescopySemaphores[index];
 }
 
 void VulkanRHI::CreateInstance()
