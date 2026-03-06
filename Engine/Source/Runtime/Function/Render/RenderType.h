@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Common.h>
 #include <cstdint>
 #include <string>
@@ -7,6 +7,10 @@
 #include <functional>
 
 NAMESPACE_XYH_BEGIN
+
+#define RHI_MAX_PHYSICAL_DEVICE_NAME_SIZE 256U	// 物理设备名最大长度（字符数量）
+
+#define RHI_UUID_SIZE 16U	// ???
 
 #define RHI_SUBPASS_EXTERNAL (~0U)
 #define RHI_QUEUE_FAMILY_IGNORED (~0U)
@@ -36,24 +40,24 @@ enum ERHIStructureType : int
 	RHI_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO = 15,
 	RHI_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO = 16,
 	RHI_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO = 17,
-	RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO = 18,	// ������ɫ���׶δ�����Ϣ
-	RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO = 19,	// ��������״̬������Ϣ
-	RHI_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO = 20,	// ��������װ��״̬������Ϣ
+	RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO = 18,	// 管线着色器阶段创建信息
+	RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO = 19,	// 顶点输入状态创建信息
+	RHI_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO = 20,	// 管线输入装配状态创建信息
 	RHI_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO = 21,
 	RHI_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO = 22,
 	RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO = 23,
 	RHI_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO = 24,
 	RHI_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO = 25,
-	RHI_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO = 26,	// ������ɫ���״̬������Ϣ
+	RHI_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO = 26,	// 管线颜色混合状态创建信息
 	RHI_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO = 27,
 	RHI_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO = 28,
 	RHI_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO = 29,
-	RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO = 30,	// ���߲��ִ�����Ϣ
+	RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO = 30,	// 管线布局创建信息
 	RHI_STRUCTURE_TYPE_SAMPLER_CREATE_INFO = 31,
-	RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO = 32,	// �����������ִ�����Ϣ
+	RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO = 32,	// 描述符集布局创建信息
 	RHI_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO = 33,
 	RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO = 34,
-	RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET = 35,	// д��������
+	RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET = 35,	// 写描述符集
 	RHI_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET = 36,
 	RHI_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO = 37,
 	RHI_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO = 38,
@@ -980,7 +984,7 @@ enum ERHIFormat : int
 	RHI_FORMAT_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ����������־λ
+// 采样数量标志位
 enum ERHISampleCountFlagBits : int
 {
 	RHI_SAMPLE_COUNT_1_BIT = 0x00000001,
@@ -993,20 +997,20 @@ enum ERHISampleCountFlagBits : int
 	RHI_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ͼ�񲼾ַ�ʽ
+// 图像布局方式
 enum ERHIImageTiling : int
 {
-	RHI_IMAGE_TILING_OPTIMAL = 0,   // ���Ų��֣�ͨ������GPU����
-	RHI_IMAGE_TILING_LINEAR = 1,    // ���Բ��֣�ͨ������CPU����
-	RHI_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT = 1000158000,  // DRM��ʽ���η����֣��ض���ĳЩƽ̨
-	RHI_IMAGE_TILING_MAX_ENUM = 0x7FFFFFFF  // ���ö��ֵ
+	RHI_IMAGE_TILING_OPTIMAL = 0,   // 最优布局，通常用于GPU访问
+	RHI_IMAGE_TILING_LINEAR = 1,    // 线性布局，通常用于CPU访问
+	RHI_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT = 1000158000,  // DRM格式修饰符布局，特定于某些平台
+	RHI_IMAGE_TILING_MAX_ENUM = 0x7FFFFFFF  // 最大枚举值
 };
 
-// ͼ����ͼ����
+// 图像视图类型
 enum ERHIImageViewType : int
 {
-	RHI_IMAGE_VIEW_TYPE_1D = 0,	// һάͼ����ͼ����
-	RHI_IMAGE_VIEW_TYPE_2D = 1,	// Ĭ�ϵĶ�άͼ����ͼ����
+	RHI_IMAGE_VIEW_TYPE_1D = 0,	// 一维图像视图类型
+	RHI_IMAGE_VIEW_TYPE_2D = 1,	// 默认的二维图像视图类型
 	RHI_IMAGE_VIEW_TYPE_3D = 2,
 	RHI_IMAGE_VIEW_TYPE_CUBE = 3,
 	RHI_IMAGE_VIEW_TYPE_1D_ARRAY = 4,
@@ -1015,20 +1019,20 @@ enum ERHIImageViewType : int
 	RHI_IMAGE_VIEW_TYPE_MAX_ENUM = 0x7FFFFFFF
 };
 
-// �������ز���
+// 附件加载操作
 enum ERHIAttachmentLoadOp : int
 {
 	RHI_ATTACHMENT_LOAD_OP_LOAD = 0,
-	RHI_ATTACHMENT_LOAD_OP_CLEAR = 1,	// ���������ͨ��������ȾĿ��
+	RHI_ATTACHMENT_LOAD_OP_CLEAR = 1,	// 清除操作，通常用于渲染目标
 	RHI_ATTACHMENT_LOAD_OP_DONT_CARE = 2,
 	RHI_ATTACHMENT_LOAD_OP_NONE_EXT = 1000400000,
 	RHI_ATTACHMENT_LOAD_OP_MAX_ENUM = 0x7FFFFFFF
 };
 
-// �����洢����
+// 附件存储操作
 enum ERHIAttachmentStoreOp : int
 {
-	RHI_ATTACHMENT_STORE_OP_STORE = 0,	// �洢������ͨ��������ȾĿ��
+	RHI_ATTACHMENT_STORE_OP_STORE = 0,	// 存储操作，通常用于渲染目标
 	RHI_ATTACHMENT_STORE_OP_DONT_CARE = 1,
 	RHI_ATTACHMENT_STORE_OP_NONE_KHR = 1000301000,
 	RHI_ATTACHMENT_STORE_OP_NONE_QCOM = RHI_ATTACHMENT_STORE_OP_NONE_KHR,
@@ -1036,17 +1040,17 @@ enum ERHIAttachmentStoreOp : int
 	RHI_ATTACHMENT_STORE_OP_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ͼ��ʹ�ñ�־λ
+// 图像使用标志位
 enum ERHIImageUsageFlagBits
 {
 	RHI_IMAGE_USAGE_TRANSFER_SRC_BIT = 0x00000001,
 	RHI_IMAGE_USAGE_TRANSFER_DST_BIT = 0x00000002,
-	RHI_IMAGE_USAGE_SAMPLED_BIT = 0x00000004,	// ����ͼ��ͨ����������
+	RHI_IMAGE_USAGE_SAMPLED_BIT = 0x00000004,	// 采样图像，通常用于纹理
 	RHI_IMAGE_USAGE_STORAGE_BIT = 0x00000008,
-	RHI_IMAGE_USAGE_COLOR_ATTACHMENT_BIT = 0x00000010,	// ��ɫ������ͨ��������ȾĿ��
+	RHI_IMAGE_USAGE_COLOR_ATTACHMENT_BIT = 0x00000010,	// 颜色附件，通常用于渲染目标
 	RHI_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT = 0x00000020,
-	RHI_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT = 0x00000040,	// ��ʱ������ͨ��������ȾĿ�꣬������Ҫ�־ô洢
-	RHI_IMAGE_USAGE_INPUT_ATTACHMENT_BIT = 0x00000080,	// ���븽����ͨ��������Ⱦ�����е���ͨ��
+	RHI_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT = 0x00000040,	// 临时附件，通常用于渲染目标，但不需要持久存储
+	RHI_IMAGE_USAGE_INPUT_ATTACHMENT_BIT = 0x00000080,	// 输入附件，通常用于渲染管线中的子通道
 	RHI_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT = 0x00000200,
 	RHI_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR = 0x00000100,
 	RHI_IMAGE_USAGE_INVOCATION_MASK_BIT_HUAWEI = 0x00040000,
@@ -1078,12 +1082,12 @@ enum ERHIBufferUsageFlagBits
 	RHI_BUFFER_USAGE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
-// �ڴ����Ա�־λ
+// 内存属性标志位
 enum ERHIMemoryPropertyFlagBits
 {
-	RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT = 0x00000001,  // λ���豸�����ڴ��У�ͨ�����и����ܣ��������޷�ֱ����CPU����
-	RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT = 0x00000002,  // ����CPU���ʵ��ڴ棬��������ҪƵ���������ݵĳ���
-	RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT = 0x00000004, // �����ɼ���һ�µ��ڴ棬ȷ��CPU���ڴ��д���GPU�����ɼ�
+	RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT = 0x00000001,  // 位于设备本地内存中，通常具有高性能，但可能无法直接由CPU访问
+	RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT = 0x00000002,  // 可由CPU访问的内存，适用于需要频繁更新数据的场景
+	RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT = 0x00000004, // 主机可见且一致的内存，确保CPU对内存的写入对GPU立即可见
 	RHI_MEMORY_PROPERTY_HOST_CACHED_BIT = 0x00000008,
 	RHI_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT = 0x00000010,
 	RHI_MEMORY_PROPERTY_PROTECTED_BIT = 0x00000020,
@@ -1095,15 +1099,26 @@ enum ERHIMemoryPropertyFlagBits
 
 enum ERHISubpassContents
 {
-	RHI_SUBPASS_CONTENTS_INLINE = 0,	// �������ݣ��������ֱ�Ӱ�����Ⱦ����
-	RHI_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS = 1,	// �μ�����������ݣ���Ⱦ����洢�ڴμ����������
+	RHI_SUBPASS_CONTENTS_INLINE = 0,	// 内联内容，命令缓冲区直接包含渲染命令
+	RHI_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS = 1,	// 次级命令缓冲区内容，渲染命令存储在次级命令缓冲区中
 	RHI_SUBPASS_CONTENTS_MAX_ENUM = 0x7FFFFFFF
+};
+
+// 物理设备类型
+enum ERHIPhysicalDeviceType : int
+{
+	RHI_PHYSICAL_DEVICE_TYPE_OTHER = 0,
+	RHI_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU = 1,
+	RHI_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU = 2,
+	RHI_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU = 3,
+	RHI_PHYSICAL_DEVICE_TYPE_CPU = 4,
+	RHI_PHYSICAL_DEVICE_TYPE_MAX_ENUM = 0x7FFFFFFF
 };
 
 enum ERHIPipelineBindPoint : int
 {
-	RHI_PIPELINE_BIND_POINT_GRAPHICS = 0,	// ͼ�ι��߰󶨵㣬ͨ��������Ⱦ����
-	RHI_PIPELINE_BIND_POINT_COMPUTE = 1,	// ������߰󶨵㣬ͨ�����ڼ������
+	RHI_PIPELINE_BIND_POINT_GRAPHICS = 0,	// 图形管线绑定点，通常用于渲染操作
+	RHI_PIPELINE_BIND_POINT_COMPUTE = 1,	// 计算管线绑定点，通常用于计算操作
 	RHI_PIPELINE_BIND_POINT_RAY_TRACING_KHR = 1000165000,
 	RHI_PIPELINE_BIND_POINT_SUBPASS_SHADING_HUAWEI = 1000369003,
 	RHI_PIPELINE_BIND_POINT_RAY_TRACING_NV = RHI_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
@@ -1122,15 +1137,15 @@ enum ERHIIndexType
 
 enum ERHIImageLayout : int
 {
-	RHI_IMAGE_LAYOUT_UNDEFINED = 0,	// δ���岼�֣�ͼ������δ������
-	RHI_IMAGE_LAYOUT_GENERAL = 1,	// ͨ�ò��֣������ڶ�����;
-	RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL = 2,	// ��ɫ�������Ų��֣�ͨ��������ȾĿ��
-	RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL = 3,	// ���ģ�帽�����Ų��֣�ͨ���������ͼ��
+	RHI_IMAGE_LAYOUT_UNDEFINED = 0,	// 未定义布局，图像内容未被保留
+	RHI_IMAGE_LAYOUT_GENERAL = 1,	// 通用布局，适用于多种用途
+	RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL = 2,	// 颜色附件最优布局，通常用于渲染目标
+	RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL = 3,	// 深度模板附件最优布局，通常用于深度图像
 	RHI_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL = 4,
-	RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL = 5,	// ��ɫ��ֻ�����Ų��֣�ͨ����������
-	// ʹ�ó��������ơ���������ͼ��
-	RHI_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL = 6,	// ����Դ����
-	RHI_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL = 7,	// ����Ŀ�겼��
+	RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL = 5,	// 着色器只读最优布局，通常用于纹理
+	// 使用场景：复制、清除、填充图像
+	RHI_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL = 6,	// 传输源布局
+	RHI_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL = 7,	// 传输目标布局
 
 	RHI_IMAGE_LAYOUT_PREINITIALIZED = 8,
 	RHI_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL = 1000117000,
@@ -1139,7 +1154,7 @@ enum ERHIImageLayout : int
 	RHI_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL = 1000241001,
 	RHI_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL = 1000241002,
 	RHI_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL = 1000241003,
-	RHI_IMAGE_LAYOUT_PRESENT_SRC_KHR = 1000001002,	// ����Դ���֣�ͨ�����ڽ�����ͼ��
+	RHI_IMAGE_LAYOUT_PRESENT_SRC_KHR = 1000001002,	// 出现源布局，通常用于交换链图像
 	RHI_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT = 1000218000,
 	RHI_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR = 1000164003,
 	RHI_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR = 1000314001,
@@ -1153,20 +1168,20 @@ enum ERHIImageLayout : int
 	RHI_IMAGE_LAYOUT_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ����������
+// 描述符类型
 enum ERHIDescriptorType : int
 {
 	RHI_DESCRIPTOR_TYPE_SAMPLER = 0,
-	RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1,	// ���ͼ���������ͨ��������������
+	RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1,	// 组合图像采样器，通常用于纹理采样
 	RHI_DESCRIPTOR_TYPE_SAMPLED_IMAGE = 2,
 	RHI_DESCRIPTOR_TYPE_STORAGE_IMAGE = 3,
 	RHI_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER = 4,
 	RHI_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER = 5,
 	RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6,
-	RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7,	// �ɶ�д�Ĵ洢��������ͨ�����ڴ洢��������
+	RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7,	// 可读写的存储缓冲区，通常用于存储大量数据
 	RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
-	RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,	// ��̬�洢������������������ʱ���Ļ�����
-	RHI_DESCRIPTOR_TYPE_INPUT_ATTACHMENT = 10,	// ���븽����ͨ��������Ⱦ�����е���ͨ��
+	RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,	// 动态存储缓冲区，允许在运行时更改缓冲区
+	RHI_DESCRIPTOR_TYPE_INPUT_ATTACHMENT = 10,	// 输入附件，通常用于渲染管线中的子通道
 	RHI_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT = 1000138000,
 	RHI_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR = 1000150000,
 	RHI_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV = 1000165000,
@@ -1174,15 +1189,15 @@ enum ERHIDescriptorType : int
 	RHI_DESCRIPTOR_TYPE_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ��ɫ���׶α�־λ
+// 着色器阶段标志位
 enum ERHIShaderStageFlagBits : int
 {
-	RHI_SHADER_STAGE_VERTEX_BIT = 0x00000001,	// ������ɫ���׶Σ�ͨ�����ڴ�����������
-	RHI_SHADER_STAGE_TESSELLATION_CONTROL_BIT = 0x00000002,	// ϸ�ֿ�����ɫ���׶Σ�ͨ������ϸ������
+	RHI_SHADER_STAGE_VERTEX_BIT = 0x00000001,	// 顶点着色器阶段，通常用于处理顶点数据
+	RHI_SHADER_STAGE_TESSELLATION_CONTROL_BIT = 0x00000002,	// 细分控制着色器阶段，通常用于细分曲面
 	RHI_SHADER_STAGE_TESSELLATION_EVALUATION_BIT = 0x00000004,
 	RHI_SHADER_STAGE_GEOMETRY_BIT = 0x00000008,
-	RHI_SHADER_STAGE_FRAGMENT_BIT = 0x00000010,	// Ƭ����ɫ���׶Σ�ͨ�����ڴ�����������
-	RHI_SHADER_STAGE_COMPUTE_BIT = 0x00000020,	// ������ɫ���׶Σ�ͨ������ͨ�ü�������
+	RHI_SHADER_STAGE_FRAGMENT_BIT = 0x00000010,	// 片段着色器阶段，通常用于处理像素数据
+	RHI_SHADER_STAGE_COMPUTE_BIT = 0x00000020,	// 计算着色器阶段，通常用于通用计算任务
 	RHI_SHADER_STAGE_ALL_GRAPHICS = 0x0000001F,
 	RHI_SHADER_STAGE_ALL = 0x7FFFFFFF,
 	RHI_SHADER_STAGE_RAYGEN_BIT_KHR = 0x00000100,
@@ -1203,7 +1218,7 @@ enum ERHIShaderStageFlagBits : int
 	RHI_SHADER_STAGE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ������������ 
+// 顶点输入速率 
 enum ERHIVertexInputRate : int
 {
 	RHI_VERTEX_INPUT_RATE_VERTEX = 0,
@@ -1211,21 +1226,21 @@ enum ERHIVertexInputRate : int
 	RHI_VERTEX_INPUT_RATE_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ���泯��
+// 正面朝向
 enum ERHIFrontFace : int
 {
-	RHI_FRONT_FACE_COUNTER_CLOCKWISE = 0,	// ��ʱ�뷽��Ϊ���棬ͨ�����ڶ������ε�����
+	RHI_FRONT_FACE_COUNTER_CLOCKWISE = 0,	// 逆时针方向为正面，通常用于定义多边形的正面
 	RHI_FRONT_FACE_CLOCKWISE = 1,
 	RHI_FRONT_FACE_MAX_ENUM = 0x7FFFFFFF
 };
 
-// �߼�����
+// 逻辑操作
 enum ERHILogicOp : int
 {
 	RHI_LOGIC_OP_CLEAR = 0,
 	RHI_LOGIC_OP_AND = 1,
 	RHI_LOGIC_OP_AND_REVERSE = 2,
-	RHI_LOGIC_OP_COPY = 3,	// ���Ʋ�����ͨ������ֱ�Ӹ�������ֵ
+	RHI_LOGIC_OP_COPY = 3,	// 复制操作，通常用于直接复制像素值
 	RHI_LOGIC_OP_AND_INVERTED = 4,
 	RHI_LOGIC_OP_NO_OP = 5,
 	RHI_LOGIC_OP_XOR = 6,
@@ -1241,11 +1256,11 @@ enum ERHILogicOp : int
 	RHI_LOGIC_OP_MAX_ENUM = 0x7FFFFFFF
 };
 
-// �Ƚϲ���
+// 比较操作
 enum ERHICompareOp : int
 {
 	RHI_COMPARE_OP_NEVER = 0,
-	RHI_COMPARE_OP_LESS = 1,	// С�ڱȽϲ�����ͨ��������Ȳ���
+	RHI_COMPARE_OP_LESS = 1,	// 小于比较操作，通常用于深度测试
 	RHI_COMPARE_OP_EQUAL = 2,
 	RHI_COMPARE_OP_LESS_OR_EQUAL = 3,
 	RHI_COMPARE_OP_GREATER = 4,
@@ -1255,23 +1270,23 @@ enum ERHICompareOp : int
 	RHI_COMPARE_OP_MAX_ENUM = 0x7FFFFFFF
 };
 
-// �����ģʽ
+// 多边形模式
 enum ERHIPolygonMode : int
 {
-	RHI_POLYGON_MODE_FILL = 0,	// ���ģʽ��ͨ������ʵ�Ķ����
+	RHI_POLYGON_MODE_FILL = 0,	// 填充模式，通常用于实心多边形
 	RHI_POLYGON_MODE_LINE = 1,
 	RHI_POLYGON_MODE_POINT = 2,
 	RHI_POLYGON_MODE_FILL_RECTANGLE_NV = 1000153000,
 	RHI_POLYGON_MODE_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ͼԪ��������
+// 图元拓扑类型
 enum ERHIPrimitiveTopology : int
 {
 	RHI_PRIMITIVE_TOPOLOGY_POINT_LIST = 0,
 	RHI_PRIMITIVE_TOPOLOGY_LINE_LIST = 1,
 	RHI_PRIMITIVE_TOPOLOGY_LINE_STRIP = 2,
-	RHI_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3,	// �������б���ͨ��������Ⱦ����������
+	RHI_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3,	// 三角形列表，通常用于渲染三角形网格
 	RHI_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4,
 	RHI_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN = 5,
 	RHI_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY = 6,
@@ -1282,10 +1297,10 @@ enum ERHIPrimitiveTopology : int
 	RHI_PRIMITIVE_TOPOLOGY_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ��ϲ���
+// 混合操作
 enum ERHIBlendOp : int
 {
-	RHI_BLEND_OP_ADD = 0,	// �ӷ���ϲ�����ͨ�����ڽ�Դ��ɫ��Ŀ����ɫ���
+	RHI_BLEND_OP_ADD = 0,	// 加法混合操作，通常用于将源颜色和目标颜色相加
 	RHI_BLEND_OP_SUBTRACT = 1,
 	RHI_BLEND_OP_REVERSE_SUBTRACT = 2,
 	RHI_BLEND_OP_MIN = 3,
@@ -1339,7 +1354,7 @@ enum ERHIBlendOp : int
 	RHI_BLEND_OP_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ģ�����
+// 模板操作
 enum ERHIStencilOp : int
 {
 	RHI_STENCIL_OP_KEEP = 0,
@@ -1353,11 +1368,11 @@ enum ERHIStencilOp : int
 	RHI_STENCIL_OP_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ��̬״̬
+// 动态状态
 enum ERHIDynamicState : int
 {
-	RHI_DYNAMIC_STATE_VIEWPORT = 0,	// �ӿڶ�̬״̬��ͨ������������Ⱦ����
-	RHI_DYNAMIC_STATE_SCISSOR = 1,	// �ü����ζ�̬״̬��ͨ������������Ⱦ����
+	RHI_DYNAMIC_STATE_VIEWPORT = 0,	// 视口动态状态，通常用于设置渲染区域
+	RHI_DYNAMIC_STATE_SCISSOR = 1,	// 裁剪矩形动态状态，通常用于限制渲染区域
 	RHI_DYNAMIC_STATE_LINE_WIDTH = 2,
 	RHI_DYNAMIC_STATE_DEPTH_BIAS = 3,
 	RHI_DYNAMIC_STATE_BLEND_CONSTANTS = 4,
@@ -1396,19 +1411,19 @@ enum ERHIDynamicState : int
 	RHI_DYNAMIC_STATE_MAX_ENUM = 0x7FFFFFFF
 };
 
-// �����������
+// 命令缓冲区级别
 enum ERHICommandBufferLevel : int
 {
-	RHI_COMMAND_BUFFER_LEVEL_PRIMARY = 0,	// �������������ͨ������ֱ���ύ������ִ��
-	RHI_COMMAND_BUFFER_LEVEL_SECONDARY = 1,	// �μ������������ͨ������Ƕ���������������
-	RHI_COMMAND_BUFFER_LEVEL_MAX_ENUM = 0x7FFFFFFF	// ���ö��ֵ
+	RHI_COMMAND_BUFFER_LEVEL_PRIMARY = 0,	// 主命令缓冲区级别，通常用于直接提交到队列执行
+	RHI_COMMAND_BUFFER_LEVEL_SECONDARY = 1,	// 次级命令缓冲区级别，通常用于嵌套在主命令缓冲区中
+	RHI_COMMAND_BUFFER_LEVEL_MAX_ENUM = 0x7FFFFFFF	// 最大枚举值
 };
 
-// �������
+// 混合因子
 enum ERHIBlendFactor
 {
-	RHI_BLEND_FACTOR_ZERO = 0,	// ����0����ʾ��ȫ��ʹ��Դ��ɫ
-	RHI_BLEND_FACTOR_ONE = 1,	// ����1����ʾ��ȫʹ��Դ��ɫ
+	RHI_BLEND_FACTOR_ZERO = 0,	// 常量0，表示完全不使用源颜色
+	RHI_BLEND_FACTOR_ONE = 1,	// 常量1，表示完全使用源颜色
 	RHI_BLEND_FACTOR_SRC_COLOR = 2,
 	RHI_BLEND_FACTOR_ONE_MINUS_SRC_COLOR = 3,
 	RHI_BLEND_FACTOR_DST_COLOR = 4,
@@ -1429,13 +1444,13 @@ enum ERHIBlendFactor
 	RHI_BLEND_FACTOR_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ͼ�����־λ
+// 图像方面标志位
 enum ERHIImageAspectFlagBits
 {
-	RHI_IMAGE_ASPECT_COLOR_BIT = 0x00000001,	// ��ɫ���棬ͨ�����ڲ�ɫͼ��
-	RHI_IMAGE_ASPECT_DEPTH_BIT = 0x00000002,	// ��ȷ��棬ͨ���������ͼ��
+	RHI_IMAGE_ASPECT_COLOR_BIT = 0x00000001,	// 颜色方面，通常用于彩色图像
+	RHI_IMAGE_ASPECT_DEPTH_BIT = 0x00000002,	// 深度方面，通常用于深度图像
 	RHI_IMAGE_ASPECT_STENCIL_BIT = 0x00000004,
-	RHI_IMAGE_ASPECT_METADATA_BIT = 0x00000008,	// Ԫ���ݷ��棬ͨ�����ڴ洢������Ϣ
+	RHI_IMAGE_ASPECT_METADATA_BIT = 0x00000008,	// 元数据方面，通常用于存储附加信息
 	RHI_IMAGE_ASPECT_PLANE_0_BIT = 0x00000010,
 	RHI_IMAGE_ASPECT_PLANE_1_BIT = 0x00000020,
 	RHI_IMAGE_ASPECT_PLANE_2_BIT = 0x00000040,
@@ -1458,10 +1473,10 @@ enum ERHIPipelineStageFlagBits
 	RHI_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT = 0x00000010,
 	RHI_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT = 0x00000020,
 	RHI_PIPELINE_STAGE_GEOMETRY_SHADER_BIT = 0x00000040,
-	RHI_PIPELINE_STAGE_FRAGMENT_SHADER_BIT = 0x00000080,	// Ƭ����ɫ���׶� - ִ������/Ƭ����ɫ��
+	RHI_PIPELINE_STAGE_FRAGMENT_SHADER_BIT = 0x00000080,	// 片段着色器阶段 - 执行像素/片段着色器
 	RHI_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT = 0x00000100,
 	RHI_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT = 0x00000200,
-	RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT = 0x00000400,	// ��ɫ��������׶� - ����ɫ����д����ɫ����
+	RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT = 0x00000400,	// 颜色附件输出阶段 - 将颜色数据写入颜色附件
 	RHI_PIPELINE_STAGE_COMPUTE_SHADER_BIT = 0x00000800,
 	RHI_PIPELINE_STAGE_TRANSFER_BIT = 0x00001000,
 	RHI_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT = 0x00002000,
@@ -1484,7 +1499,7 @@ enum ERHIPipelineStageFlagBits
 	RHI_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ���ʱ�־λ
+// 访问标志位
 enum ERHIAccessFlagBits
 {
 	RHI_ACCESS_INDIRECT_COMMAND_READ_BIT = 0x00000001,
@@ -1492,10 +1507,10 @@ enum ERHIAccessFlagBits
 	RHI_ACCESS_VERTEX_ATTRIBUTE_READ_BIT = 0x00000004,
 	RHI_ACCESS_UNIFORM_READ_BIT = 0x00000008,
 	RHI_ACCESS_INPUT_ATTACHMENT_READ_BIT = 0x00000010,
-	RHI_ACCESS_SHADER_READ_BIT = 0x00000020,	// ��ɫ����ȡ���� - ��������ɫ����ȡͼ��򻺳�������
+	RHI_ACCESS_SHADER_READ_BIT = 0x00000020,	// 着色器读取访问 - 允许从着色器读取图像或缓冲区数据
 	RHI_ACCESS_SHADER_WRITE_BIT = 0x00000040,
 	RHI_ACCESS_COLOR_ATTACHMENT_READ_BIT = 0x00000080,
-	RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT = 0x00000100,	// ��ɫ����д����� - ����д����ȾĿ����ɫ����
+	RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT = 0x00000100,	// 颜色附件写入访问 - 允许写入渲染目标颜色附件
 	RHI_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT = 0x00000200,
 	RHI_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT = 0x00000400,
 	RHI_ACCESS_TRANSFER_READ_BIT = 0x00000800,
@@ -1522,10 +1537,10 @@ enum ERHIAccessFlagBits
 	RHI_ACCESS_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ������־λ
+// 依赖标志位
 enum ERHIDependencyFlagBits
 {
-	RHI_DEPENDENCY_BY_REGION_BIT = 0x00000001,    // ������������� - ��������ȾĿ�����������֮����в���ִ��, ͨ������ƽ����Ⱦ�ܹ��������ȾЧ��
+	RHI_DEPENDENCY_BY_REGION_BIT = 0x00000001,    // 基于区域的依赖 - 允许在渲染目标的相邻区域之间进行并行执行, 通常用于平铺渲染架构，提高渲染效率
 	RHI_DEPENDENCY_DEVICE_GROUP_BIT = 0x00000004,
 	RHI_DEPENDENCY_VIEW_LOCAL_BIT = 0x00000002,
 	RHI_DEPENDENCY_VIEW_LOCAL_BIT_KHR = RHI_DEPENDENCY_VIEW_LOCAL_BIT,
@@ -1533,7 +1548,7 @@ enum ERHIDependencyFlagBits
 	RHI_DEPENDENCY_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
-// �޳�ģʽ
+// 剔除模式
 enum ERHICullModeFlagBits
 {
 	RHI_CULL_MODE_NONE = 0,
@@ -1543,7 +1558,7 @@ enum ERHICullModeFlagBits
 	RHI_CULL_MODE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ��ɫ������־λ
+// 颜色分量标志位
 enum ERHIColorComponentFlagBits
 {
 	RHI_COLOR_COMPONENT_R_BIT = 0x00000001,
@@ -1553,7 +1568,7 @@ enum ERHIColorComponentFlagBits
 	RHI_COLOR_COMPONENT_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ����������
+// 过滤器类型
 enum ERHIFilter : int
 {
 	RHI_FILTER_NEAREST = 0,
@@ -1563,7 +1578,7 @@ enum ERHIFilter : int
 	RHI_FILTER_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ������Ѱַģʽ
+// 采样器寻址模式
 enum ERHISamplerMipmapMode : int
 {
 	RHI_SAMPLER_MIPMAP_MODE_NEAREST = 0,
@@ -1571,7 +1586,7 @@ enum ERHISamplerMipmapMode : int
 	RHI_SAMPLER_MIPMAP_MODE_MAX_ENUM = 0x7FFFFFFF
 };
 
-// ��������ַģʽ
+// 采样器地址模式
 enum ERHISamplerAddressMode : int
 {
 	RHI_SAMPLER_ADDRESS_MODE_REPEAT = 0,
@@ -1583,7 +1598,7 @@ enum ERHISamplerAddressMode : int
 	RHI_SAMPLER_ADDRESS_MODE_MAX_ENUM = 0x7FFFFFFF
 };
 
-// �߿���ɫ
+// 边框颜色
 enum ERHIBorderColor : int
 {
 	RHI_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK = 0,
@@ -1661,19 +1676,19 @@ typedef uint64_t RHIDeviceSize;
 typedef uint32_t RHIFlags;
 typedef uint32_t RHISampleMask;
 
-// ��Ⱦ��������
+// 渲染管线类型
 enum class ERENDER_PIPELINE_TYPE : uint8_t
 {
-	FORWARD_PIPELINE = 0,   // ������Ⱦ����
-	DEFERRED_PIPELINE,  // �ӳ���Ⱦ����
-	PIPELINE_TYPE_COUNT // ��Ⱦ������������
+	FORWARD_PIPELINE = 0,   // 正向渲染管线
+	DEFERRED_PIPELINE,  // 延迟渲染管线
+	PIPELINE_TYPE_COUNT // 渲染管线类型数量
 };
 
-// ͼ������
+// 图像类型
 enum class EXYH_IMAGE_TYPE : uint8_t
 {
-	XYH_IMAGE_TYPE_UNKNOWM = 0, // δ֪����
-	XYH_IMAGE_TYPE_2D   // 2Dͼ��
+	XYH_IMAGE_TYPE_UNKNOWM = 0, // 未知类型
+	XYH_IMAGE_TYPE_2D   // 2D图像
 };
 
 class BufferData
@@ -1699,7 +1714,7 @@ public:
 	void* m_data{ nullptr };
 };
 
-// ��������
+// 纹理数据
 class TextureData
 {
 public:
@@ -1719,20 +1734,20 @@ public:
 	uint32_t m_depth{ 0 };
 	uint32_t m_mipLevels{ 0 };
 	uint32_t m_arrayLayers{ 0 };
-	void* m_pixels{ nullptr };	// ͼƬ����
+	void* m_pixels{ nullptr };	// 图片数据
 
-	ERHIFormat m_format = RHI_FORMAT_MAX_ENUM;  // ���ظ�ʽ
+	ERHIFormat m_format = RHI_FORMAT_MAX_ENUM;  // 像素格式
 	EXYH_IMAGE_TYPE m_type{ EXYH_IMAGE_TYPE::XYH_IMAGE_TYPE_UNKNOWM };
 };
 
-struct ST_MeshSourceDesc    // ������Դ����
+struct ST_MeshSourceDesc    // 网格资源描述
 {
 public:
 	bool operator==(const ST_MeshSourceDesc& rhs) const { return m_meshFile == rhs.m_meshFile; }
 	size_t GetHashValue() const { return std::hash<std::string> {}(m_meshFile); }
 
 public:
-	std::string m_meshFile; // �����ļ�·��
+	std::string m_meshFile; // 网格文件路径
 };
 
 struct ST_MaterialSourceDesc
@@ -1760,26 +1775,26 @@ public:
 	}
 
 public:
-	std::string m_baseColorFile;    // ������ɫ��ͼ�ļ�·��
-	std::string m_metallicRoughnessFile;    // ������-�ֲڶ���ͼ�ļ�·��
-	std::string m_normalFile;   // ������ͼ�ļ�·��
-	std::string m_occlusionFile;    // �ڵ���ͼ�ļ�·��
-	std::string m_emissiveFile; // �Է�����ͼ�ļ�·��
+	std::string m_baseColorFile;    // 基础颜色贴图文件路径
+	std::string m_metallicRoughnessFile;    // 金属度-粗糙度贴图文件路径
+	std::string m_normalFile;   // 法线贴图文件路径
+	std::string m_occlusionFile;    // 遮挡贴图文件路径
+	std::string m_emissiveFile; // 自发光贴图文件路径
 };
 
-struct ST_StaticMeshData    // ��̬��������
+struct ST_StaticMeshData    // 静态网格数据
 {
-	std::shared_ptr<BufferData> m_vertexBuffer; // ���㻺����
-	std::shared_ptr<BufferData> m_indexBuffer;  // ����������
+	std::shared_ptr<BufferData> m_vertexBuffer; // 顶点缓冲区
+	std::shared_ptr<BufferData> m_indexBuffer;  // 索引缓冲区
 };
 
-struct ST_RenderMeshData    // ��Ⱦ��������
+struct ST_RenderMeshData    // 渲染网格数据
 {
-	ST_StaticMeshData m_staticMeshData; // ��̬��������
-	std::shared_ptr<BufferData> m_skeletonBindingBuffer;    // �����󶨻�����
+	ST_StaticMeshData m_staticMeshData; // 静态网格数据
+	std::shared_ptr<BufferData> m_skeletonBindingBuffer;    // 骨骼绑定缓冲区
 };
 
-struct ST_RenderMaterialData    // ��Ⱦ��������
+struct ST_RenderMaterialData    // 渲染材质数据
 {
 	std::shared_ptr<TextureData> m_base_color_texture;
 	std::shared_ptr<TextureData> m_metallic_roughness_texture;

@@ -1994,6 +1994,152 @@ void VulkanRHI::WaitForFences()
 
 void VulkanRHI::GetPhysicalDeviceProperties(ST_RHIPhysicalDeviceProperties* pProperties)
 {
+	VkPhysicalDeviceProperties vkPhysicalDeviceProperties;
+	vkGetPhysicalDeviceProperties(m_physicalDevice, &vkPhysicalDeviceProperties);
+
+	pProperties->m_apiVersion = vkPhysicalDeviceProperties.apiVersion;
+	pProperties->m_driverVersion = vkPhysicalDeviceProperties.driverVersion;
+	pProperties->m_vendorID = vkPhysicalDeviceProperties.vendorID;
+	pProperties->m_deviceID = vkPhysicalDeviceProperties.deviceID;
+	pProperties->m_deviceType = (ERHIPhysicalDeviceType)vkPhysicalDeviceProperties.deviceType;
+	for (uint32_t i = 0; i < RHI_MAX_PHYSICAL_DEVICE_NAME_SIZE; i++)
+	{
+		pProperties->m_deviceName[i] = vkPhysicalDeviceProperties.deviceName[i];
+	}
+	for (uint32_t i = 0; i < RHI_UUID_SIZE; i++)
+	{
+		pProperties->m_pipelineCacheUUID[i] = vkPhysicalDeviceProperties.pipelineCacheUUID[i];
+	}
+	pProperties->m_sparseProperties.m_residencyStandard2DBlockShape = (VkBool32)vkPhysicalDeviceProperties.sparseProperties.residencyStandard2DBlockShape;
+	pProperties->m_sparseProperties.m_residencyStandard2DMultisampleBlockShape = (VkBool32)vkPhysicalDeviceProperties.sparseProperties.residencyStandard2DMultisampleBlockShape;
+	pProperties->m_sparseProperties.m_residencyStandard3DBlockShape = (VkBool32)vkPhysicalDeviceProperties.sparseProperties.residencyStandard3DBlockShape;
+	pProperties->m_sparseProperties.m_residencyAlignedMipSize = (VkBool32)vkPhysicalDeviceProperties.sparseProperties.residencyAlignedMipSize;
+	pProperties->m_sparseProperties.m_residencyNonResidentStrict = (VkBool32)vkPhysicalDeviceProperties.sparseProperties.residencyNonResidentStrict;
+
+	pProperties->m_limits.m_maxImageDimension1D = vkPhysicalDeviceProperties.limits.maxImageDimension1D;
+	pProperties->m_limits.m_maxImageDimension2D = vkPhysicalDeviceProperties.limits.maxImageDimension2D;
+	pProperties->m_limits.m_maxImageDimension3D = vkPhysicalDeviceProperties.limits.maxImageDimension3D;
+	pProperties->m_limits.m_maxImageDimensionCube = vkPhysicalDeviceProperties.limits.maxImageDimensionCube;
+	pProperties->m_limits.m_maxImageArrayLayers = vkPhysicalDeviceProperties.limits.maxImageArrayLayers;
+	pProperties->m_limits.m_maxTexelBufferElements = vkPhysicalDeviceProperties.limits.maxTexelBufferElements;
+	pProperties->m_limits.m_maxUniformBufferRange = vkPhysicalDeviceProperties.limits.maxUniformBufferRange;
+	pProperties->m_limits.m_maxStorageBufferRange = vkPhysicalDeviceProperties.limits.maxStorageBufferRange;
+	pProperties->m_limits.m_maxPushConstantsSize = vkPhysicalDeviceProperties.limits.maxPushConstantsSize;
+	pProperties->m_limits.m_maxMemoryAllocationCount = vkPhysicalDeviceProperties.limits.maxMemoryAllocationCount;
+	pProperties->m_limits.m_maxSamplerAllocationCount = vkPhysicalDeviceProperties.limits.maxSamplerAllocationCount;
+	pProperties->m_limits.m_bufferImageGranularity = (VkDeviceSize)vkPhysicalDeviceProperties.limits.bufferImageGranularity;
+	pProperties->m_limits.m_sparseAddressSpaceSize = (VkDeviceSize)vkPhysicalDeviceProperties.limits.sparseAddressSpaceSize;
+	pProperties->m_limits.m_maxBoundDescriptorSets = vkPhysicalDeviceProperties.limits.maxBoundDescriptorSets;
+	pProperties->m_limits.m_maxPerStageDescriptorSamplers = vkPhysicalDeviceProperties.limits.maxPerStageDescriptorSamplers;
+	pProperties->m_limits.m_maxPerStageDescriptorUniformBuffers = vkPhysicalDeviceProperties.limits.maxPerStageDescriptorUniformBuffers;
+	pProperties->m_limits.m_maxPerStageDescriptorStorageBuffers = vkPhysicalDeviceProperties.limits.maxPerStageDescriptorStorageBuffers;
+	pProperties->m_limits.m_maxPerStageDescriptorSampledImages = vkPhysicalDeviceProperties.limits.maxPerStageDescriptorSampledImages;
+	pProperties->m_limits.m_maxPerStageDescriptorStorageImages = vkPhysicalDeviceProperties.limits.maxPerStageDescriptorStorageImages;
+	pProperties->m_limits.m_maxPerStageDescriptorInputAttachments = vkPhysicalDeviceProperties.limits.maxPerStageDescriptorInputAttachments;
+	pProperties->m_limits.m_maxPerStageResources = vkPhysicalDeviceProperties.limits.maxPerStageResources;
+	pProperties->m_limits.m_maxDescriptorSetSamplers = vkPhysicalDeviceProperties.limits.maxDescriptorSetSamplers;
+	pProperties->m_limits.m_maxDescriptorSetUniformBuffers = vkPhysicalDeviceProperties.limits.maxDescriptorSetUniformBuffers;
+	pProperties->m_limits.m_maxDescriptorSetUniformBuffersDynamic = vkPhysicalDeviceProperties.limits.maxDescriptorSetUniformBuffersDynamic;
+	pProperties->m_limits.m_maxDescriptorSetStorageBuffers = vkPhysicalDeviceProperties.limits.maxDescriptorSetStorageBuffers;
+	pProperties->m_limits.m_maxDescriptorSetStorageBuffersDynamic = vkPhysicalDeviceProperties.limits.maxDescriptorSetStorageBuffersDynamic;
+	pProperties->m_limits.m_maxDescriptorSetSampledImages = vkPhysicalDeviceProperties.limits.maxDescriptorSetSampledImages;
+	pProperties->m_limits.m_maxDescriptorSetStorageImages = vkPhysicalDeviceProperties.limits.maxDescriptorSetStorageImages;
+	pProperties->m_limits.m_maxDescriptorSetInputAttachments = vkPhysicalDeviceProperties.limits.maxDescriptorSetInputAttachments;
+	pProperties->m_limits.m_maxVertexInputAttributes = vkPhysicalDeviceProperties.limits.maxVertexInputAttributes;
+	pProperties->m_limits.m_maxVertexInputBindings = vkPhysicalDeviceProperties.limits.maxVertexInputBindings;
+	pProperties->m_limits.m_maxVertexInputAttributeOffset = vkPhysicalDeviceProperties.limits.maxVertexInputAttributeOffset;
+	pProperties->m_limits.m_maxVertexInputBindingStride = vkPhysicalDeviceProperties.limits.maxVertexInputBindingStride;
+	pProperties->m_limits.m_maxVertexOutputComponents = vkPhysicalDeviceProperties.limits.maxVertexOutputComponents;
+	pProperties->m_limits.m_maxTessellationGenerationLevel = vkPhysicalDeviceProperties.limits.maxTessellationGenerationLevel;
+	pProperties->m_limits.m_maxTessellationPatchSize = vkPhysicalDeviceProperties.limits.maxTessellationPatchSize;
+	pProperties->m_limits.m_maxTessellationControlPerVertexInputComponents = vkPhysicalDeviceProperties.limits.maxTessellationControlPerVertexInputComponents;
+	pProperties->m_limits.m_maxTessellationControlPerVertexOutputComponents = vkPhysicalDeviceProperties.limits.maxTessellationControlPerVertexOutputComponents;
+	pProperties->m_limits.m_maxTessellationControlPerPatchOutputComponents = vkPhysicalDeviceProperties.limits.maxTessellationControlPerPatchOutputComponents;
+	pProperties->m_limits.m_maxTessellationControlTotalOutputComponents = vkPhysicalDeviceProperties.limits.maxTessellationControlTotalOutputComponents;
+	pProperties->m_limits.m_maxTessellationEvaluationInputComponents = vkPhysicalDeviceProperties.limits.maxTessellationEvaluationInputComponents;
+	pProperties->m_limits.m_maxTessellationEvaluationOutputComponents = vkPhysicalDeviceProperties.limits.maxTessellationEvaluationOutputComponents;
+	pProperties->m_limits.m_maxGeometryShaderInvocations = vkPhysicalDeviceProperties.limits.maxGeometryShaderInvocations;
+	pProperties->m_limits.m_maxGeometryInputComponents = vkPhysicalDeviceProperties.limits.maxGeometryInputComponents;
+	pProperties->m_limits.m_maxGeometryOutputComponents = vkPhysicalDeviceProperties.limits.maxGeometryOutputComponents;
+	pProperties->m_limits.m_maxGeometryOutputVertices = vkPhysicalDeviceProperties.limits.maxGeometryOutputVertices;
+	pProperties->m_limits.m_maxGeometryTotalOutputComponents = vkPhysicalDeviceProperties.limits.maxGeometryTotalOutputComponents;
+	pProperties->m_limits.m_maxFragmentInputComponents = vkPhysicalDeviceProperties.limits.maxFragmentInputComponents;
+	pProperties->m_limits.m_maxFragmentOutputAttachments = vkPhysicalDeviceProperties.limits.maxFragmentOutputAttachments;
+	pProperties->m_limits.m_maxFragmentDualSrcAttachments = vkPhysicalDeviceProperties.limits.maxFragmentDualSrcAttachments;
+	pProperties->m_limits.m_maxFragmentCombinedOutputResources = vkPhysicalDeviceProperties.limits.maxFragmentCombinedOutputResources;
+	pProperties->m_limits.m_maxComputeSharedMemorySize = vkPhysicalDeviceProperties.limits.maxComputeSharedMemorySize;
+	for (uint32_t i = 0; i < 3; i++)
+	{
+		pProperties->m_limits.m_maxComputeWorkGroupCount[i] = vkPhysicalDeviceProperties.limits.maxComputeWorkGroupCount[i];
+	}
+	pProperties->m_limits.m_maxComputeWorkGroupInvocations = vkPhysicalDeviceProperties.limits.maxComputeWorkGroupInvocations;
+	for (uint32_t i = 0; i < 3; i++)
+	{
+		pProperties->m_limits.m_maxComputeWorkGroupSize[i] = vkPhysicalDeviceProperties.limits.maxComputeWorkGroupSize[i];
+	}
+	pProperties->m_limits.m_subPixelPrecisionBits = vkPhysicalDeviceProperties.limits.subPixelPrecisionBits;
+	pProperties->m_limits.m_subTexelPrecisionBits = vkPhysicalDeviceProperties.limits.subTexelPrecisionBits;
+	pProperties->m_limits.m_mipmapPrecisionBits = vkPhysicalDeviceProperties.limits.mipmapPrecisionBits;
+	pProperties->m_limits.m_maxDrawIndexedIndexValue = vkPhysicalDeviceProperties.limits.maxDrawIndexedIndexValue;
+	pProperties->m_limits.m_maxDrawIndirectCount = vkPhysicalDeviceProperties.limits.maxDrawIndirectCount;
+	pProperties->m_limits.m_maxSamplerLodBias = vkPhysicalDeviceProperties.limits.maxSamplerLodBias;
+	pProperties->m_limits.m_maxSamplerAnisotropy = vkPhysicalDeviceProperties.limits.maxSamplerAnisotropy;
+	pProperties->m_limits.m_maxViewports = vkPhysicalDeviceProperties.limits.maxViewports;
+	for (uint32_t i = 0; i < 2; i++)
+	{
+		pProperties->m_limits.m_maxViewportDimensions[i] = vkPhysicalDeviceProperties.limits.maxViewportDimensions[i];
+	}
+	for (uint32_t i = 0; i < 2; i++)
+	{
+		pProperties->m_limits.m_viewportBoundsRange[i] = vkPhysicalDeviceProperties.limits.viewportBoundsRange[i];
+	}
+	pProperties->m_limits.m_viewportSubPixelBits = vkPhysicalDeviceProperties.limits.viewportSubPixelBits;
+	pProperties->m_limits.m_minMemoryMapAlignment = vkPhysicalDeviceProperties.limits.minMemoryMapAlignment;
+	pProperties->m_limits.m_minTexelBufferOffsetAlignment = (VkDeviceSize)vkPhysicalDeviceProperties.limits.minTexelBufferOffsetAlignment;
+	pProperties->m_limits.m_minUniformBufferOffsetAlignment = (VkDeviceSize)vkPhysicalDeviceProperties.limits.minUniformBufferOffsetAlignment;
+	pProperties->m_limits.m_minStorageBufferOffsetAlignment = (VkDeviceSize)vkPhysicalDeviceProperties.limits.minStorageBufferOffsetAlignment;
+	pProperties->m_limits.m_minTexelOffset = vkPhysicalDeviceProperties.limits.minTexelOffset;
+	pProperties->m_limits.m_maxTexelOffset = vkPhysicalDeviceProperties.limits.maxTexelOffset;
+	pProperties->m_limits.m_minTexelGatherOffset = vkPhysicalDeviceProperties.limits.minTexelGatherOffset;
+	pProperties->m_limits.m_maxTexelGatherOffset = vkPhysicalDeviceProperties.limits.maxTexelGatherOffset;
+	pProperties->m_limits.m_minInterpolationOffset = vkPhysicalDeviceProperties.limits.minInterpolationOffset;
+	pProperties->m_limits.m_maxInterpolationOffset = vkPhysicalDeviceProperties.limits.maxInterpolationOffset;
+	pProperties->m_limits.m_subPixelInterpolationOffsetBits = vkPhysicalDeviceProperties.limits.subPixelInterpolationOffsetBits;
+	pProperties->m_limits.m_maxFramebufferWidth = vkPhysicalDeviceProperties.limits.maxFramebufferWidth;
+	pProperties->m_limits.m_maxFramebufferHeight = vkPhysicalDeviceProperties.limits.maxFramebufferHeight;
+	pProperties->m_limits.m_maxFramebufferLayers = vkPhysicalDeviceProperties.limits.maxFramebufferLayers;
+	pProperties->m_limits.m_framebufferColorSampleCounts = (VkSampleCountFlags)vkPhysicalDeviceProperties.limits.framebufferColorSampleCounts;
+	pProperties->m_limits.m_framebufferDepthSampleCounts = (VkSampleCountFlags)vkPhysicalDeviceProperties.limits.framebufferDepthSampleCounts;
+	pProperties->m_limits.m_framebufferStencilSampleCounts = (VkSampleCountFlags)vkPhysicalDeviceProperties.limits.framebufferStencilSampleCounts;
+	pProperties->m_limits.m_framebufferNoAttachmentsSampleCounts = (VkSampleCountFlags)vkPhysicalDeviceProperties.limits.framebufferNoAttachmentsSampleCounts;
+	pProperties->m_limits.m_maxColorAttachments = vkPhysicalDeviceProperties.limits.maxColorAttachments;
+	pProperties->m_limits.m_sampledImageColorSampleCounts = (VkSampleCountFlags)vkPhysicalDeviceProperties.limits.sampledImageColorSampleCounts;
+	pProperties->m_limits.m_sampledImageIntegerSampleCounts = (VkSampleCountFlags)vkPhysicalDeviceProperties.limits.sampledImageIntegerSampleCounts;
+	pProperties->m_limits.m_sampledImageDepthSampleCounts = (VkSampleCountFlags)vkPhysicalDeviceProperties.limits.sampledImageDepthSampleCounts;
+	pProperties->m_limits.m_sampledImageStencilSampleCounts = (VkSampleCountFlags)vkPhysicalDeviceProperties.limits.sampledImageStencilSampleCounts;
+	pProperties->m_limits.m_storageImageSampleCounts = (VkSampleCountFlags)vkPhysicalDeviceProperties.limits.storageImageSampleCounts;
+	pProperties->m_limits.m_maxSampleMaskWords = vkPhysicalDeviceProperties.limits.maxSampleMaskWords;
+	pProperties->m_limits.m_timestampComputeAndGraphics = (VkBool32)vkPhysicalDeviceProperties.limits.timestampComputeAndGraphics;
+	pProperties->m_limits.m_timestampPeriod = vkPhysicalDeviceProperties.limits.timestampPeriod;
+	pProperties->m_limits.m_maxClipDistances = vkPhysicalDeviceProperties.limits.maxClipDistances;
+	pProperties->m_limits.m_maxCullDistances = vkPhysicalDeviceProperties.limits.maxCullDistances;
+	pProperties->m_limits.m_maxCombinedClipAndCullDistances = vkPhysicalDeviceProperties.limits.maxCombinedClipAndCullDistances;
+	pProperties->m_limits.m_discreteQueuePriorities = vkPhysicalDeviceProperties.limits.discreteQueuePriorities;
+	for (uint32_t i = 0; i < 2; i++)
+	{
+		pProperties->m_limits.m_pointSizeRange[i] = vkPhysicalDeviceProperties.limits.pointSizeRange[i];
+	}
+	for (uint32_t i = 0; i < 2; i++)
+	{
+		pProperties->m_limits.m_lineWidthRange[i] = vkPhysicalDeviceProperties.limits.lineWidthRange[i];
+	}
+	pProperties->m_limits.m_pointSizeGranularity = vkPhysicalDeviceProperties.limits.pointSizeGranularity;
+	pProperties->m_limits.m_lineWidthGranularity = vkPhysicalDeviceProperties.limits.lineWidthGranularity;
+	pProperties->m_limits.m_strictLines = (VkBool32)vkPhysicalDeviceProperties.limits.strictLines;
+	pProperties->m_limits.m_standardSampleLocations = (VkBool32)vkPhysicalDeviceProperties.limits.standardSampleLocations;
+	pProperties->m_limits.m_optimalBufferCopyOffsetAlignment = (VkDeviceSize)vkPhysicalDeviceProperties.limits.optimalBufferCopyOffsetAlignment;
+	pProperties->m_limits.m_optimalBufferCopyRowPitchAlignment = (VkDeviceSize)vkPhysicalDeviceProperties.limits.optimalBufferCopyRowPitchAlignment;
+	pProperties->m_limits.m_nonCoherentAtomSize = (VkDeviceSize)vkPhysicalDeviceProperties.limits.nonCoherentAtomSize;
 }
 
 RHICommandBuffer* VulkanRHI::GetCurrentCommandBuffer() const

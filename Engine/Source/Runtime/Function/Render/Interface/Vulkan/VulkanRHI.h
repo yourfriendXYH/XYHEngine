@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "../RHI.h"
 #include <GLFW/glfw3.h>
 #include <vk_mem_alloc.h>
@@ -13,36 +13,36 @@ public:
 
 	virtual void PrepareContext() override;
 
-	virtual bool IsPointLightShadowEnabled();	// ÊÇ·ñÆôÓÃµã¹âÔ´ÒõÓ°
+	virtual bool IsPointLightShadowEnabled();	// æ˜¯å¦å¯ç”¨ç‚¹å…‰æºé˜´å½±
 
-	// ·ÖÅäºÍ´´½¨
-	virtual bool AllocateCommandBuffers(const ST_RHICommandBufferAllocateInfo* pAllocateInfo, RHICommandBuffer*& pCommandBuffers);	// ÅäÖÃÃüÁî»º³åÇø
-	virtual bool AllocateDescriptorSets(const ST_RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet*& pDescriptorSets);	// ÅäÖÃÃèÊö·û¼¯
+	// åˆ†é…å’Œåˆ›å»º
+	virtual bool AllocateCommandBuffers(const ST_RHICommandBufferAllocateInfo* pAllocateInfo, RHICommandBuffer*& pCommandBuffers);	// é…ç½®å‘½ä»¤ç¼“å†²åŒº
+	virtual bool AllocateDescriptorSets(const ST_RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet*& pDescriptorSets);	// é…ç½®æè¿°ç¬¦é›†
 
-	virtual void CreateSwapChain();	// ´´½¨½»»»Á´
+	virtual void CreateSwapChain();	// åˆ›å»ºäº¤æ¢é“¾
 
-	virtual void RecreateSwapChain();	// ÖØĞÂ´´½¨½»»»Á´
+	virtual void RecreateSwapChain();	// é‡æ–°åˆ›å»ºäº¤æ¢é“¾
 
-	virtual void CreateSwapChainImageViews();	// ´´½¨½»»»Á´Í¼ÏñÊÓÍ¼
+	virtual void CreateSwapChainImageViews();	// åˆ›å»ºäº¤æ¢é“¾å›¾åƒè§†å›¾
 
-	virtual void CreateFramebufferImageAndViews();	// ´´½¨Ö¡»º³åÍ¼ÏñºÍÊÓÍ¼
+	virtual void CreateFramebufferImageAndViews();	// åˆ›å»ºå¸§ç¼“å†²å›¾åƒå’Œè§†å›¾
 
-	virtual RHISampler* GetOrCreateDefaultSampler(ERHIDefaultSamplerType type);	// »ñÈ¡»ò´´½¨Ä¬ÈÏ²ÉÑùÆ÷
+	virtual RHISampler* GetOrCreateDefaultSampler(ERHIDefaultSamplerType type);	// è·å–æˆ–åˆ›å»ºé»˜è®¤é‡‡æ ·å™¨
 
-	virtual RHISampler* GetOrCreateMipmapSampler(uint32_t width, uint32_t height);	// »ñÈ¡»ò´´½¨mipmap²ÉÑùÆ÷
+	virtual RHISampler* GetOrCreateMipmapSampler(uint32_t width, uint32_t height);	// è·å–æˆ–åˆ›å»ºmipmapé‡‡æ ·å™¨
 
-	virtual RHIShader* CreateShaderModule(const std::vector<unsigned char>& shaderCode);	// ´´½¨×ÅÉ«Æ÷Ä£¿é
+	virtual RHIShader* CreateShaderModule(const std::vector<unsigned char>& shaderCode);	// åˆ›å»ºç€è‰²å™¨æ¨¡å—
 
-	virtual void CreateBuffer(RHIDeviceSize size, RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory);	// ´´½¨»º³åÇø
+	virtual void CreateBuffer(RHIDeviceSize size, RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory);	// åˆ›å»ºç¼“å†²åŒº
 
-	virtual void CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory, RHIDeviceSize size, void* data = nullptr, int datasize = 0);	// ´´½¨»º³åÇø²¢³õÊ¼»¯
+	virtual void CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory, RHIDeviceSize size, void* data = nullptr, int datasize = 0);	// åˆ›å»ºç¼“å†²åŒºå¹¶åˆå§‹åŒ–
 
 	virtual bool CreateBufferVMA(VmaAllocator allocator,
 		const ST_RHIBufferCreateInfo* pBufferCreateInfo,
 		const VmaAllocationCreateInfo* pAllocationCreateInfo,
 		RHIBuffer*& pBuffer,
 		VmaAllocation* pAllocation,
-		VmaAllocationInfo* pAllocationInfo);	// Ê¹ÓÃVMA´´½¨»º³åÇø
+		VmaAllocationInfo* pAllocationInfo);	// ä½¿ç”¨VMAåˆ›å»ºç¼“å†²åŒº
 
 	virtual bool CreateBufferWithAlignmentVMA(
 		VmaAllocator allocator,
@@ -51,76 +51,76 @@ public:
 		RHIDeviceSize minAlignment,
 		RHIBuffer*& pBuffer,
 		VmaAllocation* pAllocation,
-		VmaAllocationInfo* pAllocationInfo);	// Ê¹ÓÃVMA´´½¨»º³åÇø²¢¶ÔÆë
+		VmaAllocationInfo* pAllocationInfo);	// ä½¿ç”¨VMAåˆ›å»ºç¼“å†²åŒºå¹¶å¯¹é½
 
-	virtual void CopyBuffer(RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, RHIDeviceSize srcOffset, RHIDeviceSize dstOffset, RHIDeviceSize size);	// ¸´ÖÆ»º³åÇø
+	virtual void CopyBuffer(RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, RHIDeviceSize srcOffset, RHIDeviceSize dstOffset, RHIDeviceSize size);	// å¤åˆ¶ç¼“å†²åŒº
 
 	virtual void CreateImage(uint32_t imageWidth, uint32_t imageHeight, ERHIFormat format, ERHIImageTiling imageTiling, RHIImageUsageFlags imageUsageFlags, RHIMemoryPropertyFlags memoryPropertyFlags,
-		RHIImage*& image, RHIDeviceMemory*& memory, RHIImageCreateFlags imageCreateFlags, uint32_t arrayLayers, uint32_t miplevels);	// ´´½¨Í¼Ïñ
+		RHIImage*& image, RHIDeviceMemory*& memory, RHIImageCreateFlags imageCreateFlags, uint32_t arrayLayers, uint32_t miplevels);	// åˆ›å»ºå›¾åƒ
 
 	virtual void CreateImageView(RHIImage* image, ERHIFormat format, RHIImageAspectFlags imageAspectFlags, ERHIImageViewType viewType, uint32_t layoutCount, uint32_t miplevels,
-		RHIImageView*& imageView);	// ´´½¨Í¼ÏñÊÓÍ¼
+		RHIImageView*& imageView);	// åˆ›å»ºå›¾åƒè§†å›¾
 
 	virtual void CreateGlobalImage(RHIImage*& pImage, RHIImageView*& pImageView, VmaAllocation& imageAllocation, uint32_t textureImageWidth, uint32_t textureImageHeight, void* pTextureImagePixels,
-		ERHIFormat textureImageFormat, uint32_t miplevels);	// ´´½¨È«¾ÖÍ¼Ïñ
+		ERHIFormat textureImageFormat, uint32_t miplevels);	// åˆ›å»ºå…¨å±€å›¾åƒ
 
 	virtual void CreateCubeMap(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, std::array<void*, 6> texture_image_pixels,
-		ERHIFormat texture_image_format, uint32_t miplevels);	// ´´½¨Á¢·½ÌåÌùÍ¼
+		ERHIFormat texture_image_format, uint32_t miplevels);	// åˆ›å»ºç«‹æ–¹ä½“è´´å›¾
 
-	virtual bool CreateCommandPool(const ST_RHICommandPoolCreateInfo* pCreateInfo, RHICommandPool*& pCommandPool);	// ´´½¨ÃüÁî³Ø
+	virtual bool CreateCommandPool(const ST_RHICommandPoolCreateInfo* pCreateInfo, RHICommandPool*& pCommandPool);	// åˆ›å»ºå‘½ä»¤æ± 
 
-	virtual bool CreateDescriptorPool(const ST_RHIDescriptorPoolCreateInfo* pCreateInfo, RHIDescriptorPool*& pDescriptorPool);	// ´´½¨ÃèÊö·û³Ø
+	virtual bool CreateDescriptorPool(const ST_RHIDescriptorPoolCreateInfo* pCreateInfo, RHIDescriptorPool*& pDescriptorPool);	// åˆ›å»ºæè¿°ç¬¦æ± 
 
-	virtual bool CreateDescriptorSetLayout(const ST_RHIDescriptorSetLayoutCreateInfo* pCreateInfo, RHIDescriptorSetLayout*& pSetLayout);	// ´´½¨ÃèÊö·û¼¯²¼¾Ö
+	virtual bool CreateDescriptorSetLayout(const ST_RHIDescriptorSetLayoutCreateInfo* pCreateInfo, RHIDescriptorSetLayout*& pSetLayout);	// åˆ›å»ºæè¿°ç¬¦é›†å¸ƒå±€
 
-	virtual bool CreateFence(const ST_RHIFenceCreateInfo* pCreateInfo, RHIFence*& pFence);	// ´´½¨Õ¤À¸
+	virtual bool CreateFence(const ST_RHIFenceCreateInfo* pCreateInfo, RHIFence*& pFence);	// åˆ›å»ºæ …æ 
 
-	virtual bool CreateFramebuffer(const ST_RHIFramebufferCreateInfo* pCreateInfo, RHIFramebuffer*& pFramebuffer);	// ´´½¨Ö¡»º³å
+	virtual bool CreateFramebuffer(const ST_RHIFramebufferCreateInfo* pCreateInfo, RHIFramebuffer*& pFramebuffer);	// åˆ›å»ºå¸§ç¼“å†²
 
-	virtual bool CreateGraphicsPipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIGraphicsPipelineCreateInfo* pCreateInfo, RHIPipeline*& pPipelines);	// ´´½¨Í¼ĞÎ¹ÜÏß
+	virtual bool CreateGraphicsPipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIGraphicsPipelineCreateInfo* pCreateInfo, RHIPipeline*& pPipelines);	// åˆ›å»ºå›¾å½¢ç®¡çº¿
 
-	virtual bool CreateComputePipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIComputePipelineCreateInfo* pCreateInfo, RHIPipeline*& pPipelines);	// ´´½¨¼ÆËã¹ÜÏß
+	virtual bool CreateComputePipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIComputePipelineCreateInfo* pCreateInfo, RHIPipeline*& pPipelines);	// åˆ›å»ºè®¡ç®—ç®¡çº¿
 
-	virtual bool CreatePipelineLayout(const ST_RHIPipelineLayoutCreateInfo* pCreateInfo, RHIPipelineLayout*& pPipelineLayout);	// ´´½¨¹ÜÏß²¼¾Ö
+	virtual bool CreatePipelineLayout(const ST_RHIPipelineLayoutCreateInfo* pCreateInfo, RHIPipelineLayout*& pPipelineLayout);	// åˆ›å»ºç®¡çº¿å¸ƒå±€
 
-	virtual bool CreateRenderPass(const ST_RHIRenderPassCreateInfo* pCreateInfo, RHIRenderPass*& pRenderPass);	// ´´½¨äÖÈ¾Í¨µÀ
+	virtual bool CreateRenderPass(const ST_RHIRenderPassCreateInfo* pCreateInfo, RHIRenderPass*& pRenderPass);	// åˆ›å»ºæ¸²æŸ“é€šé“
 
-	virtual bool CreateSampler(const ST_RHISamplerCreateInfo* pCreateInfo, RHISampler*& pSampler);	// ´´½¨²ÉÑùÆ÷
+	virtual bool CreateSampler(const ST_RHISamplerCreateInfo* pCreateInfo, RHISampler*& pSampler);	// åˆ›å»ºé‡‡æ ·å™¨
 
-	virtual bool CreateRHISemaphore(const ST_RHISemaphoreCreateInfo* pCreateInfo, RHISemaphore*& pSemaphore);	// ´´½¨ĞÅºÅÁ¿
+	virtual bool CreateRHISemaphore(const ST_RHISemaphoreCreateInfo* pCreateInfo, RHISemaphore*& pSemaphore);	// åˆ›å»ºä¿¡å·é‡
 
 
 	// command and command write
-	virtual bool WaitForFencesPFN(uint32_t fenceCount, RHIFence* const* pFences, RHIBool32 waitAll, uint64_t timeout);	// µÈ´ıÕ¤À¸
+	virtual bool WaitForFencesPFN(uint32_t fenceCount, RHIFence* const* pFences, RHIBool32 waitAll, uint64_t timeout);	// ç­‰å¾…æ …æ 
 
-	virtual bool ResetFencesPFN(uint32_t fenceCount, RHIFence* const* pFences);	// ÖØÖÃÕ¤À¸
+	virtual bool ResetFencesPFN(uint32_t fenceCount, RHIFence* const* pFences);	// é‡ç½®æ …æ 
 
-	virtual bool ResetCommandPoolPFN(RHICommandPool* commandPool, RHICommandPoolResetFlags flags);	// ÖØÖÃÃüÁî³Ø
+	virtual bool ResetCommandPoolPFN(RHICommandPool* commandPool, RHICommandPoolResetFlags flags);	// é‡ç½®å‘½ä»¤æ± 
 
-	virtual bool BeginCommandBufferPFN(RHICommandBuffer* pCommandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo);	// ¿ªÊ¼ÃüÁî»º³åÇø
+	virtual bool BeginCommandBufferPFN(RHICommandBuffer* pCommandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo);	// å¼€å§‹å‘½ä»¤ç¼“å†²åŒº
 
-	virtual bool EndCommandBufferPFN(RHICommandBuffer* pCommandBuffer);	// ½áÊøÃüÁî»º³åÇø
+	virtual bool EndCommandBufferPFN(RHICommandBuffer* pCommandBuffer);	// ç»“æŸå‘½ä»¤ç¼“å†²åŒº
 
-	virtual void CmdBeginRenderPassPFN(RHICommandBuffer* commandBuffer, const ST_RHIRenderPassBeginInfo* pRenderPassBegin, ERHISubpassContents contents);	// ¿ªÊ¼äÖÈ¾Í¨µÀ
+	virtual void CmdBeginRenderPassPFN(RHICommandBuffer* commandBuffer, const ST_RHIRenderPassBeginInfo* pRenderPassBegin, ERHISubpassContents contents);	// å¼€å§‹æ¸²æŸ“é€šé“
 
-	virtual void CmdNextSubpassPFN(RHICommandBuffer* commandBuffer, ERHISubpassContents contents);	// ÇĞ»»µ½ÏÂÒ»¸ö×ÓÍ¨µÀ
+	virtual void CmdNextSubpassPFN(RHICommandBuffer* commandBuffer, ERHISubpassContents contents);	// åˆ‡æ¢åˆ°ä¸‹ä¸€ä¸ªå­é€šé“
 
-	virtual void CmdEndRenderPassPFN(RHICommandBuffer* commandBuffer);	// ½áÊøäÖÈ¾Í¨µÀ
+	virtual void CmdEndRenderPassPFN(RHICommandBuffer* commandBuffer);	// ç»“æŸæ¸²æŸ“é€šé“
 
-	virtual void CmdBindPipelinePFN(RHICommandBuffer* commandBuffer, ERHIPipelineBindPoint pipelineBindPoint, RHIPipeline* pipeline);	// °ó¶¨¹ÜÏß
+	virtual void CmdBindPipelinePFN(RHICommandBuffer* commandBuffer, ERHIPipelineBindPoint pipelineBindPoint, RHIPipeline* pipeline);	// ç»‘å®šç®¡çº¿
 
-	virtual void CmdSetViewportPFN(RHICommandBuffer* commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const ST_RHIViewport* pViewports);	// ÉèÖÃÊÓ¿Ú
+	virtual void CmdSetViewportPFN(RHICommandBuffer* commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const ST_RHIViewport* pViewports);	// è®¾ç½®è§†å£
 
-	virtual void CmdSetScissorPFN(RHICommandBuffer* commandBuffer, uint32_t firstScissor, uint32_t scissorCount, const ST_RHIRect2D* pScissors);	// ÉèÖÃ²Ã¼ôÇøÓò
+	virtual void CmdSetScissorPFN(RHICommandBuffer* commandBuffer, uint32_t firstScissor, uint32_t scissorCount, const ST_RHIRect2D* pScissors);	// è®¾ç½®è£å‰ªåŒºåŸŸ
 
 	virtual void CmdBindVertexBuffersPFN(
 		RHICommandBuffer* commandBuffer,
 		uint32_t firstBinding,
 		uint32_t bindingCount,
 		RHIBuffer* const* pBuffers,
-		const RHIDeviceSize* pOffsets);	// °ó¶¨¶¥µã»º³åÇø
+		const RHIDeviceSize* pOffsets);	// ç»‘å®šé¡¶ç‚¹ç¼“å†²åŒº
 
-	virtual void CmdBindIndexBufferPFN(RHICommandBuffer* commandBuffer, RHIBuffer* buffer, RHIDeviceSize offset, ERHIIndexType indexType);	// °ó¶¨Ë÷Òı»º³åÇø
+	virtual void CmdBindIndexBufferPFN(RHICommandBuffer* commandBuffer, RHIBuffer* buffer, RHIDeviceSize offset, ERHIIndexType indexType);	// ç»‘å®šç´¢å¼•ç¼“å†²åŒº
 
 	virtual void CmdBindDescriptorSetsPFN(
 		RHICommandBuffer* commandBuffer,
@@ -130,249 +130,248 @@ public:
 		uint32_t descriptorSetCount,
 		const RHIDescriptorSet* const* pDescriptorSets,
 		uint32_t dynamicOffsetCount,
-		const uint32_t* pDynamicOffsets);	// °ó¶¨ÃèÊö·û¼¯
+		const uint32_t* pDynamicOffsets);	// ç»‘å®šæè¿°ç¬¦é›†
 
-	virtual void CmdDrawIndexedPFN(RHICommandBuffer* commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);	// »æÖÆË÷Òı
+	virtual void CmdDrawIndexedPFN(RHICommandBuffer* commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);	// ç»˜åˆ¶ç´¢å¼•
 
-	virtual void CmdClearAttachmentsPFN(RHICommandBuffer* commandBuffer, uint32_t attachmentCount, const ST_RHIClearAttachment* pAttachments, uint32_t rectCount, const ST_RHIClearRect* pRects);	// Çå³ı¸½¼ş
+	virtual void CmdClearAttachmentsPFN(RHICommandBuffer* commandBuffer, uint32_t attachmentCount, const ST_RHIClearAttachment* pAttachments, uint32_t rectCount, const ST_RHIClearRect* pRects);	// æ¸…é™¤é™„ä»¶
 
-	virtual bool BeginCommandBuffer(RHICommandBuffer* commandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo);	// ¿ªÊ¼ÃüÁî»º³åÇø
+	virtual bool BeginCommandBuffer(RHICommandBuffer* commandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo);	// å¼€å§‹å‘½ä»¤ç¼“å†²åŒº
 
-	virtual void CmdCopyImageToBuffer(RHICommandBuffer* commandBuffer, RHIImage* srcImage, ERHIImageLayout srcImageLayout, RHIBuffer* dstBuffer, uint32_t regionCount, const ST_RHIBufferImageCopy* pRegions);	// ´ÓÍ¼Ïñ¸´ÖÆµ½»º³åÇø
+	virtual void CmdCopyImageToBuffer(RHICommandBuffer* commandBuffer, RHIImage* srcImage, ERHIImageLayout srcImageLayout, RHIBuffer* dstBuffer, uint32_t regionCount, const ST_RHIBufferImageCopy* pRegions);	// ä»å›¾åƒå¤åˆ¶åˆ°ç¼“å†²åŒº
 
-	virtual void CmdCopyImageToImage(RHICommandBuffer* commandBuffer, RHIImage* srcImage, ERHIImageAspectFlagBits srcFlag, RHIImage* dstImage, ERHIImageAspectFlagBits dstFlag, uint32_t width, uint32_t height);	// ´ÓÍ¼Ïñ¸´ÖÆµ½Í¼Ïñ
+	virtual void CmdCopyImageToImage(RHICommandBuffer* commandBuffer, RHIImage* srcImage, ERHIImageAspectFlagBits srcFlag, RHIImage* dstImage, ERHIImageAspectFlagBits dstFlag, uint32_t width, uint32_t height);	// ä»å›¾åƒå¤åˆ¶åˆ°å›¾åƒ
 
-	virtual void CmdCopyBuffer(RHICommandBuffer* commandBuffer, RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, uint32_t regionCount, ST_RHIBufferCopy* pRegions);	// ´Ó»º³åÇø¸´ÖÆµ½»º³åÇø
+	virtual void CmdCopyBuffer(RHICommandBuffer* commandBuffer, RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, uint32_t regionCount, ST_RHIBufferCopy* pRegions);	// ä»ç¼“å†²åŒºå¤åˆ¶åˆ°ç¼“å†²åŒº
 
-	virtual void CmdDraw(RHICommandBuffer* commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance);	// »æÖÆ¶¥µã
+	virtual void CmdDraw(RHICommandBuffer* commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance);	// ç»˜åˆ¶é¡¶ç‚¹
 
-	virtual void CmdDispatch(RHICommandBuffer* commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);	// µ÷¶È¼ÆËã
+	virtual void CmdDispatch(RHICommandBuffer* commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);	// è°ƒåº¦è®¡ç®—
 
-	virtual void CmdDispatchIndirect(RHICommandBuffer* commandBuffer, RHIBuffer* buffer, RHIDeviceSize offset);	// ¼ä½Óµ÷¶È¼ÆËã
+	virtual void CmdDispatchIndirect(RHICommandBuffer* commandBuffer, RHIBuffer* buffer, RHIDeviceSize offset);	// é—´æ¥è°ƒåº¦è®¡ç®—
 
 	virtual void CmdPipelineBarrier(RHICommandBuffer* commandBuffer, RHIPipelineStageFlags srcStageMask, RHIPipelineStageFlags dstStageMask, RHIDependencyFlags dependencyFlags, uint32_t memoryBarrierCount,
 		const ST_RHIMemoryBarrier* pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const ST_RHIBufferMemoryBarrier* pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount,
-		const ST_RHIImageMemoryBarrier* pImageMemoryBarriers);	// ¹ÜÏßÆÁÕÏ
+		const ST_RHIImageMemoryBarrier* pImageMemoryBarriers);	// ç®¡çº¿å±éšœ
 
-	virtual bool EndCommandBuffer(RHICommandBuffer* commandBuffer);	// ½áÊøÃüÁî»º³åÇø
+	virtual bool EndCommandBuffer(RHICommandBuffer* commandBuffer);	// ç»“æŸå‘½ä»¤ç¼“å†²åŒº
 
-	virtual void UpdateDescriptorSets(uint32_t descriptorWriteCount, const ST_RHIWriteDescriptorSet* pDescriptorWrites, uint32_t descriptorCopyCount, const ST_RHICopyDescriptorSet* pDescriptorCopies);	// ¸üĞÂÃèÊö·û¼¯
+	virtual void UpdateDescriptorSets(uint32_t descriptorWriteCount, const ST_RHIWriteDescriptorSet* pDescriptorWrites, uint32_t descriptorCopyCount, const ST_RHICopyDescriptorSet* pDescriptorCopies);	// æ›´æ–°æè¿°ç¬¦é›†
 
-	virtual bool QueueSubmit(RHIQueue* pQueue, uint32_t submitCount, const ST_RHISubmitInfo* pSubmits, RHIFence* pFence);	// Ìá½»µ½¶ÓÁĞ
+	virtual bool QueueSubmit(RHIQueue* pQueue, uint32_t submitCount, const ST_RHISubmitInfo* pSubmits, RHIFence* pFence);	// æäº¤åˆ°é˜Ÿåˆ—
 
-	virtual bool QueueWaitIdle(RHIQueue* queue);	// ¶ÓÁĞµÈ´ı¿ÕÏĞ
+	virtual bool QueueWaitIdle(RHIQueue* queue);	// é˜Ÿåˆ—ç­‰å¾…ç©ºé—²
 
-	virtual void ResetCommandPool();	// ÖØÖÃÃüÁî³Ø
+	virtual void ResetCommandPool();	// é‡ç½®å‘½ä»¤æ± 
 
-	virtual void WaitForFences();	// µÈ´ıÕ¤À¸
+	virtual void WaitForFences();	// ç­‰å¾…æ …æ 
 
 
-	// ²éÑ¯
-	virtual void GetPhysicalDeviceProperties(ST_RHIPhysicalDeviceProperties* pProperties);	// »ñÈ¡ÎïÀíÉè±¸ÊôĞÔ
+	// æŸ¥è¯¢
+	virtual void GetPhysicalDeviceProperties(ST_RHIPhysicalDeviceProperties* pProperties);	// è·å–ç‰©ç†è®¾å¤‡å±æ€§
 
-	virtual RHICommandBuffer* GetCurrentCommandBuffer() const;	// »ñÈ¡µ±Ç°ÃüÁî»º³åÇø
+	virtual RHICommandBuffer* GetCurrentCommandBuffer() const;	// è·å–å½“å‰å‘½ä»¤ç¼“å†²åŒº
 
-	virtual RHICommandBuffer* const* GetCommandBufferList() const; // »ñÈ¡ÃüÁî»º³åÇøÁĞ±í
+	virtual RHICommandBuffer* const* GetCommandBufferList() const; // è·å–å‘½ä»¤ç¼“å†²åŒºåˆ—è¡¨
 
-	virtual RHICommandPool* GetCommandPoor() const;	// »ñÈ¡ÃüÁî³Ø
+	virtual RHICommandPool* GetCommandPoor() const;	// è·å–å‘½ä»¤æ± 
 
-	virtual RHIDescriptorPool* GetDescriptorPoor() const;	// »ñÈ¡ÃèÊö·û³Ø
+	virtual RHIDescriptorPool* GetDescriptorPoor() const;	// è·å–æè¿°ç¬¦æ± 
 
-	virtual RHIFence* const* GetFenceList() const;	// »ñÈ¡Õ¤À¸ÁĞ±í
+	virtual RHIFence* const* GetFenceList() const;	// è·å–æ …æ åˆ—è¡¨
 
-	virtual ST_QueueFamilyIndices GetQueueFamilyIndices() const;	// »ñÈ¡¶ÓÁĞ×åË÷Òı
+	virtual ST_QueueFamilyIndices GetQueueFamilyIndices() const;	// è·å–é˜Ÿåˆ—æ—ç´¢å¼•
 
-	virtual RHIQueue* GetGraphicsQueue() const; // »ñÈ¡Í¼ĞÎ¶ÓÁĞ
+	virtual RHIQueue* GetGraphicsQueue() const; // è·å–å›¾å½¢é˜Ÿåˆ—
 
-	virtual RHIQueue* GetComputeQueue() const;	// »ñÈ¡¼ÆËã¶ÓÁĞ
+	virtual RHIQueue* GetComputeQueue() const;	// è·å–è®¡ç®—é˜Ÿåˆ—
 
-	virtual ST_RHISwapChainDesc GetSwapchainInfo();	// »ñÈ¡½»»»Á´ĞÅÏ¢
+	virtual ST_RHISwapChainDesc GetSwapchainInfo();	// è·å–äº¤æ¢é“¾ä¿¡æ¯
 
-	virtual ST_RHIDepthImageDesc GetDepthImageInfo() const;	// »ñÈ¡Éî¶ÈÍ¼ÏñĞÅÏ¢
+	virtual ST_RHIDepthImageDesc GetDepthImageInfo() const;	// è·å–æ·±åº¦å›¾åƒä¿¡æ¯
 
-	virtual uint8_t GetMaxFramesInFlight() const;	// »ñÈ¡×î´óÖ¡Êı
+	virtual uint8_t GetMaxFramesInFlight() const;	// è·å–æœ€å¤§å¸§æ•°
 
-	virtual uint8_t GetCurrentFrameIndex() const;	// »ñÈ¡µ±Ç°Ö¡Ë÷Òı
+	virtual uint8_t GetCurrentFrameIndex() const;	// è·å–å½“å‰å¸§ç´¢å¼•
 
-	virtual void SetCurrentFrameIndex(uint8_t index);	// ÉèÖÃµ±Ç°Ö¡Ë÷Òı
+	virtual void SetCurrentFrameIndex(uint8_t index);	// è®¾ç½®å½“å‰å¸§ç´¢å¼•
 
 
 	// command write
-	virtual RHICommandBuffer* BeginSingleTimeCommands();	// ¿ªÊ¼µ¥´ÎÃüÁî»º³åÇø
+	virtual RHICommandBuffer* BeginSingleTimeCommands();	// å¼€å§‹å•æ¬¡å‘½ä»¤ç¼“å†²åŒº
 
-	virtual void EndSingleTimeCommands(RHICommandBuffer* command_buffer);	// ½áÊøµ¥´ÎÃüÁî»º³åÇø
+	virtual void EndSingleTimeCommands(RHICommandBuffer* command_buffer);	// ç»“æŸå•æ¬¡å‘½ä»¤ç¼“å†²åŒº
 
-	virtual bool PrepareBeforePass(std::function<void()> passUpdateAfterRecreateSwapchain);	// ×¼±¸ÔÚäÖÈ¾Í¨µÀÖ®Ç°Ö´ĞĞµÄ²Ù×÷
+	virtual bool PrepareBeforePass(std::function<void()> passUpdateAfterRecreateSwapchain);	// å‡†å¤‡åœ¨æ¸²æŸ“é€šé“ä¹‹å‰æ‰§è¡Œçš„æ“ä½œ
 
-	virtual void SubmitRendering(std::function<void()> passUpdateAfterRecreateSwapchain);	// Ìá½»äÖÈ¾²Ù×÷
+	virtual void SubmitRendering(std::function<void()> passUpdateAfterRecreateSwapchain);	// æäº¤æ¸²æŸ“æ“ä½œ
 
-	virtual void PushEvent(RHICommandBuffer* commond_buffer, const char* name, const float* color);	// ¿ªÆôµ÷ÊÔ±êÇ©
+	virtual void PushEvent(RHICommandBuffer* commond_buffer, const char* name, const float* color);	// å¼€å¯è°ƒè¯•æ ‡ç­¾
 
-	virtual void PopEvent(RHICommandBuffer* commond_buffer);	// ½áÊøµ÷ÊÔ±êÇ©
+	virtual void PopEvent(RHICommandBuffer* commond_buffer);	// ç»“æŸè°ƒè¯•æ ‡ç­¾
 
 
-	// Ïú»Ù
+	// é”€æ¯
 	virtual ~VulkanRHI() override final;
 
-	virtual void Clear();	// ÇåÀíRHI×ÊÔ´
+	virtual void Clear();	// æ¸…ç†RHIèµ„æº
 
-	virtual void ClearSwapchain();	// ÇåÀí½»»»Á´×ÊÔ´
+	virtual void ClearSwapchain();	// æ¸…ç†äº¤æ¢é“¾èµ„æº
 
-	virtual void DestroyDefaultSampler(ERHIDefaultSamplerType type);	// Ïú»ÙÄ¬ÈÏ²ÉÑùÆ÷
+	virtual void DestroyDefaultSampler(ERHIDefaultSamplerType type);	// é”€æ¯é»˜è®¤é‡‡æ ·å™¨
 
-	virtual void DestroyMipmappedSampler();	// Ïú»Ùmipmap²ÉÑùÆ÷
+	virtual void DestroyMipmappedSampler();	// é”€æ¯mipmapé‡‡æ ·å™¨
 
-	virtual void DestroyShaderModule(RHIShader* shaderModule);	// Ïú»Ù×ÅÉ«Æ÷Ä£¿é
+	virtual void DestroyShaderModule(RHIShader* shaderModule);	// é”€æ¯ç€è‰²å™¨æ¨¡å—
 
-	virtual void DestroySemaphore(RHISemaphore* semaphore);	// Ïú»ÙĞÅºÅÁ¿
+	virtual void DestroySemaphore(RHISemaphore* semaphore);	// é”€æ¯ä¿¡å·é‡
 
-	virtual void DestroySampler(RHISampler* sampler);	// Ïú»Ù²ÉÑùÆ÷
+	virtual void DestroySampler(RHISampler* sampler);	// é”€æ¯é‡‡æ ·å™¨
 
-	virtual void DestroyInstance(RHIInstance* instance);	// Ïú»ÙÊµÀı
+	virtual void DestroyInstance(RHIInstance* instance);	// é”€æ¯å®ä¾‹
 
-	virtual void DestroyImageView(RHIImageView* imageView);	// Ïú»ÙÍ¼ÏñÊÓÍ¼
+	virtual void DestroyImageView(RHIImageView* imageView);	// é”€æ¯å›¾åƒè§†å›¾
 
-	virtual void DestroyImage(RHIImage* image);	// Ïú»ÙÍ¼Ïñ
+	virtual void DestroyImage(RHIImage* image);	// é”€æ¯å›¾åƒ
 
-	virtual void DestroyFramebuffer(RHIFramebuffer* framebuffer);	// Ïú»ÙÖ¡»º³å
+	virtual void DestroyFramebuffer(RHIFramebuffer* framebuffer);	// é”€æ¯å¸§ç¼“å†²
 
-	virtual void DestroyFence(RHIFence* fence);	// Ïú»ÙÕ¤À¸
+	virtual void DestroyFence(RHIFence* fence);	// é”€æ¯æ …æ 
 
-	virtual void DestroyDevice();	// Ïú»ÙÉè±¸
+	virtual void DestroyDevice();	// é”€æ¯è®¾å¤‡
 
-	virtual void DestroyCommandPool(RHICommandPool* commandPool);	// Ïú»ÙÃüÁî³Ø
+	virtual void DestroyCommandPool(RHICommandPool* commandPool);	// é”€æ¯å‘½ä»¤æ± 
 
-	virtual void DestroyBuffer(RHIBuffer*& buffer);	// Ïú»Ù»º³åÇø
+	virtual void DestroyBuffer(RHIBuffer*& buffer);	// é”€æ¯ç¼“å†²åŒº
 
-	virtual void FreeCommandBuffers(RHICommandPool* commandPool, uint32_t commandBufferCount, RHICommandBuffer* pCommandBuffers);	// ÊÍ·ÅÃüÁî»º³åÇø
+	virtual void FreeCommandBuffers(RHICommandPool* commandPool, uint32_t commandBufferCount, RHICommandBuffer* pCommandBuffers);	// é‡Šæ”¾å‘½ä»¤ç¼“å†²åŒº
 
 
-	// ÄÚ´æ
-	virtual void FreeMemory(RHIDeviceMemory*& memory);	// ÊÍ·ÅÉè±¸ÄÚ´æ
+	// å†…å­˜
+	virtual void FreeMemory(RHIDeviceMemory*& memory);	// é‡Šæ”¾è®¾å¤‡å†…å­˜
 
-	virtual bool MapMemory(RHIDeviceMemory* pMemory, RHIDeviceSize offset, RHIDeviceSize size, RHIMemoryMapFlags flags, void** ppData);	// Ó³ÉäÉè±¸ÄÚ´æ
+	virtual bool MapMemory(RHIDeviceMemory* pMemory, RHIDeviceSize offset, RHIDeviceSize size, RHIMemoryMapFlags flags, void** ppData);	// æ˜ å°„è®¾å¤‡å†…å­˜
 
-	virtual void UnmapMemory(RHIDeviceMemory* pMemory);	// È¡ÏûÓ³ÉäÉè±¸ÄÚ´æ
+	virtual void UnmapMemory(RHIDeviceMemory* pMemory);	// å–æ¶ˆæ˜ å°„è®¾å¤‡å†…å­˜
 
-	virtual void InvalidateMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size);	// Ê¹Ó³ÉäµÄÄÚ´æ·¶Î§ÎŞĞ§
+	virtual void InvalidateMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size);	// ä½¿æ˜ å°„çš„å†…å­˜èŒƒå›´æ— æ•ˆ
 
-	virtual void FlushMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size);	// Ë¢ĞÂÓ³ÉäµÄÄÚ´æ·¶Î§
+	virtual void FlushMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size);	// åˆ·æ–°æ˜ å°„çš„å†…å­˜èŒƒå›´
 
 
 	//semaphores
 	virtual RHISemaphore*& GetTextureCopySemaphore(uint32_t index);	// 
 
 private:
-	void CreateInstance();	// ´´½¨VulkanÊµÀı
-	void InitializeDebugMessenger();	// ³õÊ¼»¯µ÷ÊÔÏûÏ¢´¦ÀíÆ÷
+	void CreateInstance();	// åˆ›å»ºVulkanå®ä¾‹
+	void InitializeDebugMessenger();	// åˆå§‹åŒ–è°ƒè¯•æ¶ˆæ¯å¤„ç†å™¨
 
-	// Îª Vulkan Ìá¹©Ò»¸öÓëÆ½Ì¨£¨Windows / macOS / Linux£©¼æÈİµÄäÖÈ¾Ä¿±ê£¬Ê¹µÃ Vulkan ÄÜ¹»½«Í¼ĞÎäÖÈ¾µ½ GLFW ´´½¨µÄ´°¿ÚÖĞ¡£
-	void CreateWindowSurface();	// ´´½¨´°¿Ú±íÃæ
+	// ä¸º Vulkan æä¾›ä¸€ä¸ªä¸å¹³å°ï¼ˆWindows / macOS / Linuxï¼‰å…¼å®¹çš„æ¸²æŸ“ç›®æ ‡ï¼Œä½¿å¾— Vulkan èƒ½å¤Ÿå°†å›¾å½¢æ¸²æŸ“åˆ° GLFW åˆ›å»ºçš„çª—å£ä¸­ã€‚
+	void CreateWindowSurface();	// åˆ›å»ºçª—å£è¡¨é¢
 
-	void InitializePhysicalDevice();	// ³õÊ¼»¯ÎïÀíÉè±¸
+	void InitializePhysicalDevice();	// åˆå§‹åŒ–ç‰©ç†è®¾å¤‡
 
-	void CreateLogicalDevice();	// ´´½¨Âß¼­Éè±¸
+	void CreateLogicalDevice();	// åˆ›å»ºé€»è¾‘è®¾å¤‡
 
-	void CreateCommandPool() override;;	// ´´½¨ÃüÁî³Ø
+	void CreateCommandPool() override;;	// åˆ›å»ºå‘½ä»¤æ± 
 
-	void CreateCommandBuffers();	// ´´½¨ÃüÁî»º³åÇø
+	void CreateCommandBuffers();	// åˆ›å»ºå‘½ä»¤ç¼“å†²åŒº
 
-	void CreateDescriptorPool();	// ´´½¨ÃèÊö·û³Ø
+	void CreateDescriptorPool();	// åˆ›å»ºæè¿°ç¬¦æ± 
 
-	void CreateSyncPrimitives();	// ´´½¨Í¬²½Ô­Óï
+	void CreateSyncPrimitives();	// åˆ›å»ºåŒæ­¥åŸè¯­
 
-	void CreateAssetAllocator();	// ´´½¨×ÊÔ´·ÖÅäÆ÷
+	void CreateAssetAllocator();	// åˆ›å»ºèµ„æºåˆ†é…å™¨
 
 
-	// Vulkan µÄÑéÖ¤²ã£¨Validation Layer£©ÊÇÒ»ÖÖµ÷ÊÔ¹¤¾ß£¬¿ÉÒÔ°ïÖú¿ª·¢ÕßÔÚ¿ª·¢½×¶Î²¶×½ API µÄÎóÓÃ¡¢Ç±ÔÚµÄ bug ºÍĞÔÄÜÎÊÌâ¡£³£ÓÃµÄÑéÖ¤²ãÈç "VK_LAYER_KHRONOS_validation"¡£
-	bool CheckValidationLayerSupport();	// ¼ì²éÑéÖ¤²ãÖ§³Ö
+	// Vulkan çš„éªŒè¯å±‚ï¼ˆValidation Layerï¼‰æ˜¯ä¸€ç§è°ƒè¯•å·¥å…·ï¼Œå¯ä»¥å¸®åŠ©å¼€å‘è€…åœ¨å¼€å‘é˜¶æ®µæ•æ‰ API çš„è¯¯ç”¨ã€æ½œåœ¨çš„ bug å’Œæ€§èƒ½é—®é¢˜ã€‚å¸¸ç”¨çš„éªŒè¯å±‚å¦‚ "VK_LAYER_KHRONOS_validation"ã€‚
+	bool CheckValidationLayerSupport();	// æ£€æŸ¥éªŒè¯å±‚æ”¯æŒ
 
-	std::vector<const char*> GetRequiredExtensions();	// »ñÈ¡ËùĞèµÄÀ©Õ¹ÁĞ±í
+	std::vector<const char*> GetRequiredExtensions();	// è·å–æ‰€éœ€çš„æ‰©å±•åˆ—è¡¨
 
-	void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);	// Ìî³äµ÷ÊÔÏûÏ¢´¦ÀíÆ÷´´½¨ĞÅÏ¢
+	void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);	// å¡«å……è°ƒè¯•æ¶ˆæ¯å¤„ç†å™¨åˆ›å»ºä¿¡æ¯
 
-	// ´´½¨µ÷ÊÔ¹¤¾ßÏûÏ¢´¦ÀíÆ÷
+	// åˆ›å»ºè°ƒè¯•å·¥å…·æ¶ˆæ¯å¤„ç†å™¨
 	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 
-	// Ïú»Ùµ÷ÊÔ¹¤¾ßÏûÏ¢´¦ÀíÆ÷
+	// é”€æ¯è°ƒè¯•å·¥å…·æ¶ˆæ¯å¤„ç†å™¨
 	void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
 
-	bool IsDeviceSuitable(VkPhysicalDevice physicalDevice);	// ¼ì²éÎïÀíÉè±¸ÊÇ·ñÊÊºÏ
+	bool IsDeviceSuitable(VkPhysicalDevice physicalDevice);	// æ£€æŸ¥ç‰©ç†è®¾å¤‡æ˜¯å¦é€‚åˆ
 
-	ST_QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice);	// ²éÕÒ¶ÓÁĞ×å
+	ST_QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice);	// æŸ¥æ‰¾é˜Ÿåˆ—æ—
 
-	bool CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice);	// ¼ì²éÉè±¸À©Õ¹Ö§³Ö
+	bool CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice);	// æ£€æŸ¥è®¾å¤‡æ‰©å±•æ”¯æŒ
 
-	ST_SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physicalDevice);	// ²éÑ¯½»»»Á´Ö§³Ö
+	ST_SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physicalDevice);	// æŸ¥è¯¢äº¤æ¢é“¾æ”¯æŒ
 
-	VkFormat FindDepthFormat();	// ²éÕÒÉî¶È¸ñÊ½
-	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);	// ²éÕÒÖ§³ÖµÄ¸ñÊ½
+	VkFormat FindDepthFormat();	// æŸ¥æ‰¾æ·±åº¦æ ¼å¼
+	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);	// æŸ¥æ‰¾æ”¯æŒçš„æ ¼å¼
 
-	VkSurfaceFormatKHR ChooseSwapchainSurfaceFormatFromDetails(const std::vector<VkSurfaceFormatKHR>& availableSurfaceFormats);	// Ñ¡Ôñ½»»»Á´±íÃæ¸ñÊ½
-	VkPresentModeKHR ChooseSwapchainPresentModeFromDetails(const std::vector<VkPresentModeKHR>& availablePresentModes);	// Ñ¡Ôñ½»»»Á´³ÊÏÖÄ£Ê½
-	VkExtent2D ChooseSwapchainExtentFromDetails(const VkSurfaceCapabilitiesKHR& capabilities);	// Ñ¡Ôñ½»»»Á´·¶Î§
+	VkSurfaceFormatKHR ChooseSwapchainSurfaceFormatFromDetails(const std::vector<VkSurfaceFormatKHR>& availableSurfaceFormats);	// é€‰æ‹©äº¤æ¢é“¾è¡¨é¢æ ¼å¼
+	VkPresentModeKHR ChooseSwapchainPresentModeFromDetails(const std::vector<VkPresentModeKHR>& availablePresentModes);	// é€‰æ‹©äº¤æ¢é“¾å‘ˆç°æ¨¡å¼
+	VkExtent2D ChooseSwapchainExtentFromDetails(const VkSurfaceCapabilitiesKHR& capabilities);	// é€‰æ‹©äº¤æ¢é“¾èŒƒå›´
 
 public:
 
-	ST_RHIViewport m_viewport;	// ÊÓ¿ÚÊôĞÔ
-	ST_RHIRect2D m_scissor;	// ²Ã¼ôÇøÓò
-	GLFWwindow* m_pGLFWwindow;	// GLFW´°¿Ú
+	ST_RHIViewport m_viewport;	// è§†å£å±æ€§
+	ST_RHIRect2D m_scissor;	// è£å‰ªåŒºåŸŸ
+	GLFWwindow* m_pGLFWwindow;	// GLFWçª—å£
 
-	VkInstance m_instance = nullptr;	// VulkanÊµÀı
-	VkSurfaceKHR m_surface = nullptr;	// Vulkan±íÃæ
-	VkPhysicalDevice m_physicalDevice;	// VulkanÎïÀíÉè±¸
+	VkInstance m_instance = nullptr;	// Vulkanå®ä¾‹
+	VkSurfaceKHR m_surface = nullptr;	// Vulkanè¡¨é¢
+	VkPhysicalDevice m_physicalDevice;	// Vulkanç‰©ç†è®¾å¤‡
 
-	ST_QueueFamilyIndices m_queueIndices;	// ¶ÓÁĞ×åË÷Òı
+	ST_QueueFamilyIndices m_queueIndices;	// é˜Ÿåˆ—æ—ç´¢å¼•
 
-	VkDevice m_device = nullptr;	// VulkanÂß¼­Éè±¸
-	RHIQueue* m_graphicsQueue = nullptr;	// VulkanÍ¼ĞÎ¶ÓÁĞ
-	VkQueue m_presentQueue = nullptr;	// Vulkan³ÊÏÖ¶ÓÁĞ
-	RHIQueue* m_computeQueue = nullptr;	// Vulkan¼ÆËã¶ÓÁĞ
+	VkDevice m_device = nullptr;	// Vulkané€»è¾‘è®¾å¤‡
+	RHIQueue* m_graphicsQueue = nullptr;	// Vulkanå›¾å½¢é˜Ÿåˆ—
+	VkQueue m_presentQueue = nullptr;	// Vulkanå‘ˆç°é˜Ÿåˆ—
+	RHIQueue* m_computeQueue = nullptr;	// Vulkanè®¡ç®—é˜Ÿåˆ—
 
-	// Ä¬ÈÏÃüÁî³Ø
+	// é»˜è®¤å‘½ä»¤æ± 
 	RHICommandPool* m_rhiCommandPool;
-	// ÆäËûÃüÁî³Ø
-	static uint8_t const s_maxFramesInFlight = 3u;	// ×î´óÖ¡Êı
-	uint8_t m_currentFrameIndex = 0u;	// µ±Ç°Ö¡Ë÷Òı
-	VkCommandPool m_commandPools[s_maxFramesInFlight];	// ÆäËûÃüÁî³Ø
-	// 3¸öÁÙÊ±ÃüÁî»º³åÇø
-	VkCommandBuffer m_vkCommandBuffers[s_maxFramesInFlight];	// ÃüÁî»º³åÇøÁĞ±í
+	// å…¶ä»–å‘½ä»¤æ± 
+	uint8_t m_currentFrameIndex = 0u;	// å½“å‰å¸§ç´¢å¼•
+	VkCommandPool m_commandPools[s_maxFramesInFlight];	// å…¶ä»–å‘½ä»¤æ± 
+	// 3ä¸ªä¸´æ—¶å‘½ä»¤ç¼“å†²åŒº
+	VkCommandBuffer m_vkCommandBuffers[s_maxFramesInFlight];	// å‘½ä»¤ç¼“å†²åŒºåˆ—è¡¨
 	// TODO: set
-	VkCommandBuffer m_vkCurrentCommandBuffer;	// µ±Ç°ÃüÁî»º³åÇø
-	RHICommandBuffer* m_commandBuffers[s_maxFramesInFlight];	// RHIÃüÁî»º³åÇøÁĞ±í
+	VkCommandBuffer m_vkCurrentCommandBuffer;	// å½“å‰å‘½ä»¤ç¼“å†²åŒº
+	RHICommandBuffer* m_commandBuffers[s_maxFramesInFlight];	// RHIå‘½ä»¤ç¼“å†²åŒºåˆ—è¡¨
 	RHICommandBuffer* m_pCurrentCommandBuffer = new VulkanCommandBuffer();
 
-	VkDescriptorPool m_vkDescriptorPool;	// È«¾ÖÃèÊö·û³Ø
-	RHIDescriptorPool* m_pRHIDescriptorPool;	// RHIÃèÊö·û³Ø
+	VkDescriptorPool m_vkDescriptorPool;	// å…¨å±€æè¿°ç¬¦æ± 
+	RHIDescriptorPool* m_pRHIDescriptorPool;	// RHIæè¿°ç¬¦æ± 
 
-	// VkSemaphore ºÍ VkFence ÊÇÁ½ÖÖÍ¬²½Ô­Óï£¨Synchronization Primitives£©£¬ÓÃÓÚĞ­µ÷ GPU ºÍ CPU Ö®¼äµÄÖ´ĞĞË³Ğò£¬·ÀÖ¹×ÊÔ´¾ºÕùºÍÊı¾İ¾ºÕù
-	RHISemaphore* m_imageAvailableForTexturescopySemaphores[s_maxFramesInFlight];	// Í¼Ïñ¿ÉÓÃĞÅºÅÁ¿
-	VkSemaphore m_imageAvailableForRenderSemaphores[s_maxFramesInFlight];	// äÖÈ¾Í¼Ïñ¿ÉÓÃĞÅºÅÁ¿
-	VkSemaphore m_imageFinishedForPresentationSemaphores[s_maxFramesInFlight];	// Í¼ÏñÍê³É³ÊÏÖĞÅºÅÁ¿
-	VkFence m_isFrameInFlightFences[s_maxFramesInFlight];	// Ö¡ÔÚÖ´ĞĞÖĞµÄÕ¤À¸
-	RHIFence* m_rhiIsFrameInFlightFences[s_maxFramesInFlight];	// RHIÖ¡ÔÚÖ´ĞĞÖĞµÄÕ¤À¸
+	// VkSemaphore å’Œ VkFence æ˜¯ä¸¤ç§åŒæ­¥åŸè¯­ï¼ˆSynchronization Primitivesï¼‰ï¼Œç”¨äºåè°ƒ GPU å’Œ CPU ä¹‹é—´çš„æ‰§è¡Œé¡ºåºï¼Œé˜²æ­¢èµ„æºç«äº‰å’Œæ•°æ®ç«äº‰
+	RHISemaphore* m_imageAvailableForTexturescopySemaphores[s_maxFramesInFlight];	// å›¾åƒå¯ç”¨ä¿¡å·é‡
+	VkSemaphore m_imageAvailableForRenderSemaphores[s_maxFramesInFlight];	// æ¸²æŸ“å›¾åƒå¯ç”¨ä¿¡å·é‡
+	VkSemaphore m_imageFinishedForPresentationSemaphores[s_maxFramesInFlight];	// å›¾åƒå®Œæˆå‘ˆç°ä¿¡å·é‡
+	VkFence m_isFrameInFlightFences[s_maxFramesInFlight];	// å¸§åœ¨æ‰§è¡Œä¸­çš„æ …æ 
+	RHIFence* m_rhiIsFrameInFlightFences[s_maxFramesInFlight];	// RHIå¸§åœ¨æ‰§è¡Œä¸­çš„æ …æ 
 
-	VkSwapchainKHR m_swapchain = nullptr;	// Vulkan½»»»Á´
-	std::vector<VkImage> m_swapchainImages;	// Vulkan½»»»Á´Í¼Ïñ
-	ERHIFormat m_swapchainImageFormat = RHI_FORMAT_UNDEFINED;	// Vulkan½»»»Á´Í¼Ïñ¸ñÊ½
-	ST_RHIExtent2D m_swapchainExtent;	// Vulkan½»»»Á´¿í¸ß
-	std::vector<RHIImageView*> m_swapchainImageViews;	// Vulkan½»»»Á´Í¼ÏñÊÓÍ¼
+	VkSwapchainKHR m_swapchain = nullptr;	// Vulkanäº¤æ¢é“¾
+	std::vector<VkImage> m_swapchainImages;	// Vulkanäº¤æ¢é“¾å›¾åƒ
+	ERHIFormat m_swapchainImageFormat = RHI_FORMAT_UNDEFINED;	// Vulkanäº¤æ¢é“¾å›¾åƒæ ¼å¼
+	ST_RHIExtent2D m_swapchainExtent;	// Vulkanäº¤æ¢é“¾å®½é«˜
+	std::vector<RHIImageView*> m_swapchainImageViews;	// Vulkanäº¤æ¢é“¾å›¾åƒè§†å›¾
 	uint32_t m_currentSwapchainImageIndex;
 
-	ERHIFormat m_depthImageFormat = RHI_FORMAT_UNDEFINED;	// Éî¶ÈÍ¼Ïñ¸ñÊ½
-	RHIImage* m_depthImage;	// Éî¶ÈÍ¼Ïñ
-	VkDeviceMemory m_depthImageMemory = nullptr;	// Éî¶ÈÍ¼ÏñÄÚ´æ
-	RHIImageView* m_depthImageView;	// Éî¶ÈÍ¼ÏñÊÓÍ¼
+	ERHIFormat m_depthImageFormat = RHI_FORMAT_UNDEFINED;	// æ·±åº¦å›¾åƒæ ¼å¼
+	RHIImage* m_depthImage;	// æ·±åº¦å›¾åƒ
+	VkDeviceMemory m_depthImageMemory = nullptr;	// æ·±åº¦å›¾åƒå†…å­˜
+	RHIImageView* m_depthImageView;	// æ·±åº¦å›¾åƒè§†å›¾
 
-	// ×ÊÔ´·ÖÅäÆ÷Ê¹ÓÃ VMA library
+	// èµ„æºåˆ†é…å™¨ä½¿ç”¨ VMA library
 	VmaAllocator m_assetsAllocator;
 
-	// Vulkanº¯ÊıÖ¸Õë
-	PFN_vkCmdBeginDebugUtilsLabelEXT _vkCmdBeginDebugUtilsLabelEXT;	// ¿ªÊ¼µ÷ÊÔ¹¤¾ß±êÇ©
-	PFN_vkCmdEndDebugUtilsLabelEXT   _vkCmdEndDebugUtilsLabelEXT;	// ½áÊøµ÷ÊÔ¹¤¾ß±êÇ©
-	PFN_vkWaitForFences         _vkWaitForFences;	// µÈ´ıÕ¤À¸
-	// ÓÃÓÚÖØÖÃÕ¤À¸£¨Fence£©×´Ì¬µÄº¯Êı£¬½«Õ¤À¸´Ó signaled£¨ÒÑÍê³É£©×´Ì¬ÖØÖÃÎª unsignaled£¨Î´Íê³É£©×´Ì¬¡£
-	PFN_vkResetFences           _vkResetFences;		// ÖØÖÃÕ¤À¸
+	// Vulkanå‡½æ•°æŒ‡é’ˆ
+	PFN_vkCmdBeginDebugUtilsLabelEXT _vkCmdBeginDebugUtilsLabelEXT;	// å¼€å§‹è°ƒè¯•å·¥å…·æ ‡ç­¾
+	PFN_vkCmdEndDebugUtilsLabelEXT   _vkCmdEndDebugUtilsLabelEXT;	// ç»“æŸè°ƒè¯•å·¥å…·æ ‡ç­¾
+	PFN_vkWaitForFences         _vkWaitForFences;	// ç­‰å¾…æ …æ 
+	// ç”¨äºé‡ç½®æ …æ ï¼ˆFenceï¼‰çŠ¶æ€çš„å‡½æ•°ï¼Œå°†æ …æ ä» signaledï¼ˆå·²å®Œæˆï¼‰çŠ¶æ€é‡ç½®ä¸º unsignaledï¼ˆæœªå®Œæˆï¼‰çŠ¶æ€ã€‚
+	PFN_vkResetFences           _vkResetFences;		// é‡ç½®æ …æ 
 	PFN_vkResetCommandPool      _vkResetCommandPool;
 	PFN_vkBeginCommandBuffer    _vkBeginCommandBuffer;
 	PFN_vkEndCommandBuffer      _vkEndCommandBuffer;
@@ -390,23 +389,23 @@ public:
 
 private:
 
-	bool m_enableValidationLayers = true;	// ÊÇ·ñÆôÓÃÑéÖ¤²ã
-	bool m_enableDebugUtilsLabel = true;	// ÊÇ·ñÆôÓÃµ÷ÊÔ¹¤¾ß±êÇ©
-	bool m_enablePointLightShadow = true;	// ÊÇ·ñÆôÓÃµã¹âÔ´ÒõÓ°
+	bool m_enableValidationLayers = true;	// æ˜¯å¦å¯ç”¨éªŒè¯å±‚
+	bool m_enableDebugUtilsLabel = true;	// æ˜¯å¦å¯ç”¨è°ƒè¯•å·¥å…·æ ‡ç­¾
+	bool m_enablePointLightShadow = true;	// æ˜¯å¦å¯ç”¨ç‚¹å…‰æºé˜´å½±
 
-	uint32_t m_vulkanApiVersion = VK_API_VERSION_1_0;	// Vulkan API°æ±¾
-	const std::vector<char const*> m_validationLayers{ "VK_LAYER_KHRONOS_validation" };	// ÑéÖ¤²ãÁĞ±í
+	uint32_t m_vulkanApiVersion = VK_API_VERSION_1_0;	// Vulkan APIç‰ˆæœ¬
+	const std::vector<char const*> m_validationLayers{ "VK_LAYER_KHRONOS_validation" };	// éªŒè¯å±‚åˆ—è¡¨
 
-	VkDebugUtilsMessengerEXT m_debugMessenger = nullptr;	// µ÷ÊÔÏûÏ¢´¦ÀíÆ÷
+	VkDebugUtilsMessengerEXT m_debugMessenger = nullptr;	// è°ƒè¯•æ¶ˆæ¯å¤„ç†å™¨
 
-	std::vector<char const*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };	// Éè±¸À©Õ¹ÁĞ±í
+	std::vector<char const*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };	// è®¾å¤‡æ‰©å±•åˆ—è¡¨
 
-	uint32_t m_maxVertexBlendingMeshCount = 256u;	// ×î´ó¶¥µã»ìºÏÍø¸ñÊıÁ¿
-	uint32_t m_maxMaterialCount = 256u;	// ×î´ó²ÄÖÊÊıÁ¿
+	uint32_t m_maxVertexBlendingMeshCount = 256u;	// æœ€å¤§é¡¶ç‚¹æ··åˆç½‘æ ¼æ•°é‡
+	uint32_t m_maxMaterialCount = 256u;	// æœ€å¤§æè´¨æ•°é‡
 
-	// Ä¬ÈÏ²ÉÑùÆ÷
-	RHISampler* m_pLinearSampler = nullptr;	// ÏßĞÔ²ÉÑùÆ÷
-	RHISampler* m_pNearestSampler = nullptr;	// ×î½üµã²ÉÑùÆ÷
+	// é»˜è®¤é‡‡æ ·å™¨
+	RHISampler* m_pLinearSampler = nullptr;	// çº¿æ€§é‡‡æ ·å™¨
+	RHISampler* m_pNearestSampler = nullptr;	// æœ€è¿‘ç‚¹é‡‡æ ·å™¨
 };
 
 NAMESPACE_XYH_END

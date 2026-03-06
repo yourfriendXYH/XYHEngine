@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Common.h>
 #include <optional>
 #include "../RenderType.h"
@@ -7,8 +7,8 @@ NAMESPACE_XYH_BEGIN
 
 #define RHI_DELETE_PTR(ptr) delete ptr; ptr = nullptr;
 
-////////////////////Àà////////////////////////
-class RHIBuffer {};	// ×ÊÔ´»º³åÇø
+////////////////////ç±»////////////////////////
+class RHIBuffer {};	// èµ„æºç¼“å†²åŒº
 class RHIBufferView {};
 class RHICommandBuffer {};
 class RHICommandPool {};
@@ -31,11 +31,11 @@ class RHIPipelineLayout {};
 class RHIRenderPass {};
 class RHISampler {};
 class RHISemaphore {};
-class RHIShader {};	// ×ÅÉ«Æ÷
+class RHIShader {};	// ç€è‰²å™¨
 
 
-////////////////////½á¹¹Ìå//////////////////////////
-struct ST_RHIMemoryBarrier;	// ÄÚ´æÆÁÕÏ
+////////////////////ç»“æ„ä½“//////////////////////////
+struct ST_RHIMemoryBarrier;	// å†…å­˜å±éšœ
 struct ST_RHICopyDescriptorSet;
 struct ST_RHIDescriptorImageInfo;
 struct ST_RHIDescriptorBufferInfo;
@@ -120,7 +120,7 @@ union UN_RHIClearValue;
 union UN_RHIClearColorValue;
 struct ST_RHIClearDepthStencilValue;
 
-////////////////////½á¹¹Ìå¶¨Òå////////////////////////
+////////////////////ç»“æ„ä½“å®šä¹‰////////////////////////
 struct ST_RHIMemoryBarrier
 {
 	ERHIStructureType m_sType;
@@ -148,7 +148,7 @@ struct ST_RHIOffset2D
 	int32_t m_y;
 };
 
-// ÌØ»¯Ó³ÉäÌõÄ¿
+// ç‰¹åŒ–æ˜ å°„æ¡ç›®
 struct ST_RHISpecializationMapEntry
 {
 	uint32_t m_constantID;
@@ -162,21 +162,21 @@ struct ST_RHIExtent2D
 	uint32_t m_height;
 };
 
-// ¸½¼şÃèÊö
+// é™„ä»¶æè¿°
 struct ST_RHIAttachmentDescription
 {
-	RHIAttachmentDescriptionFlags m_flags;	// ¸½¼şÃèÊö±êÖ¾
-	ERHIFormat m_format;	// ¸½¼ş¸ñÊ½
-	ERHISampleCountFlagBits m_samples;	// ²ÉÑùÊı
-	ERHIAttachmentLoadOp m_loadOp;	// ¼ÓÔØ²Ù×÷
-	ERHIAttachmentStoreOp m_storeOp;	// ´æ´¢²Ù×÷
-	ERHIAttachmentLoadOp m_stencilLoadOp;	// Ä£°å¼ÓÔØ²Ù×÷
-	ERHIAttachmentStoreOp m_stencilStoreOp;	// Ä£°å´æ´¢²Ù×÷
-	ERHIImageLayout m_initialLayout;	// ³õÊ¼²¼¾Ö
-	ERHIImageLayout m_finalLayout;	// ×îÖÕ²¼¾Ö
+	RHIAttachmentDescriptionFlags m_flags;	// é™„ä»¶æè¿°æ ‡å¿—
+	ERHIFormat m_format;	// é™„ä»¶æ ¼å¼
+	ERHISampleCountFlagBits m_samples;	// é‡‡æ ·æ•°
+	ERHIAttachmentLoadOp m_loadOp;	// åŠ è½½æ“ä½œ
+	ERHIAttachmentStoreOp m_storeOp;	// å­˜å‚¨æ“ä½œ
+	ERHIAttachmentLoadOp m_stencilLoadOp;	// æ¨¡æ¿åŠ è½½æ“ä½œ
+	ERHIAttachmentStoreOp m_stencilStoreOp;	// æ¨¡æ¿å­˜å‚¨æ“ä½œ
+	ERHIImageLayout m_initialLayout;	// åˆå§‹å¸ƒå±€
+	ERHIImageLayout m_finalLayout;	// æœ€ç»ˆå¸ƒå±€
 };
 
-// ¹ÜÏßÑÕÉ«»ìºÏ¸½¼ş×´Ì¬
+// ç®¡çº¿é¢œè‰²æ··åˆé™„ä»¶çŠ¶æ€
 struct ST_RHIPipelineColorBlendAttachmentState
 {
 	RHIBool32 m_blendEnable;
@@ -189,7 +189,7 @@ struct ST_RHIPipelineColorBlendAttachmentState
 	RHIColorComponentFlags m_colorWriteMask;
 };
 
-// ¹ÜÏßÑÕÉ«»ìºÏ×´Ì¬´´½¨ĞÅÏ¢
+// ç®¡çº¿é¢œè‰²æ··åˆçŠ¶æ€åˆ›å»ºä¿¡æ¯
 struct ST_RHIPipelineColorBlendStateCreateInfo
 {
 	ERHIStructureType m_sType;
@@ -213,7 +213,7 @@ struct ST_RHIStencilOpState
 	uint32_t m_reference;
 };
 
-// ¹ÜÏßÉî¶ÈÄ£°å×´Ì¬´´½¨ĞÅÏ¢
+// ç®¡çº¿æ·±åº¦æ¨¡æ¿çŠ¶æ€åˆ›å»ºä¿¡æ¯
 struct ST_RHIPipelineDepthStencilStateCreateInfo
 {
 	ERHIStructureType m_sType;
@@ -232,11 +232,11 @@ struct ST_RHIPipelineDepthStencilStateCreateInfo
 
 struct ST_RHIRect2D
 {
-	ST_RHIOffset2D m_offset;    // ¾ØĞÎÇøÓòµÄ×óÉÏ½Ç×ø±ê
-	ST_RHIExtent2D m_extent;    // ¾ØĞÎÇøÓòµÄ´óĞ¡
+	ST_RHIOffset2D m_offset;    // çŸ©å½¢åŒºåŸŸçš„å·¦ä¸Šè§’åæ ‡
+	ST_RHIExtent2D m_extent;    // çŸ©å½¢åŒºåŸŸçš„å¤§å°
 };
 
-// ¶¥µãÊäÈëÊôĞÔÃèÊö
+// é¡¶ç‚¹è¾“å…¥å±æ€§æè¿°
 struct ST_RHIVertexInputAttributeDescription
 {
 	uint32_t m_location;
@@ -252,29 +252,29 @@ struct ST_RHIClearRect
 	uint32_t m_layerCount;
 };
 
-struct ST_QueueFamilyIndices    // ¶ÓÁĞ×åË÷Òı
+struct ST_QueueFamilyIndices    // é˜Ÿåˆ—æ—ç´¢å¼•
 {
-	std::optional<uint32_t> m_graphicsFamily;    // Í¼ĞÎ¶ÓÁĞ×åË÷Òı
-	std::optional<uint32_t> m_presentFamily;     // ³ÊÏÖ¶ÓÁĞ×åË÷Òı
-	std::optional<uint32_t> m_computeFamily;   // ¼ÆËã¶ÓÁĞ×åË÷Òı
+	std::optional<uint32_t> m_graphicsFamily;    // å›¾å½¢é˜Ÿåˆ—æ—ç´¢å¼•
+	std::optional<uint32_t> m_presentFamily;     // å‘ˆç°é˜Ÿåˆ—æ—ç´¢å¼•
+	std::optional<uint32_t> m_computeFamily;   // è®¡ç®—é˜Ÿåˆ—æ—ç´¢å¼•
 
 	bool isComplete() { return m_graphicsFamily.has_value() && m_presentFamily.has_value() && m_computeFamily.has_value();; }
 };
 
-struct ST_SwapChainSupportDetails   // ½»»»Á´Ö§³ÖÏ¸½Ú
+struct ST_SwapChainSupportDetails   // äº¤æ¢é“¾æ”¯æŒç»†èŠ‚
 {
-	VkSurfaceCapabilitiesKHR m_capabilities;   // ½»»»Á´µÄÄÜÁ¦
-	std::vector<VkSurfaceFormatKHR> m_formats;    // ½»»»Á´Ö§³ÖµÄ±íÃæ¸ñÊ½
-	std::vector<VkPresentModeKHR> m_presentModes;   // ½»»»Á´Ö§³ÖµÄ³ÊÏÖÄ£Ê½
+	VkSurfaceCapabilitiesKHR m_capabilities;   // äº¤æ¢é“¾çš„èƒ½åŠ›
+	std::vector<VkSurfaceFormatKHR> m_formats;    // äº¤æ¢é“¾æ”¯æŒçš„è¡¨é¢æ ¼å¼
+	std::vector<VkPresentModeKHR> m_presentModes;   // äº¤æ¢é“¾æ”¯æŒçš„å‘ˆç°æ¨¡å¼
 };
 
 struct ST_RHISwapChainDesc
 {
-	ST_RHIExtent2D m_extent;    // ½»»»Á´µÄ¿í¶ÈºÍ¸ß¶È
-	ERHIFormat m_imageFormat;   // ½»»»Á´Í¼ÏñµÄ¸ñÊ½
-	ST_RHIViewport* m_pViewport;    // ÊÓ¿Ú
-	ST_RHIRect2D* m_pScissor;   // ²Ã¼ôÇøÓò
-	std::vector<RHIImageView*> m_imageViews;  // ½»»»Á´Í¼ÏñÊÓÍ¼
+	ST_RHIExtent2D m_extent;    // äº¤æ¢é“¾çš„å®½åº¦å’Œé«˜åº¦
+	ERHIFormat m_imageFormat;   // äº¤æ¢é“¾å›¾åƒçš„æ ¼å¼
+	ST_RHIViewport* m_pViewport;    // è§†å£
+	ST_RHIRect2D* m_pScissor;   // è£å‰ªåŒºåŸŸ
+	std::vector<RHIImageView*> m_imageViews;  // äº¤æ¢é“¾å›¾åƒè§†å›¾
 };
 
 struct ST_RHIRenderPassCreateInfo
@@ -314,29 +314,29 @@ struct ST_RHISubpassDependency
 	RHIDependencyFlags m_dependencyFlags;
 };
 
-// ×ÓÍ¨µÀÃèÊö
+// å­é€šé“æè¿°
 struct ST_RHISubpassDescription
 {
 	RHISubpassDescriptionFlags m_flags;
-	ERHIPipelineBindPoint m_pipelineBindPoint;	// ¹ÜÏß°ó¶¨µã
-	uint32_t m_inputAttachmentCount;	// ÊäÈë¸½¼şÊıÁ¿
+	ERHIPipelineBindPoint m_pipelineBindPoint;	// ç®¡çº¿ç»‘å®šç‚¹
+	uint32_t m_inputAttachmentCount;	// è¾“å…¥é™„ä»¶æ•°é‡
 	const ST_RHIAttachmentReference* m_pInputAttachments;
-	uint32_t m_colorAttachmentCount;	// Êä³ö¸½¼şÊıÁ¿
+	uint32_t m_colorAttachmentCount;	// è¾“å‡ºé™„ä»¶æ•°é‡
 	const ST_RHIAttachmentReference* m_pColorAttachments;
 	const ST_RHIAttachmentReference* m_pResolveAttachments;
 	const ST_RHIAttachmentReference* m_pDepthStencilAttachment;
-	uint32_t m_preserveAttachmentCount;	// ±£Áô¸½¼şÊıÁ¿
-	const uint32_t* m_pPreserveAttachments;	// ±£Áô¸½¼şË÷Òı
+	uint32_t m_preserveAttachmentCount;	// ä¿ç•™é™„ä»¶æ•°é‡
+	const uint32_t* m_pPreserveAttachments;	// ä¿ç•™é™„ä»¶ç´¢å¼•
 };
 
-// ¸½¼şÒıÓÃ
+// é™„ä»¶å¼•ç”¨
 struct ST_RHIAttachmentReference
 {
 	uint32_t m_attachment;
-	ERHIImageLayout m_layout;	// ¸½¼ş²¼¾Ö
+	ERHIImageLayout m_layout;	// é™„ä»¶å¸ƒå±€
 };
 
-// ¶¥µãÊäÈëÊôĞÔÃèÊö
+// é¡¶ç‚¹è¾“å…¥å±æ€§æè¿°
 struct ST_RHIVertexInputBindingDescription
 {
 	uint32_t m_binding;
@@ -398,17 +398,17 @@ struct ST_RHIDepthImageDesc
 	ERHIFormat m_depthImageFormat;
 };
 
-// ÃèÊö·û¼¯²¼¾Ö°ó¶¨
+// æè¿°ç¬¦é›†å¸ƒå±€ç»‘å®š
 struct ST_RHIDescriptorSetLayoutBinding
 {
 	uint32_t m_binding;
 	ERHIDescriptorType m_descriptorType;
 	uint32_t m_descriptorCount;
 	RHIShaderStageFlags m_stageFlags;
-	RHISampler* const* m_pImmutableSamplers = nullptr;	// ²»¿É±ä²ÉÑùÆ÷
+	RHISampler* const* m_pImmutableSamplers = nullptr;	// ä¸å¯å˜é‡‡æ ·å™¨
 };
 
-// ÃèÊö·û¼¯²¼¾Ö´´½¨ĞÅÏ¢
+// æè¿°ç¬¦é›†å¸ƒå±€åˆ›å»ºä¿¡æ¯
 struct ST_RHIDescriptorSetLayoutCreateInfo
 {
 	ERHIStructureType m_sType;
@@ -418,7 +418,7 @@ struct ST_RHIDescriptorSetLayoutCreateInfo
 	const ST_RHIDescriptorSetLayoutBinding* m_pBindings;
 };
 
-// ¹ÜÏß²¼¾Ö´´½¨ĞÅÏ¢
+// ç®¡çº¿å¸ƒå±€åˆ›å»ºä¿¡æ¯
 struct ST_RHIPipelineLayoutCreateInfo
 {
 	ERHIStructureType m_sType;
@@ -430,7 +430,7 @@ struct ST_RHIPipelineLayoutCreateInfo
 	const ST_RHIPushConstantRange* m_pPushConstantRanges;
 };
 
-// ÍÆËÍ³£Á¿·¶Î§
+// æ¨é€å¸¸é‡èŒƒå›´
 struct ST_RHIPushConstantRange
 {
 	RHIShaderStageFlags m_stageFlags;
@@ -438,7 +438,7 @@ struct ST_RHIPushConstantRange
 	uint32_t m_size;
 };
 
-// ¹ÜÏß×ÅÉ«Æ÷½×¶Î´´½¨ĞÅÏ¢
+// ç®¡çº¿ç€è‰²å™¨é˜¶æ®µåˆ›å»ºä¿¡æ¯
 struct ST_RHIPipelineShaderStageCreateInfo
 {
 	ERHIStructureType m_sType;
@@ -447,10 +447,10 @@ struct ST_RHIPipelineShaderStageCreateInfo
 	ERHIShaderStageFlagBits m_stage;
 	RHIShader* m_module;
 	const char* m_pName;
-	const ST_RHISpecializationInfo* m_pSpecializationInfo;	// ÌØÊâ»¯ĞÅÏ¢
+	const ST_RHISpecializationInfo* m_pSpecializationInfo;	// ç‰¹æ®ŠåŒ–ä¿¡æ¯
 };
 
-// ÌØÊâ»¯Ó³ÉäÌõÄ¿
+// ç‰¹æ®ŠåŒ–æ˜ å°„æ¡ç›®
 struct ST_RHISpecializationInfo
 {
 	uint32_t m_mapEntryCount;
@@ -459,7 +459,7 @@ struct ST_RHISpecializationInfo
 	const void* m_pData;
 };
 
-// ¹ÜÏß¶¥µãÊäÈë×´Ì¬´´½¨ĞÅÏ¢
+// ç®¡çº¿é¡¶ç‚¹è¾“å…¥çŠ¶æ€åˆ›å»ºä¿¡æ¯
 struct ST_RHIPipelineVertexInputStateCreateInfo
 {
 	ERHIStructureType m_sType;
@@ -471,17 +471,17 @@ struct ST_RHIPipelineVertexInputStateCreateInfo
 	const ST_RHIVertexInputAttributeDescription* m_pVertexAttributeDescriptions;
 };
 
-// ¹ÜÏßÊäÈë×°Åä×´Ì¬´´½¨ĞÅÏ¢
+// ç®¡çº¿è¾“å…¥è£…é…çŠ¶æ€åˆ›å»ºä¿¡æ¯
 struct ST_RHIPipelineInputAssemblyStateCreateInfo
 {
 	ERHIStructureType m_sType;
 	const void* m_pNext;
 	RHIPipelineInputAssemblyStateCreateFlags m_flags;
-	ERHIPrimitiveTopology m_topology;	// Í¼ÔªÍØÆËÀàĞÍ
+	ERHIPrimitiveTopology m_topology;	// å›¾å…ƒæ‹“æ‰‘ç±»å‹
 	RHIBool32 m_primitiveRestartEnable;
 };
 
-// ¹ÜÏßÊÓ¿Ú×´Ì¬´´½¨ĞÅÏ¢
+// ç®¡çº¿è§†å£çŠ¶æ€åˆ›å»ºä¿¡æ¯
 struct ST_RHIPipelineViewportStateCreateInfo
 {
 	ERHIStructureType m_sType;
@@ -493,25 +493,25 @@ struct ST_RHIPipelineViewportStateCreateInfo
 	const ST_RHIRect2D* m_pScissors;
 };
 
-// ¹ÜÏß¹âÕ¤»¯×´Ì¬´´½¨ĞÅÏ¢
+// ç®¡çº¿å…‰æ …åŒ–çŠ¶æ€åˆ›å»ºä¿¡æ¯
 struct ST_RHIPipelineRasterizationStateCreateInfo
 {
 	ERHIStructureType m_sType;
 	const void* m_pNext;
-	RHIPipelineRasterizationStateCreateFlags m_flags;	// ¹ÜÏß¹âÕ¤»¯×´Ì¬´´½¨±êÖ¾
-	RHIBool32 m_depthClampEnable;	// ÊÇ·ñÆôÓÃÉî¶È²Ã¼ô
-	RHIBool32 m_rasterizerDiscardEnable;	// ÊÇ·ñ¶ªÆú¹âÕ¤»¯½×¶Î
-	ERHIPolygonMode m_polygonMode;	// ¶à±ßĞÎÄ£Ê½
-	RHICullModeFlags m_cullMode;	// ÌŞ³ıÄ£Ê½
+	RHIPipelineRasterizationStateCreateFlags m_flags;	// ç®¡çº¿å…‰æ …åŒ–çŠ¶æ€åˆ›å»ºæ ‡å¿—
+	RHIBool32 m_depthClampEnable;	// æ˜¯å¦å¯ç”¨æ·±åº¦è£å‰ª
+	RHIBool32 m_rasterizerDiscardEnable;	// æ˜¯å¦ä¸¢å¼ƒå…‰æ …åŒ–é˜¶æ®µ
+	ERHIPolygonMode m_polygonMode;	// å¤šè¾¹å½¢æ¨¡å¼
+	RHICullModeFlags m_cullMode;	// å‰”é™¤æ¨¡å¼
 	ERHIFrontFace m_frontFace;
-	RHIBool32 m_depthBiasEnable;	// ÊÇ·ñÆôÓÃÉî¶ÈÆ«ÒÆ
-	float m_depthBiasConstantFactor;	// ³£Á¿Éî¶ÈÆ«ÒÆÒò×Ó
-	float m_depthBiasClamp;	// Éî¶ÈÆ«ÒÆ¼Ğ¾ß
-	float m_depthBiasSlopeFactor;	// Ğ±ÂÊÉî¶ÈÆ«ÒÆÒò×Ó
-	float m_lineWidth;	// Ïß¿í
+	RHIBool32 m_depthBiasEnable;	// æ˜¯å¦å¯ç”¨æ·±åº¦åç§»
+	float m_depthBiasConstantFactor;	// å¸¸é‡æ·±åº¦åç§»å› å­
+	float m_depthBiasClamp;	// æ·±åº¦åç§»å¤¹å…·
+	float m_depthBiasSlopeFactor;	// æ–œç‡æ·±åº¦åç§»å› å­
+	float m_lineWidth;	// çº¿å®½
 };
 
-// ¹ÜÏß¶àÖØ²ÉÑù×´Ì¬´´½¨ĞÅÏ¢
+// ç®¡çº¿å¤šé‡é‡‡æ ·çŠ¶æ€åˆ›å»ºä¿¡æ¯
 struct ST_RHIPipelineMultisampleStateCreateInfo
 {
 	ERHIStructureType m_sType;
@@ -521,11 +521,11 @@ struct ST_RHIPipelineMultisampleStateCreateInfo
 	RHIBool32 m_sampleShadingEnable;
 	float m_minSampleShading;
 	const RHISampleMask** m_pSampleMask;
-	RHIBool32 m_alphaToCoverageEnable;	// ÊÇ·ñÆôÓÃAlphaµ½¸²¸Ç
+	RHIBool32 m_alphaToCoverageEnable;	// æ˜¯å¦å¯ç”¨Alphaåˆ°è¦†ç›–
 	RHIBool32 m_alphaToOneEnable;
 };
 
-// ¹ÜÏß¶¯Ì¬×´Ì¬´´½¨ĞÅÏ¢
+// ç®¡çº¿åŠ¨æ€çŠ¶æ€åˆ›å»ºä¿¡æ¯
 struct ST_RHIPipelineDynamicStateCreateInfo
 {
 	ERHIStructureType m_sType;
@@ -535,16 +535,16 @@ struct ST_RHIPipelineDynamicStateCreateInfo
 	const ERHIDynamicState* m_pDynamicStates;
 };
 
-// ¹ÜÏßÇúÃæÏ¸·Ö×´Ì¬´´½¨ĞÅÏ¢
+// ç®¡çº¿æ›²é¢ç»†åˆ†çŠ¶æ€åˆ›å»ºä¿¡æ¯
 struct ST_RHIPipelineTessellationStateCreateInfo
 {
 	ERHIStructureType m_sType;
 	const void* m_pNext;
 	RHIPipelineTessellationStateCreateFlags m_flags;
-	uint32_t m_patchControlPoints;	// ÇúÃæ¿ØÖÆµãÊı
+	uint32_t m_patchControlPoints;	// æ›²é¢æ§åˆ¶ç‚¹æ•°
 };
 
-// Í¼ĞÎ¹ÜÏß´´½¨ĞÅÏ¢
+// å›¾å½¢ç®¡çº¿åˆ›å»ºä¿¡æ¯
 struct ST_RHIGraphicsPipelineCreateInfo
 {
 	ERHIStructureType m_sType;
@@ -553,8 +553,8 @@ struct ST_RHIGraphicsPipelineCreateInfo
 	uint32_t m_stageCount;
 	const ST_RHIPipelineShaderStageCreateInfo* m_pStages;
 	const ST_RHIPipelineVertexInputStateCreateInfo* m_pVertexInputState;
-	const ST_RHIPipelineInputAssemblyStateCreateInfo* m_pInputAssemblyState;	// ÊäÈë×°Åä×´Ì¬
-	const ST_RHIPipelineTessellationStateCreateInfo* m_pTessellationState;	// ÇúÃæÏ¸·Ö×´Ì¬
+	const ST_RHIPipelineInputAssemblyStateCreateInfo* m_pInputAssemblyState;	// è¾“å…¥è£…é…çŠ¶æ€
+	const ST_RHIPipelineTessellationStateCreateInfo* m_pTessellationState;	// æ›²é¢ç»†åˆ†çŠ¶æ€
 	const ST_RHIPipelineViewportStateCreateInfo* m_pViewportState;
 	const ST_RHIPipelineRasterizationStateCreateInfo* m_pRasterizationState;
 	const ST_RHIPipelineMultisampleStateCreateInfo* m_pMultisampleState;
@@ -568,7 +568,7 @@ struct ST_RHIGraphicsPipelineCreateInfo
 	int32_t m_basePipelineIndex;
 };
 
-// ¼ÆËã¹ÜÏß´´½¨ĞÅÏ¢
+// è®¡ç®—ç®¡çº¿åˆ›å»ºä¿¡æ¯
 struct ST_RHIComputePipelineCreateInfo
 {
 	ERHIStructureType m_sType;
@@ -580,7 +580,7 @@ struct ST_RHIComputePipelineCreateInfo
 	int32_t m_basePipelineIndex;
 };
 
-// ÃèÊö·ûÍ¼ÏñĞÅÏ¢
+// æè¿°ç¬¦å›¾åƒä¿¡æ¯
 struct ST_RHIDescriptorImageInfo
 {
 	RHISampler* m_pSampler;
@@ -588,7 +588,7 @@ struct ST_RHIDescriptorImageInfo
 	ERHIImageLayout m_imageLayout;
 };
 
-// ÃèÊö·û»º³åÇøĞÅÏ¢
+// æè¿°ç¬¦ç¼“å†²åŒºä¿¡æ¯
 struct ST_RHIDescriptorBufferInfo
 {
 	RHIBuffer* m_pBuffer;
@@ -600,7 +600,7 @@ struct ST_RHIWriteDescriptorSet
 {
 	ERHIStructureType m_sType;
 	const void* m_pNext;
-	RHIDescriptorSet* m_pDstSet;	// Ä¿±êÃèÊö·û¼¯
+	RHIDescriptorSet* m_pDstSet;	// ç›®æ ‡æè¿°ç¬¦é›†
 	uint32_t m_dstBinding;
 	uint32_t m_dstArrayElement;
 	uint32_t m_descriptorCount;
@@ -634,18 +634,18 @@ struct ST_RHICommandBufferAllocateInfo
 {
 	ERHIStructureType m_sType;
 	const void* m_pNext;
-	RHICommandPool* m_pCommandPool;	// ÃüÁî³Ø
-	ERHICommandBufferLevel m_level;	// ÃüÁî»º³åÇø¼¶±ğ
-	uint32_t m_commandBufferCount;	// ÃüÁî»º³åÇøÊıÁ¿
+	RHICommandPool* m_pCommandPool;	// å‘½ä»¤æ± 
+	ERHICommandBufferLevel m_level;	// å‘½ä»¤ç¼“å†²åŒºçº§åˆ«
+	uint32_t m_commandBufferCount;	// å‘½ä»¤ç¼“å†²åŒºæ•°é‡
 };
 
-// ÃüÁî»º³å¿ªÊ¼ĞÅÏ¢
+// å‘½ä»¤ç¼“å†²å¼€å§‹ä¿¡æ¯
 struct ST_RHICommandBufferBeginInfo
 {
 	ERHIStructureType m_sType;
 	const void* m_pNext;
 	RHICommandBufferUsageFlags m_flags;
-	const ST_RHICommandBufferInheritanceInfo* m_pInheritanceInfo;	// ¼Ì³ĞĞÅÏ¢
+	const ST_RHICommandBufferInheritanceInfo* m_pInheritanceInfo;	// ç»§æ‰¿ä¿¡æ¯
 };
 
 struct ST_RHICommandBufferInheritanceInfo
@@ -664,9 +664,9 @@ struct ST_RHIDescriptorSetAllocateInfo
 {
 	ERHIStructureType m_sType;
 	const void* m_pNext;
-	RHIDescriptorPool* m_pDescriptorPool;	// ÃèÊö·û³Ø
-	uint32_t m_descriptorSetCount;	// ÃèÊö·û¼¯ÊıÁ¿
-	const RHIDescriptorSetLayout* const* m_pSetLayouts;	// ÃèÊö·û¼¯²¼¾Ö
+	RHIDescriptorPool* m_pDescriptorPool;	// æè¿°ç¬¦æ± 
+	uint32_t m_descriptorSetCount;	// æè¿°ç¬¦é›†æ•°é‡
+	const RHIDescriptorSetLayout* const* m_pSetLayouts;	// æè¿°ç¬¦é›†å¸ƒå±€
 };
 
 struct ST_RHISamplerCreateInfo
@@ -691,7 +691,7 @@ struct ST_RHISamplerCreateInfo
 	RHIBool32 m_unnormalizedCoordinates;
 };
 
-// Í¼Ïñ×Ó×ÊÔ´·¶Î§
+// å›¾åƒå­èµ„æºèŒƒå›´
 struct ST_RHIImageSubresourceRange
 {
 	RHIImageAspectFlags m_aspectMask;
@@ -701,7 +701,7 @@ struct ST_RHIImageSubresourceRange
 	uint32_t m_layerCount;
 };
 
-// Í¼ÏñÄÚ´æÆÁÕÏ
+// å›¾åƒå†…å­˜å±éšœ
 struct ST_RHIImageMemoryBarrier
 {
 	ERHIStructureType m_sType;
@@ -734,6 +734,138 @@ struct ST_RHIBufferCopy
 	RHIDeviceSize m_srcOffset;
 	RHIDeviceSize m_dstOffset;
 	RHIDeviceSize m_size;
+};
+
+struct ST_RHIPhysicalDeviceLimits
+{
+	uint32_t m_maxImageDimension1D;
+	uint32_t m_maxImageDimension2D;
+	uint32_t m_maxImageDimension3D;
+	uint32_t m_maxImageDimensionCube;
+	uint32_t m_maxImageArrayLayers;
+	uint32_t m_maxTexelBufferElements;
+	uint32_t m_maxUniformBufferRange;
+	uint32_t m_maxStorageBufferRange;
+	uint32_t m_maxPushConstantsSize;
+	uint32_t m_maxMemoryAllocationCount;
+	uint32_t m_maxSamplerAllocationCount;
+	RHIDeviceSize m_bufferImageGranularity;
+	RHIDeviceSize m_sparseAddressSpaceSize;
+	uint32_t m_maxBoundDescriptorSets;
+	uint32_t m_maxPerStageDescriptorSamplers;
+	uint32_t m_maxPerStageDescriptorUniformBuffers;
+	uint32_t m_maxPerStageDescriptorStorageBuffers;
+	uint32_t m_maxPerStageDescriptorSampledImages;
+	uint32_t m_maxPerStageDescriptorStorageImages;
+	uint32_t m_maxPerStageDescriptorInputAttachments;
+	uint32_t m_maxPerStageResources;
+	uint32_t m_maxDescriptorSetSamplers;
+	uint32_t m_maxDescriptorSetUniformBuffers;
+	uint32_t m_maxDescriptorSetUniformBuffersDynamic;
+	uint32_t m_maxDescriptorSetStorageBuffers;
+	uint32_t m_maxDescriptorSetStorageBuffersDynamic;
+	uint32_t m_maxDescriptorSetSampledImages;
+	uint32_t m_maxDescriptorSetStorageImages;
+	uint32_t m_maxDescriptorSetInputAttachments;
+	uint32_t m_maxVertexInputAttributes;
+	uint32_t m_maxVertexInputBindings;
+	uint32_t m_maxVertexInputAttributeOffset;
+	uint32_t m_maxVertexInputBindingStride;
+	uint32_t m_maxVertexOutputComponents;
+	uint32_t m_maxTessellationGenerationLevel;
+	uint32_t m_maxTessellationPatchSize;
+	uint32_t m_maxTessellationControlPerVertexInputComponents;
+	uint32_t m_maxTessellationControlPerVertexOutputComponents;
+	uint32_t m_maxTessellationControlPerPatchOutputComponents;
+	uint32_t m_maxTessellationControlTotalOutputComponents;
+	uint32_t m_maxTessellationEvaluationInputComponents;
+	uint32_t m_maxTessellationEvaluationOutputComponents;
+	uint32_t m_maxGeometryShaderInvocations;
+	uint32_t m_maxGeometryInputComponents;
+	uint32_t m_maxGeometryOutputComponents;
+	uint32_t m_maxGeometryOutputVertices;
+	uint32_t m_maxGeometryTotalOutputComponents;
+	uint32_t m_maxFragmentInputComponents;
+	uint32_t m_maxFragmentOutputAttachments;
+	uint32_t m_maxFragmentDualSrcAttachments;
+	uint32_t m_maxFragmentCombinedOutputResources;
+	uint32_t m_maxComputeSharedMemorySize;
+	uint32_t m_maxComputeWorkGroupCount[3];
+	uint32_t m_maxComputeWorkGroupInvocations;
+	uint32_t m_maxComputeWorkGroupSize[3];
+	uint32_t m_subPixelPrecisionBits;
+	uint32_t m_subTexelPrecisionBits;
+	uint32_t m_mipmapPrecisionBits;
+	uint32_t m_maxDrawIndexedIndexValue;
+	uint32_t m_maxDrawIndirectCount;
+	float m_maxSamplerLodBias;
+	float m_maxSamplerAnisotropy;
+	uint32_t m_maxViewports;
+	uint32_t m_maxViewportDimensions[2];
+	float m_viewportBoundsRange[2];
+	uint32_t m_viewportSubPixelBits;
+	size_t m_minMemoryMapAlignment;
+	RHIDeviceSize m_minTexelBufferOffsetAlignment;
+	RHIDeviceSize m_minUniformBufferOffsetAlignment;
+	RHIDeviceSize m_minStorageBufferOffsetAlignment;
+	int32_t m_minTexelOffset;
+	uint32_t m_maxTexelOffset;
+	int32_t m_minTexelGatherOffset;
+	uint32_t m_maxTexelGatherOffset;
+	float m_minInterpolationOffset;
+	float m_maxInterpolationOffset;
+	uint32_t m_subPixelInterpolationOffsetBits;
+	uint32_t m_maxFramebufferWidth;
+	uint32_t m_maxFramebufferHeight;
+	uint32_t m_maxFramebufferLayers;
+	RHISampleCountFlags m_framebufferColorSampleCounts;
+	RHISampleCountFlags m_framebufferDepthSampleCounts;
+	RHISampleCountFlags m_framebufferStencilSampleCounts;
+	RHISampleCountFlags m_framebufferNoAttachmentsSampleCounts;
+	uint32_t m_maxColorAttachments;
+	RHISampleCountFlags m_sampledImageColorSampleCounts;
+	RHISampleCountFlags m_sampledImageIntegerSampleCounts;
+	RHISampleCountFlags m_sampledImageDepthSampleCounts;
+	RHISampleCountFlags m_sampledImageStencilSampleCounts;
+	RHISampleCountFlags m_storageImageSampleCounts;
+	uint32_t m_maxSampleMaskWords;
+	RHIBool32 m_timestampComputeAndGraphics;
+	float m_timestampPeriod;
+	uint32_t m_maxClipDistances;
+	uint32_t m_maxCullDistances;
+	uint32_t m_maxCombinedClipAndCullDistances;
+	uint32_t m_discreteQueuePriorities;
+	float m_pointSizeRange[2];
+	float m_lineWidthRange[2];
+	float m_pointSizeGranularity;
+	float m_lineWidthGranularity;
+	RHIBool32 m_strictLines;
+	RHIBool32 m_standardSampleLocations;
+	RHIDeviceSize m_optimalBufferCopyOffsetAlignment;
+	RHIDeviceSize m_optimalBufferCopyRowPitchAlignment;
+	RHIDeviceSize m_nonCoherentAtomSize;
+};
+
+struct ST_RHIPhysicalDeviceSparseProperties
+{
+	RHIBool32 m_residencyStandard2DBlockShape;
+	RHIBool32 m_residencyStandard2DMultisampleBlockShape;
+	RHIBool32 m_residencyStandard3DBlockShape;
+	RHIBool32 m_residencyAlignedMipSize;
+	RHIBool32 m_residencyNonResidentStrict;
+};
+
+struct ST_RHIPhysicalDeviceProperties
+{
+	uint32_t m_apiVersion;
+	uint32_t m_driverVersion;
+	uint32_t m_vendorID;
+	uint32_t m_deviceID;
+	ERHIPhysicalDeviceType m_deviceType;
+	char m_deviceName[RHI_MAX_PHYSICAL_DEVICE_NAME_SIZE];
+	uint8_t m_pipelineCacheUUID[RHI_UUID_SIZE];
+	ST_RHIPhysicalDeviceLimits m_limits;
+	ST_RHIPhysicalDeviceSparseProperties m_sparseProperties;
 };
 
 NAMESPACE_XYH_END

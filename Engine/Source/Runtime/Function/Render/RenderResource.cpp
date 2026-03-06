@@ -9,6 +9,7 @@ void RenderResource::Clear()
 
 void RenderResource::UploadGlobalRenderResource(std::shared_ptr<RHI> pRHI, const ST_LevelResourceDesc& levelResourceDesc)
 {
+	CreateAndMapStorageBuffer(pRHI);
 }
 
 void RenderResource::UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity renderEntity, ST_RenderMeshData mesh_data, ST_RenderMaterialData material_data)
@@ -106,6 +107,16 @@ ST_VulkanPBRMaterial& RenderResource::GetEntityMaterial(RenderEntity entity)
 	{
 		throw std::runtime_error("failed to get entity material");
 	}
+}
+
+void RenderResource::CreateAndMapStorageBuffer(std::shared_ptr<RHI> pRHI)
+{
+	ST_StorageBuffer& storageBuffer = m_globalRenderResource.m_storageBuffer;
+
+	uint32_t framesInFlight = RHI::s_maxFramesInFlight;	// 帧缓冲数量
+
+	ST_RHIPhysicalDeviceProperties properties;
+	pRHI->GetPhysicalDeviceProperties(&properties);
 }
 
 

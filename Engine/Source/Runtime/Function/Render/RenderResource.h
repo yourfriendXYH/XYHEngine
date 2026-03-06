@@ -93,6 +93,8 @@ public:
 
 private:
 
+	void CreateAndMapStorageBuffer(std::shared_ptr<RHI> pRHI);
+
 public:
 
 	ST_GlobalRenderResource m_globalRenderResource;
