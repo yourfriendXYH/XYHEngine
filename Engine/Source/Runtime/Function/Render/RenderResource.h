@@ -41,9 +41,9 @@ struct ST_ColorGradingResource
 struct ST_StorageBuffer
 {
 	// limits
-	uint32_t m_minUniformBufferOffsetAlignment{ 256 };
-	uint32_t m_minStorageBufferOffsetAlignment{ 256 };
-	uint32_t m_maxStorageBufferRange{ 1 << 27 };
+	uint32_t m_minUniformBufferOffsetAlignment{ 256 };	// uniform buffer 对齐值
+	uint32_t m_minStorageBufferOffsetAlignment{ 256 };	// storage buffer 对齐值
+	uint32_t m_maxStorageBufferRange{ 1 << 27 };	// 存储缓冲区（Storage Buffer）的最大字节数
 	uint32_t m_nonCoherentAtomSize{ 256 };	// 非一致性原子大小
 
 	RHIBuffer* m_pGlobalUploadRingbuffer;	// 全局上传环形缓冲区
@@ -93,7 +93,14 @@ public:
 
 private:
 
+	// 创建并映射存储缓冲区（内存分配）
 	void CreateAndMapStorageBuffer(std::shared_ptr<RHI> pRHI);
+
+	// 创建IBL纹理采样器
+	void CreateIBLSamplers(std::shared_ptr<RHI> pRHI);
+
+	// 创建IBL纹理
+	void CreateIBLTextures(std::shared_ptr<RHI> pRHI, std::array<std::shared_ptr<TextureData>, 6> irradianceMaps, std::array<std::shared_ptr<TextureData>, 6> specularMaps);
 
 public:
 
