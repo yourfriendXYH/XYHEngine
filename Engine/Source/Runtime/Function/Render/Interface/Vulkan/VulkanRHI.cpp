@@ -412,8 +412,17 @@ void VulkanRHI::CreateGlobalImage(RHIImage*& pImage, RHIImageView*& pImageView, 
 	((VulkanImageView*)pImageView)->SetResource(vkImageView);
 }
 
-void VulkanRHI::CreateCubeMap(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, std::array<void*, 6> texture_image_pixels, ERHIFormat texture_image_format, uint32_t miplevels)
+void VulkanRHI::CreateCubeMap(RHIImage*& pImage, RHIImageView*& pImageView, VmaAllocation& imageAllocation, uint32_t textureImageWidth, uint32_t textureImageHeight, std::array<void*, 6> textureImagePixels, ERHIFormat textureImageFormat, uint32_t miplevels)
 {
+	VkImage vkImage;
+	VkImageView vkImageView;
+
+	VulkanUtil::CreateCubeMap(this, vkImage, vkImageView, imageAllocation, textureImageWidth, textureImageHeight, textureImagePixels, textureImageFormat, miplevels);
+
+	pImage = new VulkanImage();
+	pImageView = new VulkanImageView();
+	((VulkanImage*)pImage)->SetResource(vkImage);
+	((VulkanImageView*)pImageView)->SetResource(vkImageView);
 }
 
 bool VulkanRHI::CreateCommandPool(const ST_RHICommandPoolCreateInfo* pCreateInfo, RHICommandPool*& pCommandPool)

@@ -59,6 +59,31 @@ void RenderResource::UploadGlobalRenderResource(std::shared_ptr<RHI> pRHI, const
 	};
 
 	CreateIBLTextures(pRHI, irradianceMaps, specularMaps);
+
+	// create brdf lut texture
+	pRHI->CreateGlobalImage(
+		m_globalRenderResource.m_iblResource.m_pBrdfLUTTextureImage,
+		m_globalRenderResource.m_iblResource.m_pBrdfLUTTextureImageView,
+		m_globalRenderResource.m_iblResource.m_brdfLUTTextureImageAllocation,
+		pBRDFMap->m_width,
+		pBRDFMap->m_height,
+		pBRDFMap->m_pixels,
+		pBRDFMap->m_format
+	);
+
+	// color grading
+	std::shared_ptr<TextureData> pColorGradingMap = LoadTexture(levelResourceDesc.m_colorGradingResourceDesc.m_colorGradingMap);
+
+	// create color grading texture
+	pRHI->CreateGlobalImage(
+		m_globalRenderResource.m_colorGradingResource.m_pColorGradingLUTTextureImage,
+		m_globalRenderResource.m_colorGradingResource.m_pColorGradingLUTTextureImageView,
+		m_globalRenderResource.m_colorGradingResource.m_pColorGradingLUTTextureImageAllocation,
+		pColorGradingMap->m_width,
+		pColorGradingMap->m_height,
+		pColorGradingMap->m_pixels,
+		pColorGradingMap->m_format
+	);
 }
 
 void RenderResource::UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity renderEntity, ST_RenderMeshData mesh_data, ST_RenderMaterialData material_data)
@@ -292,7 +317,30 @@ void RenderResource::CreateIBLSamplers(std::shared_ptr<RHI> pRHI)
 
 void RenderResource::CreateIBLTextures(std::shared_ptr<RHI> pRHI, std::array<std::shared_ptr<TextureData>, 6> irradianceMaps, std::array<std::shared_ptr<TextureData>, 6> specularMaps)
 {
+	// 假设所有纹理具有相同的宽度、高度和格式
+	uint32_t irradianceCubemapMiplevels = static_cast<uint32_t>(std::floor(log2(std::max(irradianceMaps[0]->m_width, irradianceMaps[0]->m_height)))) + 1u;
+	pRHI->CreateCubeMap(
+		m_globalRenderResource.m_iblResource.m_pIrradianceTextureImage,
+		m_globalRenderResource.m_iblResource.m_pIrradianceTextureImageView,
+		m_globalRenderResource.m_iblResource.m_irradianceTextureImageAllocation,
+		irradianceMaps[0]->m_width,
+		irradianceMaps[0]->m_height,
+		{ irradianceMaps[0]->m_pixels, irradianceMaps[1]->m_pixels, irradianceMaps[2]->m_pixels, irradianceMaps[3]->m_pixels, irradianceMaps[4]->m_pixels, irradianceMaps[5]->m_pixels },
+		irradianceMaps[0]->m_format,
+		irradianceCubemapMiplevels
+	);
 
+	uint32_t specularCubemapMiplevels = static_cast<uint32_t>(std::floor(log2(std::max(specularMaps[0]->m_width, specularMaps[0]->m_height)))) + 1u;
+	pRHI->CreateCubeMap(
+		m_globalRenderResource.m_iblResource.m_pSpecularTextureImage,
+		m_globalRenderResource.m_iblResource.m_pSpecularTextureImageView,
+		m_globalRenderResource.m_iblResource.m_specularTextureImageAllocation,
+		specularMaps[0]->m_width,
+		specularMaps[0]->m_height,
+		{ specularMaps[0]->m_pixels, specularMaps[1]->m_pixels, specularMaps[2]->m_pixels, specularMaps[3]->m_pixels, specularMaps[4]->m_pixels, specularMaps[5]->m_pixels },
+		specularMaps[0]->m_format,
+		specularCubemapMiplevels
+	);
 }
 
 

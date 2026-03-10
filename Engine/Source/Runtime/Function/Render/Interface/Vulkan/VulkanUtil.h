@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Common.h>
 #include <vulkan/vulkan.h>
 #include <vector>
@@ -10,7 +10,7 @@ class VulkanUtil
 {
 public:
 
-	// ´´½¨×ÅÉ«Æ÷Ä£¿é
+	// åˆ›å»ºç€è‰²å™¨æ¨¡å—
 	static VkShaderModule CreateShaderModule(VkDevice device, const std::vector<unsigned char>& shaderCode);
 
 	static void CreateBuffer(
@@ -33,7 +33,7 @@ public:
 		void* pData = nullptr,
 		int dataSize = 0);
 
-	// ´´½¨Í¼ÏñÊÓÍ¼
+	// åˆ›å»ºå›¾åƒè§†å›¾
 	static VkImageView CreateImageView(
 		VkDevice device,
 		VkImage& image,
@@ -43,7 +43,7 @@ public:
 		uint32_t layoutCount,
 		uint32_t miplevels);
 
-	// ´´½¨Í¼Ïñ
+	// åˆ›å»ºå›¾åƒ
 	static void CreateImage(
 		VkPhysicalDevice physicalDevice,
 		VkDevice device,
@@ -61,10 +61,10 @@ public:
 
 	static uint32_t FindMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags propertiesFlag);
 
-	// »ñÈ¡»ò´´½¨ÏßĞÔ²ÉÑùÆ÷
+	// è·å–æˆ–åˆ›å»ºçº¿æ€§é‡‡æ ·å™¨
 	static VkSampler GetOrCreateLinearSampler(VkPhysicalDevice physicalDevice, VkDevice device);
 
-	// »ñÈ¡»ò´´½¨×î½üµã²ÉÑùÆ÷
+	// è·å–æˆ–åˆ›å»ºæœ€è¿‘ç‚¹é‡‡æ ·å™¨
 	static VkSampler GetOrCreateNearestSampler(VkPhysicalDevice physicalDevice, VkDevice device);
 
 	static void CreateGlobalImage(
@@ -77,6 +77,27 @@ public:
 		void* pTextureImagePixels,
 		ERHIFormat textureImageFormat,
 		uint32_t miplevels = 0);
+
+	static void CreateCubeMap(
+		RHI* pRHI,
+		VkImage& image,
+		VkImageView& imageView,
+		VmaAllocation& imageAllocation,
+		uint32_t textureImageWidth,
+		uint32_t textureImageHeight,
+		std::array<void*, 6> textureImagePixels,
+		ERHIFormat textureImageFormat,
+		uint32_t miplevels);
+
+	// ç”Ÿæˆçº¹ç†çš„mipmap
+	static void GenerateTextureMipMaps(
+		RHI* pRHI,
+		VkImage image,
+		VkFormat imageFormat,
+		uint32_t textureWidth,
+		uint32_t textureHeight,
+		uint32_t layers,
+		uint32_t miplevels);
 
 	static void TransitionImageLayout(RHI* pRHI, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount, uint32_t mipLevels, VkImageAspectFlags aspectMaskBits);
 
