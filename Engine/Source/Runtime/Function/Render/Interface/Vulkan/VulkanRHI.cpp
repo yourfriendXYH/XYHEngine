@@ -2227,11 +2227,45 @@ void VulkanRHI::SetCurrentFrameIndex(uint8_t index)
 
 RHICommandBuffer* VulkanRHI::BeginSingleTimeCommands()
 {
-	return nullptr;
+	VkCommandBufferAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;	// 主命令缓冲区
+	allocInfo.commandPool = ((VulkanCommandPool*)m_rhiCommandPool)->GetResource();
+	allocInfo.commandBufferCount = 1;
+
+	// 分配命令缓冲区
+	VkCommandBuffer commandBuffer;
+	vkAllocateCommandBuffers(m_device, &allocInfo, &commandBuffer);
+
+	// 开始记录命令缓冲区
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;	// 只提交一次
+	_vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+	RHICommandBuffer* pRHICommandBuffer = new VulkanCommandBuffer();
+	((VulkanCommandBuffer*)pRHICommandBuffer)->SetResource(commandBuffer);
+	return pRHICommandBuffer;
 }
 
-void VulkanRHI::EndSingleTimeCommands(RHICommandBuffer* command_buffer)
+void VulkanRHI::EndSingleTimeCommands(RHICommandBuffer* pCommandBuffer)
 {
+	// 结束命令缓冲区记录
+	VkCommandBuffer vkCommandBuffer = ((VulkanCommandBuffer*)pCommandBuffer)->GetResource();
+	_vkEndCommandBuffer(vkCommandBuffer);
+
+	// 提交命令缓冲区到队列执行（发送至GPU执行）
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &vkCommandBuffer;
+	vkQueueSubmit(((VulkanQueue*)m_graphicsQueue)->GetResource(), 1, &submitInfo, VK_NULL_HANDLE);
+	// 等待队列中所有操作完成（让 CPU 一直等待，直至命令完成）
+	vkQueueWaitIdle(((VulkanQueue*)m_graphicsQueue)->GetResource());
+
+	// 释放命令
+	vkFreeCommandBuffers(m_device, ((VulkanCommandPool*)m_rhiCommandPool)->GetResource(), 1, &vkCommandBuffer);
+	delete(vkCommandBuffer);
 }
 
 bool VulkanRHI::PrepareBeforePass(std::function<void()> passUpdateAfterRecreateSwapchain)

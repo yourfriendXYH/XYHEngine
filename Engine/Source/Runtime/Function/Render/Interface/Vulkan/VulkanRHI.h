@@ -198,9 +198,9 @@ public:
 
 
 	// command write
+	// 一次性命令记录的 开始 和 结束
 	virtual RHICommandBuffer* BeginSingleTimeCommands();	// 开始单次命令缓冲区
-
-	virtual void EndSingleTimeCommands(RHICommandBuffer* command_buffer);	// 结束单次命令缓冲区
+	virtual void EndSingleTimeCommands(RHICommandBuffer* pCommandBuffer);	// 结束单次命令缓冲区
 
 	virtual bool PrepareBeforePass(std::function<void()> passUpdateAfterRecreateSwapchain);	// 准备在渲染通道之前执行的操作
 
