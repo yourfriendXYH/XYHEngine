@@ -63,9 +63,13 @@ public:
 
 	// 获取或创建线性采样器
 	static VkSampler GetOrCreateLinearSampler(VkPhysicalDevice physicalDevice, VkDevice device);
+	// 删除
+	static void DestroyNearestSampler(VkDevice device);
 
 	// 获取或创建最近点采样器
 	static VkSampler GetOrCreateNearestSampler(VkPhysicalDevice physicalDevice, VkDevice device);
+	// 删除
+	static void DestroyLinearSampler(VkDevice device);
 
 	static void CreateGlobalImage(
 		RHI* pRHI,
@@ -89,7 +93,7 @@ public:
 		ERHIFormat textureImageFormat,
 		uint32_t miplevels);
 
-	// 生成纹理的mipmap
+	// 生成纹理的mipmap(多layer)
 	static void GenerateTextureMipMaps(
 		RHI* pRHI,
 		VkImage image,
@@ -103,7 +107,7 @@ public:
 
 	static void CopyBufferToImage(RHI* pRHI, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
 
-	// 
+	// 生成纹理的mipmap(单layer)
 	static void GenMipmappedImage(RHI* pRHI, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevels);
 
 private:
