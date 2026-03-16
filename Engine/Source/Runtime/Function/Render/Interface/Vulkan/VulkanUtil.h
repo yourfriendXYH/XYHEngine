@@ -71,6 +71,12 @@ public:
 	// 删除
 	static void DestroyLinearSampler(VkDevice device);
 
+	// 获取或创建MipMap采样器
+	static VkSampler GetOrCreateMipmapSampler(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height);
+	// 删除
+	static void DestroyMipmappedSampler(VkDevice device);
+
+	// 
 	static void CreateGlobalImage(
 		RHI* pRHI,
 		VkImage& image,
@@ -113,6 +119,7 @@ public:
 private:
 	static VkSampler m_linearSampler;
 	static VkSampler m_nearestSampler;
+	static std::unordered_map<uint32_t, VkSampler> m_mipmapSamplerMap;
 };
 
 NAMESPACE_XYH_END

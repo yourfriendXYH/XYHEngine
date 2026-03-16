@@ -33,10 +33,13 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 
 	// 上传ibl，颜色分级纹理
 	ST_LevelResourceDesc levelResourceDesc;	// 关卡资源描述
-	//level_resource_desc.m_ibl_resource_desc.m_skybox_irradiance_map = global_rendering_res.m_skybox_irradiance_map;
-	//level_resource_desc.m_ibl_resource_desc.m_skybox_specular_map = global_rendering_res.m_skybox_specular_map;
-	//level_resource_desc.m_ibl_resource_desc.m_brdf_map = global_rendering_res.m_brdf_map;
-	//level_resource_desc.m_color_grading_resource_desc.m_color_grading_map = global_rendering_res.m_color_grading_map;
+	SkyBoxIrradianceMap testSkyBoxIrradianceMap;
+	SkyBoxSpecularMap testSkyBoxSpecularMap;
+	// 路径赋值
+	levelResourceDesc.m_iblResourceDesc.m_skyboxIrradianceMap = testSkyBoxIrradianceMap;
+	levelResourceDesc.m_iblResourceDesc.m_skyboxSpecularMap = testSkyBoxSpecularMap;
+	levelResourceDesc.m_iblResourceDesc.m_brdfMap = "";
+	levelResourceDesc.m_colorGradingResourceDesc.m_colorGradingMap = "";
 
 	// 渲染资源管理器
 	m_pRenderResource = std::make_shared<RenderResource>();

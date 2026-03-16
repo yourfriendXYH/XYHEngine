@@ -19,8 +19,8 @@ void VulkanRHI::Initialize(ST_RHIInitInfo initInfo)
 	m_scissor = { { 0, 0 }, { (uint32_t)windowSize[0], (uint32_t)windowSize[1] } }; // 设置裁剪区域大小
 
 #ifndef NDEBUG	// debug模式下启用验证层和调试工具标签
-	m_enableValidationLayers = true;
-	m_enableDebugUtilsLabel = true;
+	m_enableValidationLayers = false;
+	m_enableDebugUtilsLabel = false;
 #else
 	m_enable_validation_Layers = false;
 	m_enable_debug_utils_label = false;

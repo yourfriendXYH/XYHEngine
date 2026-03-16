@@ -6,6 +6,7 @@ NAMESPACE_XYH_BEGIN
 
 VkSampler VulkanUtil::m_linearSampler = VK_NULL_HANDLE;		// 线性采样器
 VkSampler VulkanUtil::m_nearestSampler = VK_NULL_HANDLE;	// 最近点采样器
+std::unordered_map<uint32_t, VkSampler> VulkanUtil::m_mipmapSamplerMap;	// mipmap采样器
 
 VkShaderModule VulkanUtil::CreateShaderModule(VkDevice device, const std::vector<unsigned char>& shaderCode)
 {
@@ -328,6 +329,61 @@ void VulkanUtil::DestroyLinearSampler(VkDevice device)
 {
 	vkDestroySampler(device, m_linearSampler, nullptr);
 	m_linearSampler = VK_NULL_HANDLE;
+}
+
+VkSampler VulkanUtil::GetOrCreateMipmapSampler(VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height)
+{
+	if (width <= 0 || height <= 0)
+		LOG_ERROR("width <= 0 || height <= 0");
+
+	VkSampler sampler;
+	uint32_t miplevels = floor(log2(std::max(width, height))) + 1;
+	auto iter = m_mipmapSamplerMap.find(miplevels);
+	if (iter != m_mipmapSamplerMap.end())
+	{
+		return iter->second;
+	}
+	else
+	{
+		VkPhysicalDeviceProperties physicalDeviceProperties{};
+		vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+		VkSamplerCreateInfo samplerInfo{};
+		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerInfo.magFilter = VK_FILTER_LINEAR;
+		samplerInfo.minFilter = VK_FILTER_LINEAR;
+		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+		samplerInfo.anisotropyEnable = VK_TRUE;
+		samplerInfo.maxAnisotropy = physicalDeviceProperties.limits.maxSamplerAnisotropy;
+
+		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		samplerInfo.unnormalizedCoordinates = VK_FALSE;
+		samplerInfo.compareEnable = VK_FALSE;
+		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+
+		samplerInfo.maxLod = miplevels - 1;
+
+		if (vkCreateSampler(device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS)
+		{
+			LOG_ERROR("vkCreateSampler failed!");
+		}
+	}
+
+	m_mipmapSamplerMap.insert(std::make_pair(miplevels, sampler));
+
+	return VkSampler();
+}
+
+void VulkanUtil::DestroyMipmappedSampler(VkDevice device)
+{
+	for (auto sampler : m_mipmapSamplerMap)
+	{
+		vkDestroySampler(device, sampler.second, nullptr);
+	}
+	m_mipmapSamplerMap.clear();
 }
 
 void VulkanUtil::CreateGlobalImage(

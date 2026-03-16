@@ -13,6 +13,9 @@ void RenderResource::UploadGlobalRenderResource(std::shared_ptr<RHI> pRHI, const
 	// 环形缓冲区 和 轴线 的内存分配
 	CreateAndMapStorageBuffer(pRHI);
 
+	// test
+	return;
+
 	// sky box irradiance 天空盒辐照度
 	SkyBoxIrradianceMap skyBoxIrradianceMap = levelResourceDesc.m_iblResourceDesc.m_skyboxIrradianceMap;	// 天空盒资源路径
 	// 加载纹理数据
