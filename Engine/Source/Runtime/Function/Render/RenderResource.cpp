@@ -91,16 +91,18 @@ void RenderResource::UploadGlobalRenderResource(std::shared_ptr<RHI> pRHI, const
 	);
 }
 
-void RenderResource::UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity renderEntity, ST_RenderMeshData mesh_data, ST_RenderMaterialData material_data)
+void RenderResource::UploadGameObjectRenderResource(std::shared_ptr<RHI> pRHI, RenderEntity renderEntity, ST_RenderMeshData meshData, ST_RenderMaterialData materialData)
 {
 }
 
-void RenderResource::UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity render_entity, ST_RenderMeshData mesh_data)
+void RenderResource::UploadGameObjectRenderResource(std::shared_ptr<RHI> pRHI, RenderEntity renderEntity, ST_RenderMeshData meshData)
 {
+	GetOrCreateVulkanMesh(pRHI, renderEntity, meshData);
 }
 
-void RenderResource::UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity render_entity, ST_RenderMaterialData material_data)
+void RenderResource::UploadGameObjectRenderResource(std::shared_ptr<RHI> pRHI, RenderEntity renderEntity, ST_RenderMaterialData materialData)
 {
+	GetOrCreateVulkanMaterial(pRHI, renderEntity, materialData);
 }
 
 void RenderResource::UpdatePerFrameBuffer(std::shared_ptr<RenderScene> pRenderScene, std::shared_ptr<RenderCamera> pCamera)
@@ -346,6 +348,26 @@ void RenderResource::CreateIBLTextures(std::shared_ptr<RHI> pRHI, std::array<std
 		specularMaps[0]->m_format,
 		specularCubemapMiplevels
 	);
+}
+
+ST_VulkanMesh& RenderResource::GetOrCreateVulkanMesh(std::shared_ptr<RHI> pRHI, RenderEntity entity, ST_RenderMeshData meshData)
+{
+	size_t assetId = entity.m_meshAssetId;
+	auto it = m_vulkanMeshes.find(assetId);
+	if (it != m_vulkanMeshes.end())
+	{
+		return it->second;
+	}
+	else
+	{
+		ST_VulkanMesh tempVkMesh;
+		auto res = m_vulkanMeshes.insert(std::make_pair(assetId, std::move(tempVkMesh)));
+	}
+}
+
+ST_VulkanPBRMaterial& RenderResource::GetOrCreateVulkanMaterial(std::shared_ptr<RHI> pRHI, RenderEntity entity, ST_RenderMaterialData materialData)
+{
+	// TODO: 在此处插入 return 语句
 }
 
 

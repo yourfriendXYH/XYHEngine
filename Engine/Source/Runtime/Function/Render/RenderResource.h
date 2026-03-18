@@ -77,11 +77,11 @@ public:
 
 	virtual void UploadGlobalRenderResource(std::shared_ptr<RHI> pRHI, const ST_LevelResourceDesc& levelResourceDesc) override final;	// 上传全局渲染资源
 
-	virtual void UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity renderEntity, ST_RenderMeshData mesh_data, ST_RenderMaterialData material_data) override final;	// 上传游戏对象渲染资源
+	virtual void UploadGameObjectRenderResource(std::shared_ptr<RHI> pRHI, RenderEntity renderEntity, ST_RenderMeshData meshData, ST_RenderMaterialData materialData) override final;	// 上传游戏对象渲染资源
 
-	virtual void UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity render_entity, ST_RenderMeshData mesh_data) override final;	// 上传游戏对象渲染资源（仅网格数据）
+	virtual void UploadGameObjectRenderResource(std::shared_ptr<RHI> pRHI, RenderEntity renderEntity, ST_RenderMeshData meshData) override final;	// 上传游戏对象渲染资源（仅网格数据）
 
-	virtual void UploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity render_entity, ST_RenderMaterialData material_data) override final; // 上传游戏对象渲染资源（仅材质数据）
+	virtual void UploadGameObjectRenderResource(std::shared_ptr<RHI> pRHI, RenderEntity renderEntity, ST_RenderMaterialData materialData) override final; // 上传游戏对象渲染资源（仅材质数据）
 
 	virtual void UpdatePerFrameBuffer(std::shared_ptr<RenderScene> pRenderScene, std::shared_ptr<RenderCamera> pCamera) override final; // 更新每帧缓冲区
 
@@ -90,6 +90,8 @@ public:
 	ST_VulkanMesh& GetEntityMesh(RenderEntity entity);
 
 	ST_VulkanPBRMaterial& GetEntityMaterial(RenderEntity entity);
+
+
 
 private:
 
@@ -101,6 +103,9 @@ private:
 
 	// 创建IBL纹理
 	void CreateIBLTextures(std::shared_ptr<RHI> pRHI, std::array<std::shared_ptr<TextureData>, 6> irradianceMaps, std::array<std::shared_ptr<TextureData>, 6> specularMaps);
+
+	ST_VulkanMesh& GetOrCreateVulkanMesh(std::shared_ptr<RHI> pRHI, RenderEntity entity, ST_RenderMeshData meshData);
+	ST_VulkanPBRMaterial& GetOrCreateVulkanMaterial(std::shared_ptr<RHI> pRHI, RenderEntity entity, ST_RenderMaterialData materialData);
 
 public:
 
