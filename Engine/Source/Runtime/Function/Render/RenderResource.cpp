@@ -362,12 +362,83 @@ ST_VulkanMesh& RenderResource::GetOrCreateVulkanMesh(std::shared_ptr<RHI> pRHI, 
 	{
 		ST_VulkanMesh tempVkMesh;
 		auto res = m_vulkanMeshes.insert(std::make_pair(assetId, std::move(tempVkMesh)));
+		assert(res.second);
+
+		// 索引
+		uint32_t indexBufferSize = static_cast<uint32_t>(meshData.m_staticMeshData.m_indexBuffer->m_size);
+		void* pIndexBufferData = meshData.m_staticMeshData.m_indexBuffer->m_data;
+		// 顶点
+		uint32_t vertexBufferSize = static_cast<uint32_t>(meshData.m_staticMeshData.m_vertexBuffer->m_size);
+		ST_MeshVertexDataDefinition* pVertexBufferData = reinterpret_cast<ST_MeshVertexDataDefinition*>(meshData.m_staticMeshData.m_vertexBuffer->m_data);
+
+		ST_VulkanMesh& nowMesh = res.first->second;
+
+		if (meshData.m_skeletonBindingBuffer)
+		{
+			uint32_t jointBindingBufferSize = static_cast<uint32_t>(meshData.m_skeletonBindingBuffer->m_size);
+			ST_MeshVertexBindingDataDefinition* pJointBindingBufferData = reinterpret_cast<ST_MeshVertexBindingDataDefinition*>(meshData.m_skeletonBindingBuffer->m_data);
+			// 更新网格数据
+			UpdateMeshData(
+				pRHI,
+				true,
+				indexBufferSize,
+				pIndexBufferData,
+				vertexBufferSize,
+				pVertexBufferData,
+				jointBindingBufferSize,
+				pJointBindingBufferData,
+				nowMesh
+			);
+		}
+		else
+		{
+			// 更新网格数据
+			UpdateMeshData(
+				pRHI,
+				false,
+				indexBufferSize,
+				pIndexBufferData,
+				vertexBufferSize,
+				pVertexBufferData,
+				0,
+				nullptr,
+				nowMesh
+			);
+		}
+
+		return nowMesh;
 	}
 }
 
 ST_VulkanPBRMaterial& RenderResource::GetOrCreateVulkanMaterial(std::shared_ptr<RHI> pRHI, RenderEntity entity, ST_RenderMaterialData materialData)
 {
 	// TODO: 在此处插入 return 语句
+}
+
+void RenderResource::UpdateMeshData(
+	std::shared_ptr<RHI> pRHI, 
+	bool enableVertexBlending, 
+	uint32_t indexBufferSize, 
+	void* pIndexBufferData, 
+	uint32_t vertexBufferSize, 
+	ST_MeshVertexDataDefinition const* pVertexBufferData, 
+	uint32_t jointBindingBufferSize, 
+	ST_MeshVertexBindingDataDefinition const* pJointBindingBufferData, 
+	ST_VulkanMesh& outNowMesh)
+{
+}
+
+void RenderResource::UpdateVertexBuffer(
+	std::shared_ptr<RHI> pRHI, 
+	bool enableVertexBlending, 
+	uint32_t vertexBufferSize, 
+	ST_MeshVertexDataDefinition const* pVertexBufferData, 
+	uint32_t jointBindingBufferSize, 
+	ST_MeshVertexBindingDataDefinition const* pJointBindingBufferData, 
+	uint32_t indexBufferSize, 
+	uint16_t* pIndexBufferData, 
+	ST_VulkanMesh& outNowMesh)
+{
 }
 
 

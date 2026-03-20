@@ -107,6 +107,38 @@ private:
 	ST_VulkanMesh& GetOrCreateVulkanMesh(std::shared_ptr<RHI> pRHI, RenderEntity entity, ST_RenderMeshData meshData);
 	ST_VulkanPBRMaterial& GetOrCreateVulkanMaterial(std::shared_ptr<RHI> pRHI, RenderEntity entity, ST_RenderMaterialData materialData);
 
+	// 更新网格数据
+	void UpdateMeshData(
+		std::shared_ptr<RHI> pRHI,
+		bool enableVertexBlending,
+		uint32_t indexBufferSize,
+		void* pIndexBufferData,
+		uint32_t vertexBufferSize,
+		struct ST_MeshVertexDataDefinition const* pVertexBufferData,
+		uint32_t jointBindingBufferSize,
+		struct ST_MeshVertexBindingDataDefinition const* pJointBindingBufferData,
+		ST_VulkanMesh& outNowMesh
+	);
+	// 
+	void UpdateVertexBuffer(
+		std::shared_ptr<RHI> pRHI,
+		bool enableVertexBlending,
+		uint32_t vertexBufferSize,
+		struct ST_MeshVertexDataDefinition const* pVertexBufferData,
+		uint32_t jointBindingBufferSize,
+		struct ST_MeshVertexBindingDataDefinition const* pJointBindingBufferData,
+		uint32_t indexBufferSize,
+		uint16_t* pIndexBufferData,
+		ST_VulkanMesh& outNowMesh
+	);
+	//
+	void UpdateIndexBuffer(
+		std::shared_ptr<RHI> pRHI,
+		uint32_t indexBufferSize,
+		void* pIndexBufferData,
+		ST_VulkanMesh& outNowMesh
+	);
+
 public:
 
 	ST_GlobalRenderResource m_globalRenderResource;

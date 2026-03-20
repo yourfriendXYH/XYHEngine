@@ -1740,6 +1740,27 @@ public:
 	EXYH_IMAGE_TYPE m_type{ EXYH_IMAGE_TYPE::XYH_IMAGE_TYPE_UNKNOWM };
 };
 
+struct ST_MeshVertexDataDefinition
+{
+	float m_x, m_y, m_z;    // position
+	float m_nx, m_ny, m_nz; // normal
+	float m_tx, m_ty, m_tz; // tangent
+	float m_u, m_v;       // UV coordinates
+};
+
+struct ST_MeshVertexBindingDataDefinition
+{
+	int m_index0{ 0 };
+	int m_index1{ 0 };
+	int m_index2{ 0 };
+	int m_index3{ 0 };
+
+	float m_weight0{ 0.f };
+	float m_weight1{ 0.f };
+	float m_weight2{ 0.f };
+	float m_weight3{ 0.f };
+};
+
 struct ST_MeshSourceDesc    // 网格资源描述
 {
 public:
