@@ -269,9 +269,11 @@ private:
 	// 为 Vulkan 提供一个与平台（Windows / macOS / Linux）兼容的渲染目标，使得 Vulkan 能够将图形渲染到 GLFW 创建的窗口中。
 	void CreateWindowSurface();	// 创建窗口表面
 
-	void InitializePhysicalDevice();	// 初始化物理设备
+	void InitializePhysicalDevice();	// 初始化物理设备 和 查找队列族支持
 
-	void CreateLogicalDevice();	// 创建逻辑设备
+	// 根据 队列族索引 创建 逻辑设备
+	// 获取队列（图像、呈现、计算）
+	void CreateLogicalDevice();
 
 	void CreateCommandPool() override;;	// 创建命令池
 

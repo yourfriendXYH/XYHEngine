@@ -61,8 +61,9 @@ void VulkanRHI::Initialize(ST_RHIInitInfo initInfo)
 
 	CreateWindowSurface(); // 创建窗口表面
 
-	InitializePhysicalDevice(); // 初始化物理设备
+	InitializePhysicalDevice(); // 初始化物理设备(显卡) 和 查找队列族支持
 
+	// 需要再Surface创建之后
 	CreateLogicalDevice();	// 创建逻辑设备
 
 	CreateCommandPool();	// 创建命令池
@@ -167,7 +168,7 @@ void VulkanRHI::CreateSwapChain()
 	// choose the best or fitting format
 	VkSurfaceFormatKHR chosenSurfaceFormat = ChooseSwapchainSurfaceFormatFromDetails(swapchainSupportDetails.m_formats);
 
-	// choose the best or fitting present mode
+	// choose the best or  fitting present mode
 	VkPresentModeKHR chosenPresentMode = ChooseSwapchainPresentModeFromDetails(swapchainSupportDetails.m_presentModes);
 
 	// 选择最合适的屏幕大小
@@ -3148,10 +3149,11 @@ VkPresentModeKHR VulkanRHI::ChooseSwapchainPresentModeFromDetails(const std::vec
 		// 优先选择VK_PRESENT_MODE_MAILBOX_KHR（邮箱模式），它可以减少延迟
 		if (VK_PRESENT_MODE_MAILBOX_KHR == presentMode)
 		{
-			return VK_PRESENT_MODE_MAILBOX_KHR;
+			return VK_PRESENT_MODE_MAILBOX_KHR;	// 三缓冲
 		}
 	}
 
+	// 双缓冲
 	return VK_PRESENT_MODE_FIFO_KHR;	// 默认使用VK_PRESENT_MODE_FIFO_KHR（FIFO模式）
 }
 
