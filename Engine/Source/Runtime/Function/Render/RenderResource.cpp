@@ -413,6 +413,8 @@ ST_VulkanMesh& RenderResource::GetOrCreateVulkanMesh(std::shared_ptr<RHI> pRHI, 
 ST_VulkanPBRMaterial& RenderResource::GetOrCreateVulkanMaterial(std::shared_ptr<RHI> pRHI, RenderEntity entity, ST_RenderMaterialData materialData)
 {
 	// TODO: 在此处插入 return 语句
+	ST_VulkanPBRMaterial test;
+	return test;
 }
 
 void RenderResource::UpdateMeshData(
@@ -438,6 +440,10 @@ void RenderResource::UpdateVertexBuffer(
 	uint32_t indexBufferSize, 
 	uint16_t* pIndexBufferData, 
 	ST_VulkanMesh& outNowMesh)
+{
+}
+
+void RenderResource::UpdateIndexBuffer(std::shared_ptr<RHI> pRHI, uint32_t indexBufferSize, void* pIndexBufferData, ST_VulkanMesh& outNowMesh)
 {
 }
 

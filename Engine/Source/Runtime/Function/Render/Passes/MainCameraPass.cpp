@@ -987,18 +987,22 @@ void MainCameraPass::SetupPipelines()
 		rasterizationStateCreateInfo.m_lineWidth = 1.0f;
 		rasterizationStateCreateInfo.m_cullMode = ERHICullModeFlagBits::RHI_CULL_MODE_BACK_BIT;	// 背面剔除
 		rasterizationStateCreateInfo.m_frontFace = ERHIFrontFace::RHI_FRONT_FACE_COUNTER_CLOCKWISE;	// 逆时针为正面
-		rasterizationStateCreateInfo.m_depthBiasEnable = RHI_FALSE;
+		rasterizationStateCreateInfo.m_depthBiasEnable = RHI_FALSE;	// 是否开启深度偏移
 		rasterizationStateCreateInfo.m_depthBiasConstantFactor = 0.0f;
 		rasterizationStateCreateInfo.m_depthBiasClamp = 0.0f;
 		rasterizationStateCreateInfo.m_depthBiasSlopeFactor = 0.0f;
 
-		// 多重采样状态创建信息
+		// 多重采样状态创建信息（抗锯齿的硬件加速器）
 		ST_RHIPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{};
 		multisampleStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		multisampleStateCreateInfo.m_sampleShadingEnable = RHI_FALSE;
 		multisampleStateCreateInfo.m_rasterizationSamples = ERHISampleCountFlagBits::RHI_SAMPLE_COUNT_1_BIT;
 
 		// 每个颜色附件的混合状态
+		// src 和 dst 的定义
+		// 在 Vulkan 的混合方程中：
+		// src(Source) = 片段着色器输出的新颜色（即将要绘制的像素）
+		// dst(Destination) = 帧缓冲区中已有的旧颜色（已经存在的像素）
 		ST_RHIPipelineColorBlendAttachmentState colorBlendAttachments[3] = {};	// 每个颜色附件的混合状态
 		colorBlendAttachments[0].m_colorWriteMask = RHI_COLOR_COMPONENT_R_BIT | RHI_COLOR_COMPONENT_G_BIT | RHI_COLOR_COMPONENT_B_BIT | RHI_COLOR_COMPONENT_A_BIT;
 		colorBlendAttachments[0].m_blendEnable = RHI_FALSE;
@@ -1027,10 +1031,10 @@ void MainCameraPass::SetupPipelines()
 		colorBlendAttachments[2].m_dstAlphaBlendFactor = ERHIBlendFactor::RHI_BLEND_FACTOR_ZERO;
 		colorBlendAttachments[2].m_alphaBlendOp = ERHIBlendOp::RHI_BLEND_OP_ADD;
 
-		// 颜色混合状态创建信息
+		// 颜色混合状态创建信息（全局）
 		ST_RHIPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = {};
 		colorBlendStateCreateInfo.m_sType = RHI_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		colorBlendStateCreateInfo.m_logicOpEnable = RHI_FALSE;
+		colorBlendStateCreateInfo.m_logicOpEnable = RHI_FALSE;	// 不启用
 		colorBlendStateCreateInfo.m_logicOp = RHI_LOGIC_OP_COPY;
 		colorBlendStateCreateInfo.m_attachmentCount = sizeof(colorBlendAttachments) / sizeof(colorBlendAttachments[0]);
 		colorBlendStateCreateInfo.m_pAttachments = &colorBlendAttachments[0];

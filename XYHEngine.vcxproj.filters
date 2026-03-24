@@ -82,6 +82,9 @@
     <Filter Include="Engine\Source\Runtime\Function\Particle">
       <UniqueIdentifier>{2f0b052c-dd56-4b47-8711-f1a2c459153d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Source\Runtime\Function\Render\Interface\DX12">
+      <UniqueIdentifier>{41b7e048-a38e-4039-a846-2bff116380b0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Source\main.cpp">
@@ -209,6 +212,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Source\Runtime\Function\Particle\EmitterIdAllocator.cpp">
       <Filter>Engine\Source\Runtime\Function\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHI.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -427,6 +433,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Particle\ParticleCommon.h">
       <Filter>Engine\Source\Runtime\Function\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHI.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
