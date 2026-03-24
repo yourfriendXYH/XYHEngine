@@ -1,6 +1,7 @@
 ﻿#include "RenderResource.h"
 #include "RenderScene.h"
 #include "RenderMesh.h"
+#include <Runtime/Function/Render/Interface/Vulkan/VulkanRHI.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -418,29 +419,79 @@ ST_VulkanPBRMaterial& RenderResource::GetOrCreateVulkanMaterial(std::shared_ptr<
 }
 
 void RenderResource::UpdateMeshData(
-	std::shared_ptr<RHI> pRHI, 
-	bool enableVertexBlending, 
-	uint32_t indexBufferSize, 
-	void* pIndexBufferData, 
-	uint32_t vertexBufferSize, 
-	ST_MeshVertexDataDefinition const* pVertexBufferData, 
-	uint32_t jointBindingBufferSize, 
-	ST_MeshVertexBindingDataDefinition const* pJointBindingBufferData, 
+	std::shared_ptr<RHI> pRHI,
+	bool enableVertexBlending,
+	uint32_t indexBufferSize,
+	void* pIndexBufferData,
+	uint32_t vertexBufferSize,
+	ST_MeshVertexDataDefinition const* pVertexBufferData,
+	uint32_t jointBindingBufferSize,
+	ST_MeshVertexBindingDataDefinition const* pJointBindingBufferData,
 	ST_VulkanMesh& outNowMesh)
 {
+	outNowMesh.m_enableVertexBlending = enableVertexBlending;
+	// 顶点
+	assert(0 == (vertexBufferSize % sizeof(ST_MeshVertexDataDefinition)));
+	outNowMesh.m_meshVertexCount = vertexBufferSize / sizeof(ST_MeshVertexDataDefinition);
+	UpdateVertexBuffer(
+		pRHI,
+		enableVertexBlending,
+		vertexBufferSize,
+		pVertexBufferData,
+		jointBindingBufferSize,
+		pJointBindingBufferData,
+		indexBufferSize,
+		reinterpret_cast<uint16_t*>(pIndexBufferData),
+		outNowMesh
+	);
+	// 索引
+	assert(0 == (indexBufferSize % sizeof(uint16_t)));
+	outNowMesh.m_meshIndexCount = indexBufferSize / sizeof(uint16_t);
+	UpdateIndexBuffer(
+		pRHI,
+		indexBufferSize,
+		pIndexBufferData,
+		outNowMesh
+	);
 }
 
 void RenderResource::UpdateVertexBuffer(
-	std::shared_ptr<RHI> pRHI, 
-	bool enableVertexBlending, 
-	uint32_t vertexBufferSize, 
-	ST_MeshVertexDataDefinition const* pVertexBufferData, 
-	uint32_t jointBindingBufferSize, 
-	ST_MeshVertexBindingDataDefinition const* pJointBindingBufferData, 
-	uint32_t indexBufferSize, 
-	uint16_t* pIndexBufferData, 
+	std::shared_ptr<RHI> pRHI,
+	bool enableVertexBlending,
+	uint32_t vertexBufferSize,
+	ST_MeshVertexDataDefinition const* pVertexBufferData,
+	uint32_t jointBindingBufferSize,
+	ST_MeshVertexBindingDataDefinition const* pJointBindingBufferData,
+	uint32_t indexBufferSize,
+	uint16_t* pIndexBufferData,
 	ST_VulkanMesh& outNowMesh)
 {
+	if (enableVertexBlending)
+	{
+		assert(0 == (vertexBufferSize % sizeof(ST_MeshVertexDataDefinition)));
+		uint32_t vertexCount = vertexBufferSize / sizeof(ST_MeshVertexDataDefinition);
+		assert(0 == (indexBufferSize % sizeof(uint16_t)));
+		uint32_t indexCount = indexBufferSize / sizeof(uint16_t);
+
+		// size
+		RHIDeviceSize vertexPositionBufferSize = sizeof(ST_MeshVertex::ST_VulkanMeshVertexPostition) * vertexCount;
+		RHIDeviceSize vertexVaryingEnableBlendingBufferSize = sizeof(ST_MeshVertex::ST_VulkanMeshVertexVaryingEnableBlending) * vertexCount;
+		RHIDeviceSize vertexVaryingBufferSize = sizeof(ST_MeshVertex::ST_VulkanMeshVertexVarying) * vertexCount;
+		RHIDeviceSize vertexJointBindingBufferSize = sizeof(ST_MeshVertex::ST_VulkanMeshVertexJointBinding) * vertexCount;
+
+		// offset
+		RHIDeviceSize vertexPositionBufferOffset = 0u;
+		RHIDeviceSize vertexVaryingEnableBlendingBufferOffset = vertexPositionBufferOffset + vertexPositionBufferSize;
+		RHIDeviceSize vertexVaryingBufferOffset = vertexVaryingEnableBlendingBufferOffset + vertexVaryingEnableBlendingBufferSize;
+		RHIDeviceSize vertexJointBindingBufferOffset = vertexVaryingBufferOffset + vertexVaryingBufferSize;
+	}
+	else
+	{
+
+	}
+
+
+	//pRHI->CreateBufferVMA();
 }
 
 void RenderResource::UpdateIndexBuffer(std::shared_ptr<RHI> pRHI, uint32_t indexBufferSize, void* pIndexBufferData, ST_VulkanMesh& outNowMesh)

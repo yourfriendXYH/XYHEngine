@@ -26,8 +26,8 @@ public:
 	virtual bool IsPointLightShadowEnabled() = 0;	// 是否启用点光源阴影
 
 	// 分配和创建
-	virtual bool AllocateCommandBuffers(const ST_RHICommandBufferAllocateInfo* pAllocateInfo, RHICommandBuffer* &pCommandBuffers) = 0;	// 配置命令缓冲区
-	virtual bool AllocateDescriptorSets(const ST_RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet* &pDescriptorSets) = 0;	// 配置描述符集
+	virtual bool AllocateCommandBuffers(const ST_RHICommandBufferAllocateInfo* pAllocateInfo, RHICommandBuffer*& pCommandBuffers) = 0;	// 配置命令缓冲区
+	virtual bool AllocateDescriptorSets(const ST_RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet*& pDescriptorSets) = 0;	// 配置描述符集
 
 	virtual void CreateSwapChain() = 0;	// 创建交换链
 
@@ -46,8 +46,8 @@ public:
 	virtual void CreateBuffer(RHIDeviceSize size, RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory) = 0;	// 创建缓冲区
 
 	virtual void CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory, RHIDeviceSize size, void* data = nullptr, int datasize = 0) = 0;	// 创建缓冲区并初始化
-	
-	virtual bool CreateBufferVMA(VmaAllocator allocator,
+
+	virtual bool CreateBufferVMA(
 		const ST_RHIBufferCreateInfo* pBufferCreateInfo,
 		const VmaAllocationCreateInfo* pAllocationCreateInfo,
 		RHIBuffer*& pBuffer,
@@ -71,10 +71,10 @@ public:
 	virtual void CreateImageView(RHIImage* image, ERHIFormat format, RHIImageAspectFlags image_aspect_flags, ERHIImageViewType view_type, uint32_t layout_count, uint32_t miplevels,
 		RHIImageView*& image_view) = 0;	// 创建图像视图
 
-	virtual void CreateGlobalImage(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, void* texture_image_pixels, 
+	virtual void CreateGlobalImage(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, void* texture_image_pixels,
 		ERHIFormat texture_image_format, uint32_t miplevels = 0) = 0;	// 创建全局图像
 
-	virtual void CreateCubeMap(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, std::array<void*, 6> texture_image_pixels, 
+	virtual void CreateCubeMap(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, std::array<void*, 6> texture_image_pixels,
 		ERHIFormat texture_image_format, uint32_t miplevels) = 0;	// 创建立方体贴图
 
 	virtual void CreateCommandPool() = 0;	// 创建命令池
@@ -162,8 +162,8 @@ public:
 
 	virtual void CmdDispatchIndirect(RHICommandBuffer* commandBuffer, RHIBuffer* buffer, RHIDeviceSize offset) = 0;	// 间接调度计算
 
-	virtual void CmdPipelineBarrier(RHICommandBuffer* commandBuffer, RHIPipelineStageFlags srcStageMask, RHIPipelineStageFlags dstStageMask, RHIDependencyFlags dependencyFlags, uint32_t memoryBarrierCount, 
-		const ST_RHIMemoryBarrier* pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const ST_RHIBufferMemoryBarrier* pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount, 
+	virtual void CmdPipelineBarrier(RHICommandBuffer* commandBuffer, RHIPipelineStageFlags srcStageMask, RHIPipelineStageFlags dstStageMask, RHIDependencyFlags dependencyFlags, uint32_t memoryBarrierCount,
+		const ST_RHIMemoryBarrier* pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const ST_RHIBufferMemoryBarrier* pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount,
 		const ST_RHIImageMemoryBarrier* pImageMemoryBarriers) = 0;	// 管线屏障
 
 	virtual bool EndCommandBuffer(RHICommandBuffer* commandBuffer) = 0;	// 结束命令缓冲区
