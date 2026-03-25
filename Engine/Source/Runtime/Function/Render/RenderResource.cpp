@@ -94,6 +94,8 @@ void RenderResource::UploadGlobalRenderResource(std::shared_ptr<RHI> pRHI, const
 
 void RenderResource::UploadGameObjectRenderResource(std::shared_ptr<RHI> pRHI, RenderEntity renderEntity, ST_RenderMeshData meshData, ST_RenderMaterialData materialData)
 {
+	GetOrCreateVulkanMesh(pRHI, renderEntity, meshData);
+	GetOrCreateVulkanMaterial(pRHI, renderEntity, materialData);
 }
 
 void RenderResource::UploadGameObjectRenderResource(std::shared_ptr<RHI> pRHI, RenderEntity renderEntity, ST_RenderMeshData meshData)
@@ -477,13 +479,134 @@ void RenderResource::UpdateVertexBuffer(
 		RHIDeviceSize vertexPositionBufferSize = sizeof(ST_MeshVertex::ST_VulkanMeshVertexPostition) * vertexCount;
 		RHIDeviceSize vertexVaryingEnableBlendingBufferSize = sizeof(ST_MeshVertex::ST_VulkanMeshVertexVaryingEnableBlending) * vertexCount;
 		RHIDeviceSize vertexVaryingBufferSize = sizeof(ST_MeshVertex::ST_VulkanMeshVertexVarying) * vertexCount;
-		RHIDeviceSize vertexJointBindingBufferSize = sizeof(ST_MeshVertex::ST_VulkanMeshVertexJointBinding) * vertexCount;
+		RHIDeviceSize vertexJointBindingBufferSize = sizeof(ST_MeshVertex::ST_VulkanMeshVertexJointBinding) * indexCount;
 
 		// offset
 		RHIDeviceSize vertexPositionBufferOffset = 0u;
 		RHIDeviceSize vertexVaryingEnableBlendingBufferOffset = vertexPositionBufferOffset + vertexPositionBufferSize;
 		RHIDeviceSize vertexVaryingBufferOffset = vertexVaryingEnableBlendingBufferOffset + vertexVaryingEnableBlendingBufferSize;
 		RHIDeviceSize vertexJointBindingBufferOffset = vertexVaryingBufferOffset + vertexVaryingBufferSize;
+
+		// 临时顶点数据缓冲区创建（用于数据拷贝）
+		RHIDeviceSize inefficientStagingBufferSize = vertexPositionBufferSize + vertexVaryingEnableBlendingBufferSize + vertexVaryingBufferSize + vertexJointBindingBufferSize;
+		RHIBuffer* pInefficientStagingBuffer = RHI_NULL_HANDLE;
+		RHIDeviceMemory* pInefficientStagingBufferMemory = RHI_NULL_HANDLE;
+		pRHI->CreateBuffer(
+			inefficientStagingBufferSize,
+			RHI_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			pInefficientStagingBuffer,
+			pInefficientStagingBufferMemory
+		);
+
+		// 给内存赋值
+		void* pInefficientStagingBufferData;
+		pRHI->MapMemory(
+			pInefficientStagingBufferMemory,
+			0,
+			RHI_WHOLE_SIZE,
+			0,
+			&pInefficientStagingBufferData
+		);
+
+		// 指向Position数据块的指针
+		ST_MeshVertex::ST_VulkanMeshVertexPostition* pMeshVertexPositions = 
+			reinterpret_cast<ST_MeshVertex::ST_VulkanMeshVertexPostition*>(reinterpret_cast<uintptr_t>(pInefficientStagingBufferData) + vertexPositionBufferOffset);
+		// normal,tangent ptr
+		ST_MeshVertex::ST_VulkanMeshVertexVaryingEnableBlending* pMeshVertexBlendingVaryings =
+			reinterpret_cast<ST_MeshVertex::ST_VulkanMeshVertexVaryingEnableBlending*>(reinterpret_cast<uintptr_t>(pInefficientStagingBufferData) + vertexVaryingEnableBlendingBufferOffset);
+		// texcoord ptr
+		ST_MeshVertex::ST_VulkanMeshVertexVarying* pMeshVertexVaryings =
+			reinterpret_cast<ST_MeshVertex::ST_VulkanMeshVertexVarying*>(reinterpret_cast<uintptr_t>(pInefficientStagingBufferData) + vertexVaryingBufferOffset);
+		// 
+		ST_MeshVertex::ST_VulkanMeshVertexJointBinding* pMeshVertexJointBinding =
+			reinterpret_cast<ST_MeshVertex::ST_VulkanMeshVertexJointBinding*>(reinterpret_cast<uintptr_t>(pInefficientStagingBufferData) + vertexJointBindingBufferOffset);
+
+		// 
+		for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+		{
+			Vector3 normal = Vector3(pVertexBufferData[vertexIndex].m_nx, pVertexBufferData[vertexIndex].m_ny, pVertexBufferData[vertexIndex].m_nz);
+			Vector3 tangent = Vector3(pVertexBufferData[vertexIndex].m_tx, pVertexBufferData[vertexIndex].m_ty, pVertexBufferData[vertexIndex].m_tz);
+
+			pMeshVertexPositions[vertexIndex].m_position = Vector3(pVertexBufferData[vertexIndex].m_x, pVertexBufferData[vertexIndex].m_y, pVertexBufferData[vertexIndex].m_z);
+			pMeshVertexBlendingVaryings[vertexIndex].m_normal = normal;
+			pMeshVertexBlendingVaryings[vertexIndex].m_tangent = tangent;
+			pMeshVertexVaryings[vertexIndex].m_texcoord = Vector2(pVertexBufferData[vertexIndex].m_u, pVertexBufferData[vertexIndex].m_v);
+		}
+
+		// 
+		for (uint32_t i = 0; i < indexCount; ++i)
+		{
+			uint32_t vertexBufferIndex = pIndexBufferData[i];
+
+			pMeshVertexJointBinding[i].m_indices[0] = pJointBindingBufferData[vertexBufferIndex].m_index0;
+			pMeshVertexJointBinding[i].m_indices[1] = pJointBindingBufferData[vertexBufferIndex].m_index1;
+			pMeshVertexJointBinding[i].m_indices[2] = pJointBindingBufferData[vertexBufferIndex].m_index2;
+			pMeshVertexJointBinding[i].m_indices[3] = pJointBindingBufferData[vertexBufferIndex].m_index3;
+
+			float invTotalWeight = pJointBindingBufferData[vertexBufferIndex].m_weight0 + pJointBindingBufferData[vertexBufferIndex].m_weight1 +
+								   pJointBindingBufferData[vertexBufferIndex].m_weight2 + pJointBindingBufferData[vertexBufferIndex].m_weight3;
+			// 加权平均
+			invTotalWeight = (invTotalWeight != 0.0) ? 1 / invTotalWeight : 1.0;
+			pMeshVertexJointBinding[i].m_weights = Vector4(
+				pJointBindingBufferData[vertexBufferIndex].m_weight0 * invTotalWeight,
+				pJointBindingBufferData[vertexBufferIndex].m_weight1 * invTotalWeight,
+				pJointBindingBufferData[vertexBufferIndex].m_weight2 * invTotalWeight,
+				pJointBindingBufferData[vertexBufferIndex].m_weight3 * invTotalWeight
+			);
+		}
+
+		pRHI->UnmapMemory(pInefficientStagingBufferMemory);
+
+		VmaAllocationCreateInfo allocInfo = {};
+		allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+		ST_RHIBufferCreateInfo bufferInfo = { RHI_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+		bufferInfo.usage = RHI_BUFFER_USAGE_VERTEX_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+		bufferInfo.size = vertexPositionBufferSize;
+		pRHI->CreateBufferVMA(
+			&bufferInfo, 
+			&allocInfo, 
+			outNowMesh.m_meshVertexPositionBuffer, 
+			&outNowMesh.m_meshVertexPositionBufferAllocation, 
+			nullptr
+		);
+		bufferInfo.size = vertexVaryingEnableBlendingBufferSize;
+		pRHI->CreateBufferVMA(
+			&bufferInfo,
+			&allocInfo,
+			outNowMesh.m_meshVertexVaryingEnableBlendingBuffer,
+			&outNowMesh.m_meshVertexVaryingEnableBlendingBufferAllocation,
+			nullptr
+		);
+		bufferInfo.size = vertexVaryingBufferSize;
+		pRHI->CreateBufferVMA(
+			&bufferInfo,
+			&allocInfo,
+			outNowMesh.m_meshVertexVaryingBuffer,
+			&outNowMesh.m_meshVertexVaryingBufferAllocation,
+			nullptr
+		);
+		bufferInfo.usage = RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
+		bufferInfo.size = vertexJointBindingBufferSize;
+		pRHI->CreateBufferVMA(
+			&bufferInfo,
+			&allocInfo,
+			outNowMesh.m_meshVertexJointBindingBuffer,
+			&outNowMesh.m_meshVertexJointBindingBufferAllocation,
+			nullptr
+		);
+
+		// 拷贝
+		pRHI->CopyBuffer(pInefficientStagingBuffer, outNowMesh.m_meshVertexPositionBuffer, vertexPositionBufferOffset, 0, vertexPositionBufferSize);
+		pRHI->CopyBuffer(pInefficientStagingBuffer, outNowMesh.m_meshVertexPositionBuffer, vertexVaryingEnableBlendingBufferOffset, 0, vertexVaryingEnableBlendingBufferSize);
+		pRHI->CopyBuffer(pInefficientStagingBuffer, outNowMesh.m_meshVertexPositionBuffer, vertexVaryingBufferOffset, 0, vertexVaryingBufferSize);
+		pRHI->CopyBuffer(pInefficientStagingBuffer, outNowMesh.m_meshVertexPositionBuffer, vertexJointBindingBufferOffset, 0, vertexJointBindingBufferSize);
+
+		// 销毁用于拷贝的临时缓冲区
+		pRHI->DestroyBuffer(pInefficientStagingBuffer);
+		pRHI->FreeMemory(pInefficientStagingBufferMemory);
 	}
 	else
 	{

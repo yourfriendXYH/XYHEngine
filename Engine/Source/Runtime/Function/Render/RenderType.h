@@ -1040,6 +1040,14 @@ enum ERHIAttachmentStoreOp : int
 	RHI_ATTACHMENT_STORE_OP_MAX_ENUM = 0x7FFFFFFF
 };
 
+// 
+enum ERHISharingMode : int
+{
+	RHI_SHARING_MODE_EXCLUSIVE = 0,
+	RHI_SHARING_MODE_CONCURRENT = 1,
+	RHI_SHARING_MODE_MAX_ENUM = 0x7FFFFFFF
+};
+
 // 图像使用标志位
 enum ERHIImageUsageFlagBits
 {

@@ -868,4 +868,16 @@ struct ST_RHIPhysicalDeviceProperties
 	ST_RHIPhysicalDeviceSparseProperties m_sparseProperties;
 };
 
+struct ST_RHIBufferCreateInfo
+{
+	ERHIStructureType sType;
+	const void* pNext;
+	RHIBufferCreateFlags flags;
+	RHIDeviceSize size;
+	RHIBufferUsageFlags usage;
+	ERHISharingMode sharingMode;
+	uint32_t queueFamilyIndexCount;
+	const uint32_t* pQueueFamilyIndices;
+};
+
 NAMESPACE_XYH_END
