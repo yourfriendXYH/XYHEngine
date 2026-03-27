@@ -162,6 +162,7 @@ public:
 
 	std::map<size_t, ST_VulkanPBRMaterial> m_vulkanPBRMaterials;	// 材质资源
 
+	RHIDescriptorSetLayout* const* m_pMeshDescriptorSetLayout = nullptr;
 };
 
 NAMESPACE_XYH_END
