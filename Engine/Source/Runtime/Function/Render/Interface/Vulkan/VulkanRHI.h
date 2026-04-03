@@ -262,6 +262,9 @@ public:
 	//semaphores
 	virtual RHISemaphore*& GetTextureCopySemaphore(uint32_t index);	// 
 
+	// 读取字节码数据
+	static std::vector<unsigned char> ReadShaderByteCode(const std::string& filePath);
+
 private:
 	void CreateInstance();	// 创建Vulkan实例
 	void InitializeDebugMessenger();	// 初始化调试消息处理器

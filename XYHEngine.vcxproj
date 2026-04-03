@@ -46,6 +46,7 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\ParticlePass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\PickPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\PointLightPass.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\TestPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\ToneMappingPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\UIPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderCamera.cpp" />
@@ -112,6 +113,7 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\ParticlePass.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\PickPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\PointLightPass.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\TestPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\ToneMappingPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\UIPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderCamera.h" />
@@ -137,6 +139,14 @@
     <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Data\CameraConfig.h" />
     <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Global\GlobalParticle.h" />
     <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Global\GlobalRendering.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Engine\Shader\glsl\deferred_lighting.frag" />
+    <None Include="Engine\Shader\glsl\deferred_lighting.vert" />
+    <None Include="Engine\Shader\glsl\mesh.vert" />
+    <None Include="Engine\Shader\glsl\mesh_gbuffer.frag" />
+    <None Include="Engine\Shader\glsl\testVk.frag" />
+    <None Include="Engine\Shader\glsl\testVk.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

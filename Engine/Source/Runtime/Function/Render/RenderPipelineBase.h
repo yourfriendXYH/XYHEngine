@@ -45,6 +45,8 @@ protected:
 	std::shared_ptr<RenderPassBase> m_pCombineUIPass = nullptr;	// 合并UI渲染通道
 	std::shared_ptr<RenderPassBase> m_pPickPass = nullptr;	// 拾取渲染通道
 	std::shared_ptr<RenderPassBase> m_pParticlePass = nullptr;	// 粒子渲染通道
+
+	std::shared_ptr<RenderPassBase> m_pTestPass = nullptr;	// 测试学习Pass
 };
 
 NAMESPACE_XYH_END

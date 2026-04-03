@@ -8,6 +8,7 @@
 #include <string>
 #include <windows.h>
 #include <iostream>
+#include <fstream>
 
 NAMESPACE_XYH_BEGIN
 
@@ -2554,6 +2555,26 @@ void VulkanRHI::FlushMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RH
 RHISemaphore*& VulkanRHI::GetTextureCopySemaphore(uint32_t index)
 {
 	return m_imageAvailableForTexturescopySemaphores[index];
+}
+
+std::vector<unsigned char> VulkanRHI::ReadShaderByteCode(const std::string& filePath)
+{
+	std::ifstream file(filePath, std::ios::ate | std::ios::binary);
+	if (!file.is_open())
+	{
+		LOG_ERROR("Failed to open file!");
+	}
+	size_t fileSize = (size_t)file.tellg();
+	file.seekg(0);
+	std::vector<char> fileData;
+	fileData.resize(fileSize);
+	file.read(fileData.data(), fileSize);
+	std::vector<unsigned char> unsignedfileData;
+	for (const char& data : fileData)
+	{
+		unsignedfileData.push_back(static_cast<unsigned char>(data));
+	}
+	return unsignedfileData;
 }
 
 void VulkanRHI::CreateInstance()

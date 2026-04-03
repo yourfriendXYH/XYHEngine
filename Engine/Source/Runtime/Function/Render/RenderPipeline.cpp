@@ -13,6 +13,8 @@
 #include "RenderResource.h"
 #include "Runtime/Function/GlobalContext.h"
 
+#include "Passes/TestPass.h"
+
 NAMESPACE_XYH_BEGIN
 
 void RenderPipeline::Initialize(ST_RenderPipelineInitInfo initInfo)
@@ -28,6 +30,9 @@ void RenderPipeline::Initialize(ST_RenderPipelineInitInfo initInfo)
 	m_pFxaaPass = std::make_shared<FXAAPass>();
 	m_pParticlePass = std::make_shared<ParticlePass>();
 
+	// test
+	m_pTestPass = std::make_shared<TestPass>();
+
 	ST_RenderPassCommonInfo passCommonInfo;
 	passCommonInfo.m_pRHI = m_pRHI;	// 设置渲染硬件接口
 	passCommonInfo.m_pRenderResource = initInfo.m_pRenderResource;	// 设置渲染资源
@@ -41,6 +46,9 @@ void RenderPipeline::Initialize(ST_RenderPipelineInitInfo initInfo)
 	m_pPickPass->SetCommonInfo(passCommonInfo);
 	m_pFxaaPass->SetCommonInfo(passCommonInfo);
 	m_pParticlePass->SetCommonInfo(passCommonInfo);
+
+	// test
+	m_pTestPass->SetCommonInfo(passCommonInfo);
 
 	m_pPointLightShadowPass->Initialize(nullptr);
 	m_pDirectionalLightPass->Initialize(nullptr);
@@ -101,6 +109,9 @@ void RenderPipeline::Initialize(ST_RenderPipelineInitInfo initInfo)
 	//fxaa_init_info.render_pass = _main_camera_pass->getRenderPass();
 	//fxaa_init_info.input_attachment = _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_post_process_buffer_odd];
 	m_pFxaaPass->Initialize(&fxaaPassInitInfo);	// 初始化FXAA渲染通道
+
+	ST_RenderPassInitInfo testPassInitInfo;
+	m_pTestPass->Initialize(&testPassInitInfo);
 }
 
 void RenderPipeline::ForwardRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource)
