@@ -319,13 +319,13 @@ struct ST_RHISubpassDescription
 {
 	RHISubpassDescriptionFlags m_flags;
 	ERHIPipelineBindPoint m_pipelineBindPoint;	// 管线绑定点
-	uint32_t m_inputAttachmentCount;	// 输入附件数量
+	uint32_t m_inputAttachmentCount = 0u;	// 输入附件数量
 	const ST_RHIAttachmentReference* m_pInputAttachments;
-	uint32_t m_colorAttachmentCount;	// 输出附件数量
+	uint32_t m_colorAttachmentCount = 0u;	// 输出附件数量
 	const ST_RHIAttachmentReference* m_pColorAttachments;
-	const ST_RHIAttachmentReference* m_pResolveAttachments;
-	const ST_RHIAttachmentReference* m_pDepthStencilAttachment;
-	uint32_t m_preserveAttachmentCount;	// 保留附件数量
+	const ST_RHIAttachmentReference* m_pResolveAttachments = nullptr;
+	const ST_RHIAttachmentReference* m_pDepthStencilAttachment = nullptr;
+	uint32_t m_preserveAttachmentCount = 0u;	// 保留附件数量
 	const uint32_t* m_pPreserveAttachments;	// 保留附件索引
 };
 

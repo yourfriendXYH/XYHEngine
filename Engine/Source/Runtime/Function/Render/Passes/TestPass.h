@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Common.h>
 #include <Runtime/Function/Render/RenderPass.h>
 
@@ -9,15 +9,24 @@ class TestPass : public RenderPass
 public:
 	void Initialize(const ST_RenderPassInitInfo* initInfo) override final;
 
+	void Draw() override;
+
 private:
 
-	void SetupAttachments();	// ÉèÖÃ¸½¼ş
+	void SetupAttachments();	// è®¾ç½®é™„ä»¶
 
-	void SetupRenderPass();	// ÉèÖÃäÖÈ¾Í¨µÀ
+	void SetupRenderPass();	// è®¾ç½®æ¸²æŸ“é€šé“
 
-	void SetupDescriptorSetLayout();	// ÉèÖÃÃèÊö·û¼¯²¼¾Ö
+	void SetupDescriptorSetLayout();	// è®¾ç½®æè¿°ç¬¦é›†å¸ƒå±€
 
-	void SetupPipelines();	// ÉèÖÃ¹ÜÏß
+	void SetupPipelines();	// è®¾ç½®ç®¡çº¿
+
+	void SetupSwapchainFramebuffers();	// è®¾ç½®äº¤æ¢é“¾å¸§ç¼“å†²
+
+private:
+
+	// æ²¡æœ‰ä½¿ç”¨åŸºç±»RenderPassä¸­çš„FramebufferæŒ‡é’ˆ
+	std::vector<RHIFramebuffer*> m_swapchainFramebuffers;	// äº¤æ¢é“¾å¸§ç¼“å†²
 
 };
 

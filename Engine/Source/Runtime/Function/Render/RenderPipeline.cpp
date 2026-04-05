@@ -190,10 +190,14 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 	pParticlePassPtr->SetRenderCommandBufferHandle(pMainCameraPass->GetRenderCommandBuffer());
 
 	// 延迟渲染
-	pMainCameraPass->Draw(colorGradingPass, fxaaPass, toneMappingPass, uiPass, combineUIPass, particlePass, pVulkanRHI->m_currentSwapchainImageIndex);
+	//pMainCameraPass->Draw(colorGradingPass, fxaaPass, toneMappingPass, uiPass, combineUIPass, particlePass, pVulkanRHI->m_currentSwapchainImageIndex);
 
 	// 渲染测试
 	//g_runtime_global_context.m_debugdraw_manager->draw(vulkan_rhi->m_current_swapchain_image_index);
+
+	// 渲染学习测试
+	TestPass* pTestPass = static_cast<TestPass*>(m_pTestPass.get());
+	pTestPass->Draw();
 
 	// 结束命令，提交渲染
 	pVulkanRHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// 提交渲染

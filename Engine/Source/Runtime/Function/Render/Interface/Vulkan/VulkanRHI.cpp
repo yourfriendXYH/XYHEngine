@@ -20,8 +20,8 @@ void VulkanRHI::Initialize(ST_RHIInitInfo initInfo)
 	m_scissor = { { 0, 0 }, { (uint32_t)windowSize[0], (uint32_t)windowSize[1] } }; // 设置裁剪区域大小
 
 #ifndef NDEBUG	// debug模式下启用验证层和调试工具标签
-	m_enableValidationLayers = false;
-	m_enableDebugUtilsLabel = false;
+	m_enableValidationLayers = true;
+	m_enableDebugUtilsLabel = true;
 #else
 	m_enable_validation_Layers = false;
 	m_enable_debug_utils_label = false;
@@ -49,7 +49,8 @@ void VulkanRHI::Initialize(ST_RHIInitInfo initInfo)
 #endif
 #elif defined(_MSC_VER)	// Microsoft Visual Studio平台下设置VK_LAYER_PATH环境变量
 	// https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
-	char const* vk_layer_path = "D:\\DirectX12_learn\\XYHEngine\\Engine\\3rdparty\\VulkanSDK\\bin\\Win32";
+	char const* vk_layer_path = "D:\\DX_C++\\XYHEngine\\Engine\\3rdparty\\VulkanSDK\\bin\\Win32";
+	//char const* vk_layer_path = "D:\\DirectX12_learn\\XYHEngine\\Engine\\3rdparty\\VulkanSDK\\bin\\Win32";
 	SetEnvironmentVariableA("VK_LAYER_PATH", vk_layer_path);
 	SetEnvironmentVariableA("DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1", "1");
 #else
@@ -2278,14 +2279,16 @@ bool VulkanRHI::PrepareBeforePass(std::function<void()> passUpdateAfterRecreateS
 	if (VK_ERROR_OUT_OF_DATE_KHR == acquireImageResult)	// 交换链已经过期，无法再用于渲染（通常发生在窗口调整大小后）。必须重新创建交换链后才能继续。
 	{
 		RecreateSwapChain();
-		passUpdateAfterRecreateSwapchain();
+		// 临时注释（窗口大小变更时会报错）
+		//passUpdateAfterRecreateSwapchain();
 	}
 	else if (VK_SUBOPTIMAL_KHR == acquireImageResult)
 	{
 		// 获取到的图像是可用的，但交换链的表面属性（如窗口大小）不再与显示引擎完全匹配。应用程序可以继续使用这个图像进行渲染，但应该重新创建交换链以获得最佳性能。
 
 		RecreateSwapChain();
-		passUpdateAfterRecreateSwapchain();
+		// 临时注释（窗口大小变更时会报错）
+		//passUpdateAfterRecreateSwapchain();
 
 		// NULL 提交等待信号量
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT };	// 等待阶段
@@ -2399,7 +2402,8 @@ void VulkanRHI::SubmitRendering(std::function<void()> passUpdateAfterRecreateSwa
 	if (VK_ERROR_OUT_OF_DATE_KHR == presentResult || VK_SUBOPTIMAL_KHR == presentResult)
 	{
 		RecreateSwapChain();
-		passUpdateAfterRecreateSwapchain();
+		// 临时注释（窗口大小变更时会报错）
+		//passUpdateAfterRecreateSwapchain();
 	}
 	else
 	{

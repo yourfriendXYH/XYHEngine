@@ -32,9 +32,9 @@ void MainCameraPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 	SetupPipelines();	// 创建渲染管线
 
-	SetupDescriptorSet();	// 设置描述符集
+	//SetupDescriptorSet();	// 设置描述符集
 
-	SetupFramebufferDescriptorSet();	// 创建帧缓冲描述符集
+	//SetupFramebufferDescriptorSet();	// 创建帧缓冲描述符集
 
 	SetupSwapchainFramebuffers();	// 创建交换链帧缓冲
 
