@@ -51,6 +51,18 @@ void TestPass::Draw()
 	m_pRHI->CmdEndRenderPassPFN(m_pRHI->GetCurrentCommandBuffer());
 }
 
+void TestPass::UpdateAfterFramebufferRecreate()
+{
+	// 销毁帧缓冲
+	for (auto* pFramebuffer : m_swapchainFramebuffers)
+	{
+		m_pRHI->DestroyFramebuffer(pFramebuffer);
+	}
+
+	// 重新创建帧缓冲
+	SetupSwapchainFramebuffers();
+}
+
 void TestPass::SetupAttachments()
 {
 

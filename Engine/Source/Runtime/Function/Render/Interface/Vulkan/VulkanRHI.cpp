@@ -233,6 +233,42 @@ void VulkanRHI::CreateSwapChain()
 
 void VulkanRHI::RecreateSwapChain()
 {
+	// 窗口大小需要大于0
+	int width = 0;
+	int height = 0;
+	glfwGetFramebufferSize(m_pGLFWwindow, &width, &height);
+	while (width == 0 || height == 0)
+	{
+		glfwGetFramebufferSize(m_pGLFWwindow, &width, &height);
+		glfwWaitEvents();
+	}
+
+	// 等待所有栅栏
+	VkResult resWaitForFences = _vkWaitForFences(m_device, s_maxFramesInFlight, m_isFrameInFlightFences, VK_TRUE, UINT64_MAX);
+	if (resWaitForFences != VK_SUCCESS)
+	{
+		LOG_ERROR("_vkWaitForFences failed");
+		return;
+	}
+
+	// 删除深度视图
+	DestroyImageView(m_depthImageView);
+	vkDestroyImage(m_device, ((VulkanImage*)m_depthImage)->GetResource(), nullptr);
+	vkFreeMemory(m_device, m_depthImageMemory, nullptr);
+
+	// 删除交换链视图
+	for (auto pImageView : m_swapchainImageViews)
+	{
+		vkDestroyImageView(m_device, ((VulkanImageView*)pImageView)->GetResource(), nullptr);
+	}
+
+	// 删除交换链
+	vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
+
+	// 重新创建
+	CreateSwapChain();
+	CreateSwapChainImageViews();
+	CreateFramebufferImageAndViews();
 }
 
 void VulkanRHI::CreateSwapChainImageViews()
@@ -2280,7 +2316,7 @@ bool VulkanRHI::PrepareBeforePass(std::function<void()> passUpdateAfterRecreateS
 	{
 		RecreateSwapChain();
 		// 临时注释（窗口大小变更时会报错）
-		//passUpdateAfterRecreateSwapchain();
+		passUpdateAfterRecreateSwapchain();
 	}
 	else if (VK_SUBOPTIMAL_KHR == acquireImageResult)
 	{
@@ -2288,7 +2324,7 @@ bool VulkanRHI::PrepareBeforePass(std::function<void()> passUpdateAfterRecreateS
 
 		RecreateSwapChain();
 		// 临时注释（窗口大小变更时会报错）
-		//passUpdateAfterRecreateSwapchain();
+		passUpdateAfterRecreateSwapchain();
 
 		// NULL 提交等待信号量
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT };	// 等待阶段
@@ -2403,7 +2439,7 @@ void VulkanRHI::SubmitRendering(std::function<void()> passUpdateAfterRecreateSwa
 	{
 		RecreateSwapChain();
 		// 临时注释（窗口大小变更时会报错）
-		//passUpdateAfterRecreateSwapchain();
+		passUpdateAfterRecreateSwapchain();
 	}
 	else
 	{
@@ -2494,8 +2530,9 @@ void VulkanRHI::DestroyImage(RHIImage* image)
 {
 }
 
-void VulkanRHI::DestroyFramebuffer(RHIFramebuffer* framebuffer)
+void VulkanRHI::DestroyFramebuffer(RHIFramebuffer* pFramebuffer)
 {
+	vkDestroyFramebuffer(m_device, ((VulkanFramebuffer*)pFramebuffer)->GetResource(), nullptr);
 }
 
 void VulkanRHI::DestroyFence(RHIFence* fence)

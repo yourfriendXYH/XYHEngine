@@ -7,9 +7,13 @@
 #include "RenderCamera.h"
 #include "RenderScene.h"
 #include "RenderPipeline.h"
+#include <Runtime/Function/Render/Interface/DX12/D3D12RHI.h>
 #include <Runtime/Function/Render/Passes/ParticlePass.h>
 
 NAMESPACE_XYH_BEGIN
+
+//#define USE_DX12
+#define USE_VK
 
 RenderSystem::~RenderSystem()
 {
@@ -23,8 +27,14 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 	// RHI初始化
 	ST_RHIInitInfo rhiInitInfo;
 	rhiInitInfo.m_pWindowSystem = initInfo.m_pWindowSystem;
+#ifdef USE_DX12	// 使用Direct3D12
+	m_pRHI = std::make_shared<D3D12RHI>();
+	m_pRHI->Initialize(rhiInitInfo);
+#endif // USE_DX12
+#ifdef USE_VK	// 使用Vulkan
 	m_pRHI = std::make_shared<VulkanRHI>();
 	m_pRHI->Initialize(rhiInitInfo);
+#endif // USE_VK
 
 	// 全局渲染资源
 	// GlobalRenderingRes globalRenderingRes;

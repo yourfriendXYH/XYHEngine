@@ -11,6 +11,9 @@ public:
 
 	void Draw() override;
 
+	// 交换链重新创建时需要处理的操作
+	void UpdateAfterFramebufferRecreate();
+
 private:
 
 	void SetupAttachments();	// 设置附件

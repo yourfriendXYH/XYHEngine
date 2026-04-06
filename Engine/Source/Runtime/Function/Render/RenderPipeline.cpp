@@ -208,6 +208,10 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 
 void RenderPipeline::PassUpdateAfterRecreateSwapchain()
 {
+	// test
+	TestPass* pTestPass = static_cast<TestPass*>(m_pTestPass.get());
+	pTestPass->UpdateAfterFramebufferRecreate();
+
 	MainCameraPass& mainCameraPass = *(static_cast<MainCameraPass*>(m_pMainCameraPass.get()));
 	ColorGradingPass& colorGradingPass = *(static_cast<ColorGradingPass*>(m_pColorGradingPass.get()));
 	FXAAPass& fxaaPass = *(static_cast<FXAAPass*>(m_pFxaaPass.get()));
@@ -216,10 +220,11 @@ void RenderPipeline::PassUpdateAfterRecreateSwapchain()
 	PickPass& pickPass = *(static_cast<PickPass*>(m_pPickPass.get()));
 	ParticlePass& particlePass = *(static_cast<ParticlePass*>(m_pParticlePass.get()));
 
-	mainCameraPass.UpdateAfterFramebufferRecreate();	// 主摄像机渲染通道更新
+	//mainCameraPass.UpdateAfterFramebufferRecreate();	// 主摄像机渲染通道更新
 
-	pickPass.RecreateFramebuffer();	// 重建拾取渲染通道的帧缓冲
-	particlePass.UpdateAfterFramebufferRecreate();	// 粒子渲染通道更新
+	//pickPass.RecreateFramebuffer();	// 重建拾取渲染通道的帧缓冲
+	//particlePass.UpdateAfterFramebufferRecreate();	// 粒子渲染通道更新
+
 }
 
 uint32_t RenderPipeline::GetGuidOfPickedMesh(const Vector2& pickedUV)

@@ -234,7 +234,7 @@ public:
 
 	virtual void DestroyImage(RHIImage* image);	// 销毁图像
 
-	virtual void DestroyFramebuffer(RHIFramebuffer* framebuffer);	// 销毁帧缓冲
+	virtual void DestroyFramebuffer(RHIFramebuffer* pFramebuffer);	// 销毁帧缓冲
 
 	virtual void DestroyFence(RHIFence* fence);	// 销毁栅栏
 
