@@ -12,7 +12,7 @@
 
 NAMESPACE_XYH_BEGIN
 
-//#define USE_DX12
+#define USE_DX12
 #define USE_VK
 
 RenderSystem::~RenderSystem()

@@ -1,6 +1,6 @@
 ﻿#include "VulkanRHI.h"
-#include "../../WindowSystem.h"
-#include "../../../../Core/Macro.h"
+#include <Runtime/Function/Render/WindowSystem.h>
+#include <Runtime/Core/Macro.h>
 #include "VulkanUtil.h"
 #include "VulkanRHIResource.h"
 #include <array>
