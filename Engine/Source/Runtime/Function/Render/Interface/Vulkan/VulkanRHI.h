@@ -319,8 +319,6 @@ private:
 
 public:
 
-	ST_RHIViewport m_viewport;	// 视口属性
-	ST_RHIRect2D m_scissor;	// 裁剪区域
 	GLFWwindow* m_pGLFWwindow = nullptr;	// GLFW窗口
 
 	VkInstance m_instance = nullptr;	// Vulkan实例

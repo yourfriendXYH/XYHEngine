@@ -27,7 +27,7 @@ public:
 	virtual bool AllocateCommandBuffers(const ST_RHICommandBufferAllocateInfo* pAllocateInfo, RHICommandBuffer*& pCommandBuffers) override { return false; };	// 配置命令缓冲区
 	virtual bool AllocateDescriptorSets(const ST_RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet*& pDescriptorSets) override { return false; };	// 配置描述符集
 
-	virtual void CreateSwapChain() override {};	// 创建交换链
+	virtual void CreateSwapChain() override;	// 创建交换链
 
 	virtual void RecreateSwapChain() override {};	// 重新创建交换链
 
@@ -289,6 +289,9 @@ private:
 	// 获取adapter 和 创建设备（显卡接口）
 	void CreateDevice();
 
+	// 创建命令队列
+	void CreateCommandQueue();
+
 public:
 	GLFWwindow* m_pGLFWwindow = nullptr;
 
@@ -299,6 +302,10 @@ private:
 	IDXGIAdapter1* m_pAdapter = nullptr;	// 显卡接口
 
 	ID3D12Device* m_pDevice = nullptr;	// 设备
+
+	ID3D12CommandQueue* m_pCommandQueue = nullptr;	// 命令队列
+
+	IDXGISwapChain3* m_pSwapChain = nullptr;	//交换链
 
 
 	RHISemaphore* m_pRHISemaphore = nullptr;

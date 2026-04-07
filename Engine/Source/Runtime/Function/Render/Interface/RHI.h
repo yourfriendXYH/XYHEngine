@@ -275,6 +275,9 @@ public:
 public:
 	static uint8_t const s_maxFramesInFlight = 3u;	// 帧缓冲数量
 
+	ST_RHIViewport m_viewport;	// 视口属性
+	ST_RHIRect2D m_scissor;	// 裁剪区域
+
 };
 
 inline RHI::~RHI() = default;
