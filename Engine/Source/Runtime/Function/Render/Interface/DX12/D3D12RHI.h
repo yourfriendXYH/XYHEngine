@@ -307,6 +307,8 @@ private:
 
 	IDXGISwapChain3* m_pSwapChain = nullptr;	//交换链
 
+	ID3D12Resource* m_pDepthStencilRenderTarget = nullptr;
+
 
 	RHISemaphore* m_pRHISemaphore = nullptr;
 };

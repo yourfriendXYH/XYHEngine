@@ -2,6 +2,8 @@
 #include <Runtime/Function/Render/WindowSystem.h>
 #include <Runtime/Core/Macro.h>
 
+#include "D3D12Util.h"
+
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
@@ -31,6 +33,16 @@ void D3D12RHI::Initialize(ST_RHIInitInfo initInfo)
 	CreateCommandQueue();	// 创建命令队列
 
 	CreateSwapChain();	// 创建交换链
+
+	D3D12Util::CreateResource(
+		m_pDepthStencilRenderTarget, 
+		m_pDevice, 
+		m_viewport.m_width,
+		m_viewport.m_height,
+		0,
+		DXGI_FORMAT_D24_UNORM_S8_UINT,
+		1,
+		D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 }
 
 D3D12RHI::~D3D12RHI()
