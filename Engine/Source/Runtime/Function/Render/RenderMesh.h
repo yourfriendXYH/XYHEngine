@@ -82,6 +82,44 @@ struct ST_MeshVertex
 
 		return attributeDescriptions;
 	}
+
+	// testPass Vertex Input
+	struct ST_TestVertexInput
+	{
+		Vector2 m_position;
+		Vector3 m_color;
+	};
+
+	static std::array<ST_RHIVertexInputBindingDescription, 1> GetBindingDescriptionsTest()
+	{
+		std::array<ST_RHIVertexInputBindingDescription, 1> bindingDescriptions{};
+		// position and color
+		bindingDescriptions[0].m_binding = 0;
+		bindingDescriptions[0].m_stride = sizeof(ST_TestVertexInput);
+		bindingDescriptions[0].m_inputRate = RHI_VERTEX_INPUT_RATE_VERTEX;
+
+		return bindingDescriptions;
+	}
+
+	static std::array<ST_RHIVertexInputAttributeDescription, 2> GetAttributeDescriptionsTest()
+	{
+		std::array<ST_RHIVertexInputAttributeDescription, 2> attributeDescriptions{};
+
+		// position
+		attributeDescriptions[0].m_binding = 0;
+		attributeDescriptions[0].m_location = 0;
+		attributeDescriptions[0].m_format = RHI_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[0].m_offset = offsetof(ST_TestVertexInput, m_position);
+
+		// color
+		attributeDescriptions[1].m_binding = 0;
+		attributeDescriptions[1].m_location = 1;
+		attributeDescriptions[1].m_format = RHI_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[1].m_offset = offsetof(ST_TestVertexInput, m_color);
+
+		return attributeDescriptions;
+	}
+
 };
 
 NAMESPACE_XYH_END

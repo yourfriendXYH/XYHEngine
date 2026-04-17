@@ -35,6 +35,7 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Particle\EmitterIdAllocator.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Particle\ParticleManager.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHI.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Util.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanUtil.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanVMA.cpp" />
@@ -99,6 +100,7 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Particle\ParticleDesc.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Particle\ParticleManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHI.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Util.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHI.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHIStruct.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.h" />

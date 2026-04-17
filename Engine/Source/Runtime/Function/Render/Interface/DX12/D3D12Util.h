@@ -7,6 +7,7 @@ class D3D12Util
 {
 public:
 	
+	// ´´½¨resource
 	static void CreateResource(
 		ID3D12Resource*& outResource, 
 		ID3D12Device* pDevice,

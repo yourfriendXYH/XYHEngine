@@ -31,6 +31,11 @@ private:
 	// 没有使用基类RenderPass中的Framebuffer指针
 	std::vector<RHIFramebuffer*> m_swapchainFramebuffers;	// 交换链帧缓冲
 
+	RHIBuffer* m_pVertexBuffer = nullptr;
+	RHIDeviceMemory* m_pVertexMemory = nullptr;
+
+	RHIBuffer* m_pIndexBuffer = nullptr;
+	RHIDeviceMemory* m_pIndexMemory = nullptr;
 };
 
 NAMESPACE_XYH_END

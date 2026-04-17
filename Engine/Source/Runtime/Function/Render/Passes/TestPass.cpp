@@ -1,5 +1,6 @@
 ﻿#include "TestPass.h"
 #include <Runtime/Function/Render/Interface/Vulkan/VulkanRHI.h>
+#include <Runtime/Function/Render/RenderMesh.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -10,6 +11,35 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	SetupPipelines();
 
 	SetupSwapchainFramebuffers();
+
+	std::vector<ST_MeshVertex::ST_TestVertexInput> vertexDatas = {
+		{ Vector2(0.0, -0.5), Vector3(1.0, 0.0, 0.0) },
+		{ Vector2(0.5, 0.5), Vector3(0.0, 1.0, 0.0) },
+		{ Vector2(-0.5, 0.5), Vector3(0.0, 0.0, 1.0) }
+	};
+
+	std::vector<uint16_t> indexDatas = { 0, 1, 2 };
+
+	m_pRHI->CreateBuffer(
+		sizeof(ST_MeshVertex::ST_TestVertexInput) * vertexDatas.size(),
+		RHI_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		m_pVertexBuffer,
+		m_pVertexMemory
+	);
+
+	void* pMap = nullptr;
+	m_pRHI->MapMemory(m_pVertexMemory, 0, RHI_WHOLE_SIZE, 0, &pMap);
+	memcpy(pMap, vertexDatas.data(), sizeof(ST_MeshVertex::ST_TestVertexInput) * vertexDatas.size());
+	m_pRHI->UnmapMemory(m_pVertexMemory);
+
+	m_pRHI->CreateBuffer(
+		sizeof(uint16_t) * 3,
+		RHI_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		m_pIndexBuffer,
+		m_pIndexMemory
+	);
 }
 
 void TestPass::Draw()
@@ -40,6 +70,14 @@ void TestPass::Draw()
 	m_pRHI->CmdBindPipelinePFN(m_pRHI->GetCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipelines[0].m_pipeline);
 	m_pRHI->CmdSetViewportPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pViewport);
 	m_pRHI->CmdSetScissorPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pScissor);
+
+	RHIBuffer* pVertexBuffer[] = {
+		m_pVertexBuffer
+	};
+	RHIDeviceSize offsets[] = { 0 };
+
+	// 绑定顶点缓冲区
+	m_pRHI->CmdBindVertexBuffersPFN(m_pRHI->GetCurrentCommandBuffer(), 0, sizeof(pVertexBuffer) / sizeof(pVertexBuffer[0]), pVertexBuffer, offsets);
 
 	// 绘制
 	vkCmdDraw(((VulkanCommandBuffer*)m_pRHI->GetCurrentCommandBuffer())->GetResource(), 3, 1, 0, 0);
@@ -153,13 +191,16 @@ void TestPass::SetupPipelines()
 		fragShaderStageCreateInfo
 	};
 
+	// 顶点布局属性
+	auto vertexBindingDescriptions = ST_MeshVertex::GetBindingDescriptionsTest();
+	auto vertexAttributeDescriptions = ST_MeshVertex::GetAttributeDescriptionsTest();
 	// 顶点输入状态创建信息（顶点布局）
 	ST_RHIPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
 	vertexInputStateCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputStateCreateInfo.m_vertexBindingDescriptionCount = 0u;
-	vertexInputStateCreateInfo.m_pVertexBindingDescriptions = nullptr;
-	vertexInputStateCreateInfo.m_vertexAttributeDescriptionCount = 0u;
-	vertexInputStateCreateInfo.m_pVertexAttributeDescriptions = nullptr;
+	vertexInputStateCreateInfo.m_vertexBindingDescriptionCount = static_cast<uint32_t>(vertexBindingDescriptions.size());
+	vertexInputStateCreateInfo.m_pVertexBindingDescriptions = &vertexBindingDescriptions[0];
+	vertexInputStateCreateInfo.m_vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttributeDescriptions.size());
+	vertexInputStateCreateInfo.m_pVertexAttributeDescriptions = &vertexAttributeDescriptions[0];
 
 	// 输入汇编状态创建信息（拓扑类型）
 	ST_RHIPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo{};
@@ -183,7 +224,7 @@ void TestPass::SetupPipelines()
 	rasterizationStateCreateInfo.m_polygonMode = ERHIPolygonMode::RHI_POLYGON_MODE_FILL;
 	rasterizationStateCreateInfo.m_lineWidth = 1.0f;
 	rasterizationStateCreateInfo.m_cullMode = ERHICullModeFlagBits::RHI_CULL_MODE_BACK_BIT;	// 背面剔除
-	rasterizationStateCreateInfo.m_frontFace = ERHIFrontFace::RHI_FRONT_FACE_CLOCKWISE;	// 逆时针为正面
+	rasterizationStateCreateInfo.m_frontFace = ERHIFrontFace::RHI_FRONT_FACE_CLOCKWISE;	// 顺时针为正面
 	rasterizationStateCreateInfo.m_depthBiasEnable = RHI_FALSE;	// 是否开启深度偏移
 	rasterizationStateCreateInfo.m_depthBiasConstantFactor = 0.0f;
 	rasterizationStateCreateInfo.m_depthBiasClamp = 0.0f;

@@ -222,6 +222,9 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Passes\TestPass.cpp">
       <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Util.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Runtime\Engine.h">
@@ -445,6 +448,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Passes\TestPass.h">
       <Filter>Engine\Source\Runtime\Function\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Util.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
