@@ -4,6 +4,22 @@
 
 NAMESPACE_XYH_BEGIN
 
+namespace
+{
+	std::vector<ST_MeshVertex::ST_TestVertexInput> s_vertexDatas = {
+	{ Vector2(-0.5, -0.5), Vector3(1.0, 1.0, 1.0) },
+	{ Vector2(0.5, -0.5), Vector3(1.0, 0.0, 0.0) },
+	{ Vector2(0.5, 0.5), Vector3(0.0, 1.0, 0.0) },
+	{ Vector2(-0.5, 0.5), Vector3(0.0, 0.0, 1.0) }
+	};
+
+	std::vector<uint16_t> s_indexDatas = {
+		0, 1, 3,
+		1, 2, 3
+	};
+}
+
+
 void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 {
 	SetupRenderPass();
@@ -12,34 +28,9 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 	SetupSwapchainFramebuffers();
 
-	std::vector<ST_MeshVertex::ST_TestVertexInput> vertexDatas = {
-		{ Vector2(0.0, -0.5), Vector3(1.0, 0.0, 0.0) },
-		{ Vector2(0.5, 0.5), Vector3(0.0, 1.0, 0.0) },
-		{ Vector2(-0.5, 0.5), Vector3(0.0, 0.0, 1.0) }
-	};
+	CreateVertexBuffer();
 
-	std::vector<uint16_t> indexDatas = { 0, 1, 2 };
-
-	m_pRHI->CreateBuffer(
-		sizeof(ST_MeshVertex::ST_TestVertexInput) * vertexDatas.size(),
-		RHI_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-		RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		m_pVertexBuffer,
-		m_pVertexMemory
-	);
-
-	void* pMap = nullptr;
-	m_pRHI->MapMemory(m_pVertexMemory, 0, RHI_WHOLE_SIZE, 0, &pMap);
-	memcpy(pMap, vertexDatas.data(), sizeof(ST_MeshVertex::ST_TestVertexInput) * vertexDatas.size());
-	m_pRHI->UnmapMemory(m_pVertexMemory);
-
-	m_pRHI->CreateBuffer(
-		sizeof(uint16_t) * 3,
-		RHI_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		m_pIndexBuffer,
-		m_pIndexMemory
-	);
+	CreateIndexBuffer();
 }
 
 void TestPass::Draw()
@@ -78,10 +69,12 @@ void TestPass::Draw()
 
 	// 绑定顶点缓冲区
 	m_pRHI->CmdBindVertexBuffersPFN(m_pRHI->GetCurrentCommandBuffer(), 0, sizeof(pVertexBuffer) / sizeof(pVertexBuffer[0]), pVertexBuffer, offsets);
+	// 绑定索引缓冲区
+	m_pRHI->CmdBindIndexBufferPFN(m_pRHI->GetCurrentCommandBuffer(), m_pIndexBuffer, 0, RHI_INDEX_TYPE_UINT16);
 
 	// 绘制
-	vkCmdDraw(((VulkanCommandBuffer*)m_pRHI->GetCurrentCommandBuffer())->GetResource(), 3, 1, 0, 0);
-	//m_pRHI->CmdDrawIndexedPFN(m_pRHI->GetCurrentCommandBuffer(), 3, 1, 0, 0, 0);
+	//vkCmdDraw(((VulkanCommandBuffer*)m_pRHI->GetCurrentCommandBuffer())->GetResource(), 4, 1, 0, 0);
+	m_pRHI->CmdDrawIndexedPFN(m_pRHI->GetCurrentCommandBuffer(), s_indexDatas.size(), 1, 0, 0, 0);
 
 	m_pRHI->PopEvent(m_pRHI->GetCurrentCommandBuffer());	// 结束
 
@@ -351,6 +344,86 @@ void TestPass::SetupSwapchainFramebuffers()
 	{
 
 	}
+}
+
+void TestPass::CreateVertexBuffer()
+{
+	RHIDeviceSize vertexBufferSize = sizeof(ST_MeshVertex::ST_TestVertexInput) * s_vertexDatas.size();
+
+	RHIBuffer* pTempBuffer = nullptr;
+	RHIDeviceMemory* pTempMemory = nullptr;
+	m_pRHI->CreateBuffer(
+		vertexBufferSize,
+		RHI_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		pTempBuffer,
+		pTempMemory
+	);
+
+	void* pVertexMap = nullptr;
+	m_pRHI->MapMemory(pTempMemory, 0, RHI_WHOLE_SIZE, 0, &pVertexMap);
+	memcpy(pVertexMap, s_vertexDatas.data(), vertexBufferSize);
+	m_pRHI->UnmapMemory(pTempMemory);
+
+	VmaAllocationCreateInfo allocInfo = {};
+	allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+	ST_RHIBufferCreateInfo bufferInfo = { RHI_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+	bufferInfo.m_usage = RHI_BUFFER_USAGE_VERTEX_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+	bufferInfo.m_size = vertexBufferSize;
+	m_pRHI->CreateBufferVMA(
+		static_cast<VulkanRHI*>(m_pRHI.get())->m_assetsAllocator,
+		&bufferInfo,
+		&allocInfo,
+		m_pVertexBuffer,
+		&m_vertexBufferAllocation,
+		nullptr
+	);
+
+	m_pRHI->CopyBuffer(pTempBuffer, m_pVertexBuffer, 0, 0, vertexBufferSize);
+
+	m_pRHI->DestroyBuffer(pTempBuffer);
+	m_pRHI->FreeMemory(pTempMemory);
+}
+
+void TestPass::CreateIndexBuffer()
+{
+	RHIDeviceSize indexBufferSize = sizeof(uint16_t) * s_indexDatas.size();
+
+	RHIBuffer* pTempBuffer = nullptr;
+	RHIDeviceMemory* pTempMemory = nullptr;
+
+	m_pRHI->CreateBuffer(
+		indexBufferSize,
+		RHI_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		pTempBuffer,
+		pTempMemory
+	);
+	void* pIndexMap = nullptr;
+	m_pRHI->MapMemory(pTempMemory, 0, RHI_WHOLE_SIZE, 0, &pIndexMap);
+	memcpy(pIndexMap, s_indexDatas.data(), indexBufferSize);
+	m_pRHI->UnmapMemory(pTempMemory);
+
+	ST_RHIBufferCreateInfo bufferInfo = { RHI_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+	bufferInfo.m_size = indexBufferSize;
+	bufferInfo.m_usage = RHI_BUFFER_USAGE_INDEX_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
+	VmaAllocationCreateInfo allocInfo = {};
+	allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+	m_pRHI->CreateBufferVMA(
+		static_cast<VulkanRHI*>(m_pRHI.get())->m_assetsAllocator,
+		&bufferInfo,
+		&allocInfo,
+		m_pIndexBuffer,
+		&m_indexBufferAllocation,
+		nullptr
+	);
+
+	m_pRHI->CopyBuffer(pTempBuffer, m_pIndexBuffer, 0, 0, indexBufferSize);
+
+	m_pRHI->DestroyBuffer(pTempBuffer);
+	m_pRHI->FreeMemory(pTempMemory);
 }
 
 NAMESPACE_XYH_END

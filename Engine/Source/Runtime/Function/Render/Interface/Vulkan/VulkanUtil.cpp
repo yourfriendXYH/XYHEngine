@@ -144,6 +144,20 @@ void VulkanUtil::CreateBufferAndInitialize(
 	}
 }
 
+void VulkanUtil::CopyBuffer(RHI* pRHI, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize srcOffset, VkDeviceSize dstOffset, VkDeviceSize size)
+{
+	if (nullptr == pRHI)
+		return;
+
+	RHICommandBuffer* pRHICommandBuffer = static_cast<VulkanRHI*>(pRHI)->BeginSingleTimeCommands();
+	VkCommandBuffer commandBuffer = static_cast<VulkanCommandBuffer*>(pRHICommandBuffer)->GetResource();
+
+	VkBufferCopy copyRegion = { srcOffset, dstOffset, size };
+	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+	static_cast<VulkanRHI*>(pRHI)->EndSingleTimeCommands(pRHICommandBuffer);
+}
+
 VkImageView VulkanUtil::CreateImageView(
 	VkDevice device,
 	VkImage& image,

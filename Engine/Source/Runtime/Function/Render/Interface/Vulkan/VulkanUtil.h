@@ -33,6 +33,9 @@ public:
 		void* pData = nullptr,
 		int dataSize = 0);
 
+	// 复制缓冲区
+	static void CopyBuffer(RHI* pRHI, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize srcOffset, VkDeviceSize dstOffset, VkDeviceSize size);
+
 	// 创建图像视图
 	static VkImageView CreateImageView(
 		VkDevice device,

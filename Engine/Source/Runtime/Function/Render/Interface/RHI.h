@@ -48,6 +48,7 @@ public:
 	virtual void CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory, RHIDeviceSize size, void* data = nullptr, int datasize = 0) = 0;	// 创建缓冲区并初始化
 
 	virtual bool CreateBufferVMA(
+		VmaAllocator allocator,
 		const ST_RHIBufferCreateInfo* pBufferCreateInfo,
 		const VmaAllocationCreateInfo* pAllocationCreateInfo,
 		RHIBuffer*& pBuffer,

@@ -26,16 +26,19 @@ private:
 
 	void SetupSwapchainFramebuffers();	// 设置交换链帧缓冲
 
+	void CreateVertexBuffer();
+	void CreateIndexBuffer();
+
 private:
 
 	// 没有使用基类RenderPass中的Framebuffer指针
 	std::vector<RHIFramebuffer*> m_swapchainFramebuffers;	// 交换链帧缓冲
 
 	RHIBuffer* m_pVertexBuffer = nullptr;
-	RHIDeviceMemory* m_pVertexMemory = nullptr;
+	VmaAllocation m_vertexBufferAllocation;
 
 	RHIBuffer* m_pIndexBuffer = nullptr;
-	RHIDeviceMemory* m_pIndexMemory = nullptr;
+	VmaAllocation m_indexBufferAllocation;
 };
 
 NAMESPACE_XYH_END

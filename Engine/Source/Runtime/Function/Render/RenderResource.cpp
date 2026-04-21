@@ -562,35 +562,39 @@ void RenderResource::UpdateVertexBuffer(
 		allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
 		ST_RHIBufferCreateInfo bufferInfo = { RHI_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-		bufferInfo.usage = RHI_BUFFER_USAGE_VERTEX_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
+		bufferInfo.m_usage = RHI_BUFFER_USAGE_VERTEX_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
 
-		bufferInfo.size = vertexPositionBufferSize;
+		bufferInfo.m_size = vertexPositionBufferSize;
 		pRHI->CreateBufferVMA(
+			static_cast<VulkanRHI*>(pRHI.get())->m_assetsAllocator,
 			&bufferInfo, 
 			&allocInfo, 
 			outNowMesh.m_meshVertexPositionBuffer, 
 			&outNowMesh.m_meshVertexPositionBufferAllocation, 
 			nullptr
 		);
-		bufferInfo.size = vertexVaryingEnableBlendingBufferSize;
+		bufferInfo.m_size = vertexVaryingEnableBlendingBufferSize;
 		pRHI->CreateBufferVMA(
+			static_cast<VulkanRHI*>(pRHI.get())->m_assetsAllocator,
 			&bufferInfo,
 			&allocInfo,
 			outNowMesh.m_meshVertexVaryingEnableBlendingBuffer,
 			&outNowMesh.m_meshVertexVaryingEnableBlendingBufferAllocation,
 			nullptr
 		);
-		bufferInfo.size = vertexVaryingBufferSize;
+		bufferInfo.m_size = vertexVaryingBufferSize;
 		pRHI->CreateBufferVMA(
+			static_cast<VulkanRHI*>(pRHI.get())->m_assetsAllocator,
 			&bufferInfo,
 			&allocInfo,
 			outNowMesh.m_meshVertexVaryingBuffer,
 			&outNowMesh.m_meshVertexVaryingBufferAllocation,
 			nullptr
 		);
-		bufferInfo.usage = RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
-		bufferInfo.size = vertexJointBindingBufferSize;
+		bufferInfo.m_usage = RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
+		bufferInfo.m_size = vertexJointBindingBufferSize;
 		pRHI->CreateBufferVMA(
+			static_cast<VulkanRHI*>(pRHI.get())->m_assetsAllocator,
 			&bufferInfo,
 			&allocInfo,
 			outNowMesh.m_meshVertexJointBindingBuffer,
@@ -704,26 +708,29 @@ void RenderResource::UpdateVertexBuffer(
 		allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
 		ST_RHIBufferCreateInfo bufferInfo = { RHI_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-		bufferInfo.usage = RHI_BUFFER_USAGE_VERTEX_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
+		bufferInfo.m_usage = RHI_BUFFER_USAGE_VERTEX_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
 
-		bufferInfo.size = vertexPositionBufferSize;
+		bufferInfo.m_size = vertexPositionBufferSize;
 		pRHI->CreateBufferVMA(
+			static_cast<VulkanRHI*>(pRHI.get())->m_assetsAllocator,
 			&bufferInfo,
 			&allocInfo,
 			outNowMesh.m_meshVertexPositionBuffer,
 			&outNowMesh.m_meshVertexPositionBufferAllocation,
 			nullptr
 		);
-		bufferInfo.size = vertexVaryingEnableBlendingBufferSize;
+		bufferInfo.m_size = vertexVaryingEnableBlendingBufferSize;
 		pRHI->CreateBufferVMA(
+			static_cast<VulkanRHI*>(pRHI.get())->m_assetsAllocator,
 			&bufferInfo,
 			&allocInfo,
 			outNowMesh.m_meshVertexVaryingEnableBlendingBuffer,
 			&outNowMesh.m_meshVertexVaryingEnableBlendingBufferAllocation,
 			nullptr
 		);
-		bufferInfo.size = vertexVaryingBufferSize;
+		bufferInfo.m_size = vertexVaryingBufferSize;
 		pRHI->CreateBufferVMA(
+			static_cast<VulkanRHI*>(pRHI.get())->m_assetsAllocator,
 			&bufferInfo,
 			&allocInfo,
 			outNowMesh.m_meshVertexVaryingBuffer,
@@ -792,11 +799,12 @@ void RenderResource::UpdateIndexBuffer(std::shared_ptr<RHI> pRHI, uint32_t index
 	pRHI->UnmapMemory(pInefficientStagingBufferMemory);
 
 	ST_RHIBufferCreateInfo bufferInfo = { RHI_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-	bufferInfo.size = bufferSize;
-	bufferInfo.usage = RHI_BUFFER_USAGE_INDEX_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
+	bufferInfo.m_size = bufferSize;
+	bufferInfo.m_usage = RHI_BUFFER_USAGE_INDEX_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
 	VmaAllocationCreateInfo allocInfo = {};
 	allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 	pRHI->CreateBufferVMA(
+		static_cast<VulkanRHI*>(pRHI.get())->m_assetsAllocator,
 		&bufferInfo,
 		&allocInfo,
 		outNowMesh.m_meshIndexBuffer,

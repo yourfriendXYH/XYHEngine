@@ -870,14 +870,14 @@ struct ST_RHIPhysicalDeviceProperties
 
 struct ST_RHIBufferCreateInfo
 {
-	ERHIStructureType sType;
-	const void* pNext;
-	RHIBufferCreateFlags flags;
-	RHIDeviceSize size;
-	RHIBufferUsageFlags usage;
-	ERHISharingMode sharingMode;
-	uint32_t queueFamilyIndexCount;
-	const uint32_t* pQueueFamilyIndices;
+	ERHIStructureType m_sType;
+	const void* m_pNext;
+	RHIBufferCreateFlags m_flags;
+	RHIDeviceSize m_size;
+	RHIBufferUsageFlags m_usage;
+	ERHISharingMode m_sharingMode;
+	uint32_t m_queueFamilyIndexCount;
+	const uint32_t* m_pQueueFamilyIndices;
 };
 
 NAMESPACE_XYH_END

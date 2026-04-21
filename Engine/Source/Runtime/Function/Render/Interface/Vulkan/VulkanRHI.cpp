@@ -387,9 +387,31 @@ void VulkanRHI::CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPr
 	((VulkanDeviceMemory*)bufferMemory)->SetResource(vkDeviceMemory);
 }
 
-bool VulkanRHI::CreateBufferVMA(const ST_RHIBufferCreateInfo* pBufferCreateInfo, const VmaAllocationCreateInfo* pAllocationCreateInfo, RHIBuffer*& pBuffer, VmaAllocation* pAllocation, VmaAllocationInfo* pAllocationInfo)
+bool VulkanRHI::CreateBufferVMA(VmaAllocator allocator, const ST_RHIBufferCreateInfo* pBufferCreateInfo, const VmaAllocationCreateInfo* pAllocationCreateInfo, RHIBuffer*& pBuffer, VmaAllocation* pAllocation, VmaAllocationInfo* pAllocationInfo)
 {
-	return false;
+	VkBuffer vkBuffer;
+	VkBufferCreateInfo bufferCreateInfo{};
+	bufferCreateInfo.sType = (VkStructureType)pBufferCreateInfo->m_sType;
+	bufferCreateInfo.pNext = (const void*)pBufferCreateInfo->m_pNext;
+	bufferCreateInfo.flags = (VkBufferCreateFlags)pBufferCreateInfo->m_flags;
+	bufferCreateInfo.size = (VkDeviceSize)pBufferCreateInfo->m_size;
+	bufferCreateInfo.usage = (VkBufferUsageFlags)pBufferCreateInfo->m_usage;
+	bufferCreateInfo.sharingMode = (VkSharingMode)pBufferCreateInfo->m_sharingMode;
+	bufferCreateInfo.queueFamilyIndexCount = pBufferCreateInfo->m_queueFamilyIndexCount;
+	bufferCreateInfo.pQueueFamilyIndices = (const uint32_t*)pBufferCreateInfo->m_pQueueFamilyIndices;
+
+	pBuffer = new VulkanBuffer();
+	VkResult result = vmaCreateBuffer(allocator, &bufferCreateInfo, pAllocationCreateInfo, &vkBuffer, pAllocation, pAllocationInfo);
+	((VulkanBuffer*)pBuffer)->SetResource(vkBuffer);
+
+	if (result == VK_SUCCESS)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool VulkanRHI::CreateBufferWithAlignmentVMA(VmaAllocator allocator, const ST_RHIBufferCreateInfo* pBufferCreateInfo, const VmaAllocationCreateInfo* pAllocationCreateInfo, RHIDeviceSize minAlignment, RHIBuffer*& pBuffer, VmaAllocation* pAllocation, VmaAllocationInfo* pAllocationInfo)
@@ -397,8 +419,11 @@ bool VulkanRHI::CreateBufferWithAlignmentVMA(VmaAllocator allocator, const ST_RH
 	return false;
 }
 
-void VulkanRHI::CopyBuffer(RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, RHIDeviceSize srcOffset, RHIDeviceSize dstOffset, RHIDeviceSize size)
+void VulkanRHI::CopyBuffer(RHIBuffer* pSrcBuffer, RHIBuffer* pDstBuffer, RHIDeviceSize srcOffset, RHIDeviceSize dstOffset, RHIDeviceSize size)
 {
+	VkBuffer vkSrcBuffer = ((VulkanBuffer*)pSrcBuffer)->GetResource();
+	VkBuffer vkDstBuffer = ((VulkanBuffer*)pDstBuffer)->GetResource();
+	VulkanUtil::CopyBuffer(this, vkSrcBuffer, vkDstBuffer, srcOffset, dstOffset, size);
 }
 
 void VulkanRHI::CreateImage(uint32_t imageWidth, uint32_t imageHeight, ERHIFormat format, ERHIImageTiling imageTiling, RHIImageUsageFlags imageUsageFlags, RHIMemoryPropertyFlags memoryPropertyFlags, RHIImage*& image, RHIDeviceMemory*& memory, RHIImageCreateFlags imageCreateFlags, uint32_t arrayLayers, uint32_t miplevels)
@@ -2304,7 +2329,7 @@ void VulkanRHI::EndSingleTimeCommands(RHICommandBuffer* pCommandBuffer)
 
 	// 释放命令
 	vkFreeCommandBuffers(m_device, ((VulkanCommandPool*)m_rhiCommandPool)->GetResource(), 1, &vkCommandBuffer);
-	delete(vkCommandBuffer);
+	//delete(vkCommandBuffer);
 }
 
 bool VulkanRHI::PrepareBeforePass(std::function<void()> passUpdateAfterRecreateSwapchain)

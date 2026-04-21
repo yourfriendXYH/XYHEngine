@@ -38,6 +38,7 @@ public:
 	virtual void CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory, RHIDeviceSize size, void* data = nullptr, int datasize = 0);	// 创建缓冲区并初始化
 
 	virtual bool CreateBufferVMA(
+		VmaAllocator allocator,
 		const ST_RHIBufferCreateInfo* pBufferCreateInfo,
 		const VmaAllocationCreateInfo* pAllocationCreateInfo,
 		RHIBuffer*& pBuffer,
@@ -53,7 +54,7 @@ public:
 		VmaAllocation* pAllocation,
 		VmaAllocationInfo* pAllocationInfo);	// 使用VMA创建缓冲区并对齐
 
-	virtual void CopyBuffer(RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, RHIDeviceSize srcOffset, RHIDeviceSize dstOffset, RHIDeviceSize size);	// 复制缓冲区
+	virtual void CopyBuffer(RHIBuffer* pSrcBuffer, RHIBuffer* pDstBuffer, RHIDeviceSize srcOffset, RHIDeviceSize dstOffset, RHIDeviceSize size);	// 复制缓冲区
 
 	virtual void CreateImage(uint32_t imageWidth, uint32_t imageHeight, ERHIFormat format, ERHIImageTiling imageTiling, RHIImageUsageFlags imageUsageFlags, RHIMemoryPropertyFlags memoryPropertyFlags,
 		RHIImage*& image, RHIDeviceMemory*& memory, RHIImageCreateFlags imageCreateFlags, uint32_t arrayLayers, uint32_t miplevels);	// 创建图像
