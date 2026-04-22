@@ -14,6 +14,9 @@ public:
 	// 交换链重新创建时需要处理的操作
 	void UpdateAfterFramebufferRecreate();
 
+	// 准备部分数据
+	void PreparePassData(std::shared_ptr<RenderResourceBase> renderResource) override final;
+
 private:
 
 	void SetupAttachments();	// 设置附件
@@ -21,6 +24,8 @@ private:
 	void SetupRenderPass();	// 设置渲染通道
 
 	void SetupDescriptorSetLayout();	// 设置描述符集布局
+
+	void SetupDescriptorSet();	// 设置描述符集
 
 	void SetupPipelines();	// 设置管线
 
@@ -39,6 +44,19 @@ private:
 
 	RHIBuffer* m_pIndexBuffer = nullptr;
 	VmaAllocation m_indexBufferAllocation;
+
+	RHIBuffer* m_pPerframeStorageBuffer = nullptr;
+	RHIDeviceMemory* m_pPerframeMemory = nullptr;
+
+	RHIBuffer* m_pPerDrawcallStorageBuffer = nullptr;
+	RHIDeviceMemory* m_pPerDrawcallMemory = nullptr;
+
+	// 每帧用到的通用数据（全局数据）
+	ST_TestPerframeStorageBufferObject m_perframeStorageBufferObj;
+
+	ST_TestPerDrawcallStorageBufferObject m_perDrawcallStorageBufferObj;
+
+	int m_tempDegree = 0;
 };
 
 NAMESPACE_XYH_END

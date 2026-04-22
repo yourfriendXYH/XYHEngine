@@ -16,6 +16,8 @@ void RenderPipelineBase::PreparePassData(std::shared_ptr<RenderResourceBase> pRe
 
 	m_pParticlePass->PreparePassData(pRenderResource);
 
+	m_pTestPass->PreparePassData(pRenderResource);
+
 	// g_runtime_global_context.m_debugdraw_manager->preparePassData(render_resource);
 }
 

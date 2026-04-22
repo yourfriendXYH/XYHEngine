@@ -9,4 +9,6 @@ layout(location = 0) out highp vec4 outColor;
 void main()
 {
 	outColor = vec4(fragColor, 1.0);
+
+	gl_FragDepth = 0.0;
 }

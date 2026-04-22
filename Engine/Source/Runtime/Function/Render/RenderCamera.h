@@ -68,7 +68,7 @@ protected:
 	float m_aspectRatio = 0.0f;	// 宽高比
 
 	// 指相机能看到的视野范围
-	float m_fovX = Degree(89.f).valueDegrees();	// 水平视场角
+	float m_fovX = Degree(120.f).valueDegrees();	// 水平视场角
 	float m_fovY = 0.0f;	// 垂直视场角
 
 	std::mutex m_viewMatrixMutex;	// 视图矩阵互斥锁

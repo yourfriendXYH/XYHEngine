@@ -2,15 +2,17 @@
 #include <Runtime/Function/Render/Interface/Vulkan/VulkanRHI.h>
 #include <Runtime/Function/Render/RenderMesh.h>
 
+#include <random>
+
 NAMESPACE_XYH_BEGIN
 
 namespace
 {
 	std::vector<ST_MeshVertex::ST_TestVertexInput> s_vertexDatas = {
-	{ Vector2(-0.5, -0.5), Vector3(1.0, 1.0, 1.0) },
-	{ Vector2(0.5, -0.5), Vector3(1.0, 0.0, 0.0) },
-	{ Vector2(0.5, 0.5), Vector3(0.0, 1.0, 0.0) },
-	{ Vector2(-0.5, 0.5), Vector3(0.0, 0.0, 1.0) }
+	{ Vector2(-1.0, -1.0), Vector3(1.0, 1.0, 1.0) },
+	{ Vector2(1.0, -1.0), Vector3(1.0, 0.0, 0.0) },
+	{ Vector2(1.0, 1.0), Vector3(0.0, 1.0, 0.0) },
+	{ Vector2(-1.0, 1.0), Vector3(0.0, 0.0, 1.0) }
 	};
 
 	std::vector<uint16_t> s_indexDatas = {
@@ -23,6 +25,10 @@ namespace
 void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 {
 	SetupRenderPass();
+
+	SetupDescriptorSetLayout();
+
+	SetupDescriptorSet();
 
 	SetupPipelines();
 
@@ -47,7 +53,7 @@ void TestPass::Draw()
 
 		// 附件清除值
 		UN_RHIClearValue clearValues[1];
-		clearValues[0].m_color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+		clearValues[0].m_color = { {0.5f, 0.5f, 0.5f, 1.0f} };
 		renderPassBeginInfo.m_clearValueCount = 1;
 		renderPassBeginInfo.m_pClearValues = clearValues;
 
@@ -72,6 +78,29 @@ void TestPass::Draw()
 	// 绑定索引缓冲区
 	m_pRHI->CmdBindIndexBufferPFN(m_pRHI->GetCurrentCommandBuffer(), m_pIndexBuffer, 0, RHI_INDEX_TYPE_UINT16);
 
+	m_perDrawcallStorageBufferObj.m_modelMatrix = Matrix4x4(Vector3(0.f, 0.f, 0.f), Vector3(1.f, 1.f, 1.f), Quaternion(Radian(Degree(m_tempDegree)), Vector3(0.0, 0.0, 1.0)));
+	m_tempDegree = (m_tempDegree + 1) % 360;
+
+	void* pMap = nullptr;
+	m_pRHI->MapMemory(m_pPerframeMemory, 0, RHI_WHOLE_SIZE, 0, &pMap);
+	*reinterpret_cast<ST_TestPerframeStorageBufferObject*>(pMap) = m_perframeStorageBufferObj;	// 赋值
+	m_pRHI->UnmapMemory(m_pPerframeMemory);
+
+	void* pMap1 = nullptr;
+	m_pRHI->MapMemory(m_pPerDrawcallMemory, 0, RHI_WHOLE_SIZE, 0, &pMap1);
+	*reinterpret_cast<ST_TestPerDrawcallStorageBufferObject*>(pMap1) = m_perDrawcallStorageBufferObj;	// 赋值
+	m_pRHI->UnmapMemory(m_pPerDrawcallMemory);
+
+	m_pRHI->CmdBindDescriptorSetsPFN(
+		m_pRHI->GetCurrentCommandBuffer(),
+		RHI_PIPELINE_BIND_POINT_GRAPHICS,
+		m_renderPipelines[0].m_pipelineLayout,
+		0,
+		1,
+		&m_descriptorInfos[0].m_pDescriptorSet,
+		0,
+		nullptr);
+
 	// 绘制
 	//vkCmdDraw(((VulkanCommandBuffer*)m_pRHI->GetCurrentCommandBuffer())->GetResource(), 4, 1, 0, 0);
 	m_pRHI->CmdDrawIndexedPFN(m_pRHI->GetCurrentCommandBuffer(), s_indexDatas.size(), 1, 0, 0, 0);
@@ -92,6 +121,15 @@ void TestPass::UpdateAfterFramebufferRecreate()
 
 	// 重新创建帧缓冲
 	SetupSwapchainFramebuffers();
+}
+
+void TestPass::PreparePassData(std::shared_ptr<RenderResourceBase> renderResource)
+{
+	const RenderResource* vulkanResource = static_cast<const RenderResource*>(renderResource.get());
+	if (nullptr != vulkanResource)
+	{
+		m_perframeStorageBufferObj.m_projViewMatrix = vulkanResource->m_meshPerframeStorageBufferObject.m_projViewMatrix;
+	}
 }
 
 void TestPass::SetupAttachments()
@@ -155,6 +193,99 @@ void TestPass::SetupRenderPass()
 
 void TestPass::SetupDescriptorSetLayout()
 {
+	m_descriptorInfos.resize(1);
+
+	ST_RHIDescriptorSetLayoutBinding layoutBindings[2];
+
+	ST_RHIDescriptorSetLayoutBinding& perFrameStorageBufferBinding = layoutBindings[0];
+	perFrameStorageBufferBinding.m_binding = 0;
+	perFrameStorageBufferBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	perFrameStorageBufferBinding.m_descriptorCount = 1;
+	perFrameStorageBufferBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT | RHI_SHADER_STAGE_FRAGMENT_BIT;
+	perFrameStorageBufferBinding.m_pImmutableSamplers = nullptr;
+
+	ST_RHIDescriptorSetLayoutBinding& perDrawcallStorageBufferBinding = layoutBindings[1];
+	perDrawcallStorageBufferBinding.m_binding = 1;
+	perDrawcallStorageBufferBinding.m_descriptorType = ERHIDescriptorType::RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	perDrawcallStorageBufferBinding.m_descriptorCount = 1;
+	perDrawcallStorageBufferBinding.m_stageFlags = ERHIShaderStageFlagBits::RHI_SHADER_STAGE_VERTEX_BIT | RHI_SHADER_STAGE_FRAGMENT_BIT;
+	perDrawcallStorageBufferBinding.m_pImmutableSamplers = nullptr;
+
+	ST_RHIDescriptorSetLayoutCreateInfo layoutCreateInfo;
+	layoutCreateInfo.m_sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutCreateInfo.m_pNext = NULL;
+	layoutCreateInfo.m_flags = 0;
+	layoutCreateInfo.m_bindingCount = (sizeof(layoutBindings) / sizeof(layoutBindings[0]));
+	layoutCreateInfo.m_pBindings = layoutBindings;
+
+	if (RHI_SUCCESS != m_pRHI->CreateDescriptorSetLayout(&layoutCreateInfo, m_descriptorInfos[0].m_pDescriptorSetLayout))
+	{
+		throw std::runtime_error("create mesh global layout");
+	}
+}
+
+void TestPass::SetupDescriptorSet()
+{
+	m_pRHI->CreateBuffer(
+		sizeof(ST_TestPerframeStorageBufferObject),
+		RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+		RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		m_pPerframeStorageBuffer,
+		m_pPerframeMemory
+	);
+
+	m_pRHI->CreateBuffer(
+		sizeof(ST_TestPerDrawcallStorageBufferObject),
+		RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+		RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		m_pPerDrawcallStorageBuffer,
+		m_pPerDrawcallMemory
+	);
+
+
+	ST_RHIDescriptorSetAllocateInfo descriptorSetAllocInfo;
+	descriptorSetAllocInfo.m_sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	descriptorSetAllocInfo.m_pNext = NULL;
+	descriptorSetAllocInfo.m_pDescriptorPool = m_pRHI->GetDescriptorPoor();
+	descriptorSetAllocInfo.m_descriptorSetCount = 1;
+	descriptorSetAllocInfo.m_pSetLayouts = &m_descriptorInfos[0].m_pDescriptorSetLayout;
+	// 分配 描述符集
+	if (RHI_SUCCESS != m_pRHI->AllocateDescriptorSets(&descriptorSetAllocInfo, m_descriptorInfos[0].m_pDescriptorSet))
+	{
+		throw std::runtime_error("allocate mesh global descriptor set");
+	}
+
+	ST_RHIDescriptorBufferInfo perframeStorageBufferInfo = {};
+	perframeStorageBufferInfo.m_offset = 0;	// 这个偏移量加上dynamic_offset不应该大于缓冲区的大小
+	perframeStorageBufferInfo.m_range = sizeof(ST_TestPerframeStorageBufferObject);	// 范围是指每次绘制调用时着色器实际使用的大小
+	perframeStorageBufferInfo.m_pBuffer = m_pPerframeStorageBuffer;
+	
+	ST_RHIDescriptorBufferInfo perDrawcallStorageBufferInfo = {};
+	perDrawcallStorageBufferInfo.m_offset = 0;	// 这个偏移量加上dynamic_offset不应该大于缓冲区的大小
+	perDrawcallStorageBufferInfo.m_range = sizeof(ST_TestPerDrawcallStorageBufferObject);	// 范围是指每次绘制调用时着色器实际使用的大小
+	perDrawcallStorageBufferInfo.m_pBuffer = m_pPerDrawcallStorageBuffer;
+
+	ST_RHIWriteDescriptorSet descriptorWritesInfo[2];
+
+	descriptorWritesInfo[0].m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWritesInfo[0].m_pNext = nullptr;
+	descriptorWritesInfo[0].m_pDstSet = m_descriptorInfos[0].m_pDescriptorSet;
+	descriptorWritesInfo[0].m_dstBinding = 0;
+	descriptorWritesInfo[0].m_dstArrayElement = 0;
+	descriptorWritesInfo[0].m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	descriptorWritesInfo[0].m_descriptorCount = 1;
+	descriptorWritesInfo[0].m_pBufferInfo = &perframeStorageBufferInfo;
+
+	descriptorWritesInfo[1].m_sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWritesInfo[1].m_pNext = nullptr;
+	descriptorWritesInfo[1].m_pDstSet = m_descriptorInfos[0].m_pDescriptorSet;
+	descriptorWritesInfo[1].m_dstBinding = 1;
+	descriptorWritesInfo[1].m_dstArrayElement = 0;
+	descriptorWritesInfo[1].m_descriptorType = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	descriptorWritesInfo[1].m_descriptorCount = 1;
+	descriptorWritesInfo[1].m_pBufferInfo = &perDrawcallStorageBufferInfo;
+
+	m_pRHI->UpdateDescriptorSets((uint32_t)(sizeof(descriptorWritesInfo) / sizeof(descriptorWritesInfo[0])), descriptorWritesInfo, 0, nullptr);
 }
 
 void TestPass::SetupPipelines()
@@ -217,7 +348,7 @@ void TestPass::SetupPipelines()
 	rasterizationStateCreateInfo.m_polygonMode = ERHIPolygonMode::RHI_POLYGON_MODE_FILL;
 	rasterizationStateCreateInfo.m_lineWidth = 1.0f;
 	rasterizationStateCreateInfo.m_cullMode = ERHICullModeFlagBits::RHI_CULL_MODE_BACK_BIT;	// 背面剔除
-	rasterizationStateCreateInfo.m_frontFace = ERHIFrontFace::RHI_FRONT_FACE_CLOCKWISE;	// 顺时针为正面
+	rasterizationStateCreateInfo.m_frontFace = ERHIFrontFace::RHI_FRONT_FACE_COUNTER_CLOCKWISE;	// 顺时针为正面
 	rasterizationStateCreateInfo.m_depthBiasEnable = RHI_FALSE;	// 是否开启深度偏移
 	rasterizationStateCreateInfo.m_depthBiasConstantFactor = 0.0f;
 	rasterizationStateCreateInfo.m_depthBiasClamp = 0.0f;
@@ -266,11 +397,13 @@ void TestPass::SetupPipelines()
 	depthStencilCreateInfo.m_stencilTestEnable = RHI_FALSE;
 
 	// 创建渲染管线布局
+	RHIDescriptorSetLayout* descriptorSetLayouts[1] = {
+		m_descriptorInfos[0].m_pDescriptorSetLayout
+	};
 	ST_RHIPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
 	pipelineLayoutCreateInfo.m_sType = ERHIStructureType::RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutCreateInfo.m_setLayoutCount = 0;
-	pipelineLayoutCreateInfo.m_pSetLayouts = nullptr;
-
+	pipelineLayoutCreateInfo.m_setLayoutCount = 1;
+	pipelineLayoutCreateInfo.m_pSetLayouts = descriptorSetLayouts;
 	if (m_pRHI->CreatePipelineLayout(&pipelineLayoutCreateInfo, m_renderPipelines[0].m_pipelineLayout) != RHI_SUCCESS)
 	{
 		throw std::runtime_error("create mesh gbuffer pipeline layout");

@@ -116,6 +116,16 @@ struct ST_MeshPerframeStorageBufferObject
 	Matrix4x4 m_directionalLightProjView;
 };
 
+// TestPass使用
+struct ST_TestPerframeStorageBufferObject
+{
+	Matrix4x4 m_projViewMatrix = Matrix4x4::IDENTITY;
+};
+struct ST_TestPerDrawcallStorageBufferObject
+{
+	Matrix4x4 m_modelMatrix = Matrix4x4::IDENTITY;
+};
+
 struct ST_VulkanMeshInstance
 {
 	float m_enableVertexBlending;
