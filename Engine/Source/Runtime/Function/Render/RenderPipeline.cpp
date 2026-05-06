@@ -203,7 +203,7 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 	pVulkanRHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// 提交渲染
 
 	pParticlePassPtr->CopyNormalAndDepthImage();	// 复制法线和深度图像
-	pParticlePassPtr->Simulate();	// ???
+	pParticlePassPtr->Simulate();	// 计算
 }
 
 void RenderPipeline::PassUpdateAfterRecreateSwapchain()

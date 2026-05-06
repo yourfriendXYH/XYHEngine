@@ -73,6 +73,16 @@ void TestPass::Draw()
 	};
 	RHIDeviceSize offsets[] = { 0 };
 
+	m_pRHI->CmdBindDescriptorSetsPFN(
+		m_pRHI->GetCurrentCommandBuffer(),
+		RHI_PIPELINE_BIND_POINT_GRAPHICS,
+		m_renderPipelines[0].m_pipelineLayout,
+		0,
+		1,
+		&m_descriptorInfos[0].m_pDescriptorSet,
+		0,
+		nullptr);
+
 	// 绑定顶点缓冲区
 	m_pRHI->CmdBindVertexBuffersPFN(m_pRHI->GetCurrentCommandBuffer(), 0, sizeof(pVertexBuffer) / sizeof(pVertexBuffer[0]), pVertexBuffer, offsets);
 	// 绑定索引缓冲区
@@ -80,6 +90,9 @@ void TestPass::Draw()
 
 	m_perDrawcallStorageBufferObj.m_modelMatrix = Matrix4x4(Vector3(0.f, 0.f, 0.f), Vector3(1.f, 1.f, 1.f), Quaternion(Radian(Degree(m_tempDegree)), Vector3(0.0, 0.0, 1.0)));
 	m_tempDegree = (m_tempDegree + 1) % 360;
+
+	// 转为列主序矩阵
+	m_perframeStorageBufferObj.m_projViewMatrix = m_perframeStorageBufferObj.m_projViewMatrix.transpose();
 
 	void* pMap = nullptr;
 	m_pRHI->MapMemory(m_pPerframeMemory, 0, RHI_WHOLE_SIZE, 0, &pMap);
@@ -90,16 +103,6 @@ void TestPass::Draw()
 	m_pRHI->MapMemory(m_pPerDrawcallMemory, 0, RHI_WHOLE_SIZE, 0, &pMap1);
 	*reinterpret_cast<ST_TestPerDrawcallStorageBufferObject*>(pMap1) = m_perDrawcallStorageBufferObj;	// 赋值
 	m_pRHI->UnmapMemory(m_pPerDrawcallMemory);
-
-	m_pRHI->CmdBindDescriptorSetsPFN(
-		m_pRHI->GetCurrentCommandBuffer(),
-		RHI_PIPELINE_BIND_POINT_GRAPHICS,
-		m_renderPipelines[0].m_pipelineLayout,
-		0,
-		1,
-		&m_descriptorInfos[0].m_pDescriptorSet,
-		0,
-		nullptr);
 
 	// 绘制
 	//vkCmdDraw(((VulkanCommandBuffer*)m_pRHI->GetCurrentCommandBuffer())->GetResource(), 4, 1, 0, 0);
@@ -347,7 +350,7 @@ void TestPass::SetupPipelines()
 	rasterizationStateCreateInfo.m_rasterizerDiscardEnable = RHI_FALSE;
 	rasterizationStateCreateInfo.m_polygonMode = ERHIPolygonMode::RHI_POLYGON_MODE_FILL;
 	rasterizationStateCreateInfo.m_lineWidth = 1.0f;
-	rasterizationStateCreateInfo.m_cullMode = ERHICullModeFlagBits::RHI_CULL_MODE_BACK_BIT;	// 背面剔除
+	rasterizationStateCreateInfo.m_cullMode = ERHICullModeFlagBits::RHI_CULL_MODE_NONE;	// 背面剔除
 	rasterizationStateCreateInfo.m_frontFace = ERHIFrontFace::RHI_FRONT_FACE_COUNTER_CLOCKWISE;	// 顺时针为正面
 	rasterizationStateCreateInfo.m_depthBiasEnable = RHI_FALSE;	// 是否开启深度偏移
 	rasterizationStateCreateInfo.m_depthBiasConstantFactor = 0.0f;
