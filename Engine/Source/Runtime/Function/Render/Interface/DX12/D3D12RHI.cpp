@@ -44,7 +44,36 @@ void D3D12RHI::Initialize(ST_RHIInitInfo initInfo)
 		1,
 		D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 
+	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDescRTV{};
+	descriptorHeapDescRTV.NumDescriptors = s_maxFramesInFlight;
+	descriptorHeapDescRTV.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	m_pDevice->CreateDescriptorHeap(&descriptorHeapDescRTV, IID_PPV_ARGS(&m_pRTVHeap));
+	m_rtvDescriptorSize = m_pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
+	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDescDSV{};
+	descriptorHeapDescDSV.NumDescriptors = 1;
+	descriptorHeapDescDSV.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	m_pDevice->CreateDescriptorHeap(&descriptorHeapDescDSV, IID_PPV_ARGS(&m_pDSVHeap));
+	m_dsvDescriptorSize = m_pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHeapStart = m_pRTVHeap->GetCPUDescriptorHandleForHeapStart();
+	for (size_t i = 0; i < s_maxFramesInFlight; i++)
+	{
+		m_pSwapChain->GetBuffer(i, IID_PPV_ARGS(&m_pColorRenderTarget[i]));
+		D3D12_CPU_DESCRIPTOR_HANDLE rtvPointer;
+		rtvPointer.ptr = rtvHeapStart.ptr + i * m_rtvDescriptorSize;
+		m_pDevice->CreateRenderTargetView(m_pColorRenderTarget[i], nullptr, rtvPointer);
+	}
+	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc{};
+	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	m_pDevice->CreateDepthStencilView(m_pDepthStencilRenderTarget, &depthStencilViewDesc, m_pDSVHeap->GetCPUDescriptorHandleForHeapStart());
+
+	m_pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_pCommandAllocator));
+	m_pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pCommandAllocator, nullptr, IID_PPV_ARGS(&m_pCommandList));
+
+	m_pDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_pFence));
+	m_fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 }
 
 D3D12RHI::~D3D12RHI()
@@ -71,6 +100,14 @@ void D3D12RHI::CreateSwapChain()
 	{
 		LOG_ERROR("create swap chain failed");
 	}
+}
+
+void D3D12RHI::WaitForFences()
+{
+}
+
+void D3D12RHI::SubmitRendering(std::function<void()> passUpdateAfterRecreateSwapchain)
+{
 }
 
 void D3D12RHI::CreateDXGIFactory()
@@ -133,6 +170,21 @@ void D3D12RHI::CreateCommandQueue()
 	{
 		LOG_ERROR("create command queue failed!");
 	}
+}
+
+void D3D12RHI::WaitForCompletionOfCommandList()
+{
+	if (m_pFence->GetCompletedValue() < m_fenceValue)	// 等待上一帧指令执行完成
+	{
+		m_pFence->SetEventOnCompletion(m_fenceValue, m_fenceEvent);
+		WaitForSingleObject(m_fenceEvent, INFINITE);
+	}
+}
+
+void D3D12RHI::EndCommandList()
+{
+	m_fenceValue += 1;
+	m_pCommandQueue->Signal(m_pFence, m_fenceValue);
 }
 
 NAMESPACE_XYH_END

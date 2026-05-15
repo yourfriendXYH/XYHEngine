@@ -13,19 +13,19 @@ void D3D12Util::CreateResource(
 	D3D12_RESOURCE_FLAGS flags)
 {
 	D3D12_HEAP_PROPERTIES heapProperties{};
-	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;	// 内存放的位置
 
 	D3D12_RESOURCE_DESC resourceDesc{};
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	resourceDesc.Alignment = 0;
-	resourceDesc.Width = 100;
-	resourceDesc.Height = 100;
+	resourceDesc.Width = width;
+	resourceDesc.Height = height;
 	resourceDesc.DepthOrArraySize = 1;
 	resourceDesc.MipLevels = 0;
 	resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	resourceDesc.SampleDesc.Count = 1;
 	resourceDesc.SampleDesc.Quality = 0;
-	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;	// 拿去干嘛
 	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;	// 用途
 
 	D3D12_CLEAR_VALUE clearValue{};

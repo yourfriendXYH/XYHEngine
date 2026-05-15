@@ -186,7 +186,7 @@ public:
 
 	virtual void ResetCommandPool() override {};	// 重置命令池
 
-	virtual void WaitForFences() override {};	// 等待栅栏
+	virtual void WaitForFences() override;	// 等待栅栏
 
 
 	// 查询
@@ -226,7 +226,7 @@ public:
 
 	virtual bool PrepareBeforePass(std::function<void()> passUpdateAfterRecreateSwapchain) override { return false; };	// 准备在渲染通道之前执行的操作
 
-	virtual void SubmitRendering(std::function<void()> passUpdateAfterRecreateSwapchain) override {};	// 提交渲染操作
+	virtual void SubmitRendering(std::function<void()> passUpdateAfterRecreateSwapchain) override;	// 提交渲染操作
 
 	virtual void PushEvent(RHICommandBuffer* commond_buffer, const char* name, const float* color) override {};	// 开启调试标签
 
@@ -293,6 +293,11 @@ private:
 	// 创建命令队列
 	void CreateCommandQueue();
 
+	// 等待命令队列完成
+	void WaitForCompletionOfCommandList();
+
+	void EndCommandList();
+
 public:
 	GLFWwindow* m_pGLFWwindow = nullptr;
 
@@ -310,7 +315,21 @@ private:
 
 	ID3D12Resource* m_pDepthStencilRenderTarget = nullptr;
 
+	ID3D12Resource* m_pColorRenderTarget[s_maxFramesInFlight];
 
+	ID3D12DescriptorHeap* m_pRTVHeap = nullptr;	// render target view 堆内存
+	UINT m_rtvDescriptorSize = 0;
+
+	ID3D12DescriptorHeap* m_pDSVHeap = nullptr;	// depth stencil view 堆内存
+	UINT m_dsvDescriptorSize = 0;
+
+	ID3D12CommandAllocator* m_pCommandAllocator = nullptr;	// 命令内存管理器
+	ID3D12CommandList* m_pCommandList = nullptr;
+
+	ID3D12Fence* m_pFence = nullptr;
+	HANDLE m_fenceEvent = nullptr;
+	UINT64 m_fenceValue = 0;
+	// 先不管
 	RHISemaphore* m_pRHISemaphore = nullptr;
 };
 
