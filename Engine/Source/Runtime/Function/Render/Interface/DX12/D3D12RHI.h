@@ -184,9 +184,9 @@ public:
 
 	virtual bool QueueWaitIdle(RHIQueue* queue) override { return false; };	// 队列等待空闲
 
-	virtual void ResetCommandPool() override {};	// 重置命令池
-
 	virtual void WaitForFences() override;	// 等待栅栏
+
+	virtual void ResetCommandPool() override;	// 重置命令池
 
 
 	// 查询
@@ -214,7 +214,7 @@ public:
 
 	virtual uint8_t GetMaxFramesInFlight() const override { return 0u; };	// 获取最大帧数
 
-	virtual uint8_t GetCurrentFrameIndex() const override { return 0u; };	// 获取当前帧索引
+	virtual uint8_t GetCurrentFrameIndex() const override;	// 获取当前帧索引
 
 	virtual void SetCurrentFrameIndex(uint8_t index) override {};	// 设置当前帧索引
 
@@ -282,6 +282,13 @@ public:
 	//semaphores
 	virtual RHISemaphore*& GetTextureCopySemaphore(uint32_t index) override { return m_pRHISemaphore; };	// 
 
+public:
+	void BeginRenderToSwapChain(ID3D12GraphicsCommandList* pGraphicsCommandList);
+
+	void EndRenderToSwapChain(ID3D12GraphicsCommandList* pGraphicsCommandList);
+
+	ID3D12GraphicsCommandList* GetGraphicsCommandList() const;
+
 private:
 
 	// 创建DXGI
@@ -297,6 +304,8 @@ private:
 	void WaitForCompletionOfCommandList();
 
 	void EndCommandList();
+
+	D3D12_RESOURCE_BARRIER InitResourceBarrier(ID3D12Resource* pResource, D3D12_RESOURCE_STATES srcState, D3D12_RESOURCE_STATES dstState);
 
 public:
 	GLFWwindow* m_pGLFWwindow = nullptr;
@@ -316,6 +325,7 @@ private:
 	ID3D12Resource* m_pDepthStencilRenderTarget = nullptr;
 
 	ID3D12Resource* m_pColorRenderTarget[s_maxFramesInFlight];
+	uint8_t m_currentRenderTargetIndex = 0;
 
 	ID3D12DescriptorHeap* m_pRTVHeap = nullptr;	// render target view 堆内存
 	UINT m_rtvDescriptorSize = 0;
@@ -324,7 +334,7 @@ private:
 	UINT m_dsvDescriptorSize = 0;
 
 	ID3D12CommandAllocator* m_pCommandAllocator = nullptr;	// 命令内存管理器
-	ID3D12CommandList* m_pCommandList = nullptr;
+	ID3D12GraphicsCommandList* m_pGraphicsCommandList = nullptr;
 
 	ID3D12Fence* m_pFence = nullptr;
 	HANDLE m_fenceEvent = nullptr;

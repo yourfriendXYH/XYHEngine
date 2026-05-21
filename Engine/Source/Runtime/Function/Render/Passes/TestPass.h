@@ -34,6 +34,10 @@ private:
 	void CreateVertexBuffer();
 	void CreateIndexBuffer();
 
+	void VulkanDrawTest();
+
+	void D3D12DrawTest();
+
 private:
 
 	// 没有使用基类RenderPass中的Framebuffer指针

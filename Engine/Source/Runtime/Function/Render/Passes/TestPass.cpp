@@ -3,6 +3,7 @@
 #include <Runtime/Function/Render/RenderMesh.h>
 
 #include <random>
+#include <Runtime/Function/Render/Interface/DX12/D3D12RHI.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -24,6 +25,7 @@ namespace
 
 void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 {
+#ifdef USE_VULKAN
 	SetupRenderPass();
 
 	SetupDescriptorSetLayout();
@@ -37,81 +39,18 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	CreateVertexBuffer();
 
 	CreateIndexBuffer();
+#else
+
+#endif // USE_VULKAN
 }
 
 void TestPass::Draw()
 {
-	VulkanRHI* pVulkanRHI = static_cast<VulkanRHI*>(m_pRHI.get());
-	// 开始渲染通道
-	{
-		ST_RHIRenderPassBeginInfo renderPassBeginInfo;
-		renderPassBeginInfo.m_sType = RHI_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassBeginInfo.m_pRenderPass = m_framebuffer.m_pRenderPass;
-		renderPassBeginInfo.m_pFramebuffer = m_swapchainFramebuffers[pVulkanRHI->m_currentSwapchainImageIndex];
-		renderPassBeginInfo.m_renderArea.m_offset = { 0, 0 };
-		renderPassBeginInfo.m_renderArea.m_extent = m_pRHI->GetSwapchainInfo().m_extent;
-
-		// 附件清除值
-		UN_RHIClearValue clearValues[1];
-		clearValues[0].m_color = { {0.5f, 0.5f, 0.5f, 1.0f} };
-		renderPassBeginInfo.m_clearValueCount = 1;
-		renderPassBeginInfo.m_pClearValues = clearValues;
-
-		m_pRHI->CmdBeginRenderPassPFN(m_pRHI->GetCurrentCommandBuffer(), &renderPassBeginInfo, RHI_SUBPASS_CONTENTS_INLINE);
-	}
-
-	float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	m_pRHI->PushEvent(m_pRHI->GetCurrentCommandBuffer(), "Mesh GBuffer", color);	// 开始
-
-	// 绑定管线
-	m_pRHI->CmdBindPipelinePFN(m_pRHI->GetCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipelines[0].m_pipeline);
-	m_pRHI->CmdSetViewportPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pViewport);
-	m_pRHI->CmdSetScissorPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pScissor);
-
-	RHIBuffer* pVertexBuffer[] = {
-		m_pVertexBuffer
-	};
-	RHIDeviceSize offsets[] = { 0 };
-
-	m_pRHI->CmdBindDescriptorSetsPFN(
-		m_pRHI->GetCurrentCommandBuffer(),
-		RHI_PIPELINE_BIND_POINT_GRAPHICS,
-		m_renderPipelines[0].m_pipelineLayout,
-		0,
-		1,
-		&m_descriptorInfos[0].m_pDescriptorSet,
-		0,
-		nullptr);
-
-	// 绑定顶点缓冲区
-	m_pRHI->CmdBindVertexBuffersPFN(m_pRHI->GetCurrentCommandBuffer(), 0, sizeof(pVertexBuffer) / sizeof(pVertexBuffer[0]), pVertexBuffer, offsets);
-	// 绑定索引缓冲区
-	m_pRHI->CmdBindIndexBufferPFN(m_pRHI->GetCurrentCommandBuffer(), m_pIndexBuffer, 0, RHI_INDEX_TYPE_UINT16);
-
-	m_perDrawcallStorageBufferObj.m_modelMatrix = Matrix4x4(Vector3(0.f, 0.f, 0.f), Vector3(1.f, 1.f, 1.f), Quaternion(Radian(Degree(m_tempDegree)), Vector3(0.0, 0.0, 1.0)));
-	m_tempDegree = (m_tempDegree + 1) % 360;
-
-	// 转为列主序矩阵
-	m_perframeStorageBufferObj.m_projViewMatrix = m_perframeStorageBufferObj.m_projViewMatrix.transpose();
-
-	void* pMap = nullptr;
-	m_pRHI->MapMemory(m_pPerframeMemory, 0, RHI_WHOLE_SIZE, 0, &pMap);
-	*reinterpret_cast<ST_TestPerframeStorageBufferObject*>(pMap) = m_perframeStorageBufferObj;	// 赋值
-	m_pRHI->UnmapMemory(m_pPerframeMemory);
-
-	void* pMap1 = nullptr;
-	m_pRHI->MapMemory(m_pPerDrawcallMemory, 0, RHI_WHOLE_SIZE, 0, &pMap1);
-	*reinterpret_cast<ST_TestPerDrawcallStorageBufferObject*>(pMap1) = m_perDrawcallStorageBufferObj;	// 赋值
-	m_pRHI->UnmapMemory(m_pPerDrawcallMemory);
-
-	// 绘制
-	//vkCmdDraw(((VulkanCommandBuffer*)m_pRHI->GetCurrentCommandBuffer())->GetResource(), 4, 1, 0, 0);
-	m_pRHI->CmdDrawIndexedPFN(m_pRHI->GetCurrentCommandBuffer(), s_indexDatas.size(), 1, 0, 0, 0);
-
-	m_pRHI->PopEvent(m_pRHI->GetCurrentCommandBuffer());	// 结束
-
-	// 结束
-	m_pRHI->CmdEndRenderPassPFN(m_pRHI->GetCurrentCommandBuffer());
+#ifdef USE_VULKAN
+	VulkanDrawTest();
+#else
+	D3D12DrawTest();
+#endif // USE_VULKAN
 }
 
 void TestPass::UpdateAfterFramebufferRecreate()
@@ -560,6 +499,91 @@ void TestPass::CreateIndexBuffer()
 
 	m_pRHI->DestroyBuffer(pTempBuffer);
 	m_pRHI->FreeMemory(pTempMemory);
+}
+
+void TestPass::VulkanDrawTest()
+{
+	VulkanRHI* pVulkanRHI = static_cast<VulkanRHI*>(m_pRHI.get());
+	// 开始渲染通道
+	{
+		ST_RHIRenderPassBeginInfo renderPassBeginInfo;
+		renderPassBeginInfo.m_sType = RHI_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.m_pRenderPass = m_framebuffer.m_pRenderPass;
+		renderPassBeginInfo.m_pFramebuffer = m_swapchainFramebuffers[pVulkanRHI->m_currentSwapchainImageIndex];
+		renderPassBeginInfo.m_renderArea.m_offset = { 0, 0 };
+		renderPassBeginInfo.m_renderArea.m_extent = m_pRHI->GetSwapchainInfo().m_extent;
+
+		// 附件清除值
+		UN_RHIClearValue clearValues[1];
+		clearValues[0].m_color = { {0.5f, 0.5f, 0.5f, 1.0f} };
+		renderPassBeginInfo.m_clearValueCount = 1;
+		renderPassBeginInfo.m_pClearValues = clearValues;
+
+		m_pRHI->CmdBeginRenderPassPFN(m_pRHI->GetCurrentCommandBuffer(), &renderPassBeginInfo, RHI_SUBPASS_CONTENTS_INLINE);
+	}
+
+	float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	m_pRHI->PushEvent(m_pRHI->GetCurrentCommandBuffer(), "Mesh GBuffer", color);	// 开始
+
+	// 绑定管线
+	m_pRHI->CmdBindPipelinePFN(m_pRHI->GetCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipelines[0].m_pipeline);
+	m_pRHI->CmdSetViewportPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pViewport);
+	m_pRHI->CmdSetScissorPFN(m_pRHI->GetCurrentCommandBuffer(), 0, 1, m_pRHI->GetSwapchainInfo().m_pScissor);
+
+	RHIBuffer* pVertexBuffer[] = {
+		m_pVertexBuffer
+	};
+	RHIDeviceSize offsets[] = { 0 };
+
+	m_pRHI->CmdBindDescriptorSetsPFN(
+		m_pRHI->GetCurrentCommandBuffer(),
+		RHI_PIPELINE_BIND_POINT_GRAPHICS,
+		m_renderPipelines[0].m_pipelineLayout,
+		0,
+		1,
+		&m_descriptorInfos[0].m_pDescriptorSet,
+		0,
+		nullptr);
+
+	// 绑定顶点缓冲区
+	m_pRHI->CmdBindVertexBuffersPFN(m_pRHI->GetCurrentCommandBuffer(), 0, sizeof(pVertexBuffer) / sizeof(pVertexBuffer[0]), pVertexBuffer, offsets);
+	// 绑定索引缓冲区
+	m_pRHI->CmdBindIndexBufferPFN(m_pRHI->GetCurrentCommandBuffer(), m_pIndexBuffer, 0, RHI_INDEX_TYPE_UINT16);
+
+	m_perDrawcallStorageBufferObj.m_modelMatrix = Matrix4x4(Vector3(0.f, 0.f, 0.f), Vector3(1.f, 1.f, 1.f), Quaternion(Radian(Degree(m_tempDegree)), Vector3(0.0, 0.0, 1.0)));
+	m_tempDegree = (m_tempDegree + 1) % 360;
+
+	// 转为列主序矩阵
+	m_perframeStorageBufferObj.m_projViewMatrix = m_perframeStorageBufferObj.m_projViewMatrix.transpose();
+
+	void* pMap = nullptr;
+	m_pRHI->MapMemory(m_pPerframeMemory, 0, RHI_WHOLE_SIZE, 0, &pMap);
+	*reinterpret_cast<ST_TestPerframeStorageBufferObject*>(pMap) = m_perframeStorageBufferObj;	// 赋值
+	m_pRHI->UnmapMemory(m_pPerframeMemory);
+
+	void* pMap1 = nullptr;
+	m_pRHI->MapMemory(m_pPerDrawcallMemory, 0, RHI_WHOLE_SIZE, 0, &pMap1);
+	*reinterpret_cast<ST_TestPerDrawcallStorageBufferObject*>(pMap1) = m_perDrawcallStorageBufferObj;	// 赋值
+	m_pRHI->UnmapMemory(m_pPerDrawcallMemory);
+
+	// 绘制
+	//vkCmdDraw(((VulkanCommandBuffer*)m_pRHI->GetCurrentCommandBuffer())->GetResource(), 4, 1, 0, 0);
+	m_pRHI->CmdDrawIndexedPFN(m_pRHI->GetCurrentCommandBuffer(), s_indexDatas.size(), 1, 0, 0, 0);
+
+	m_pRHI->PopEvent(m_pRHI->GetCurrentCommandBuffer());	// 结束
+
+	// 结束
+	m_pRHI->CmdEndRenderPassPFN(m_pRHI->GetCurrentCommandBuffer());
+}
+
+void TestPass::D3D12DrawTest()
+{
+	D3D12RHI* pD3D12RHI = static_cast<D3D12RHI*>(m_pRHI.get());
+
+	pD3D12RHI->BeginRenderToSwapChain(pD3D12RHI->GetGraphicsCommandList());
+
+
+	pD3D12RHI->EndRenderToSwapChain(pD3D12RHI->GetGraphicsCommandList());
 }
 
 NAMESPACE_XYH_END

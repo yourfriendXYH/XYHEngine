@@ -10,12 +10,15 @@
 #include "Passes/FXAAPass.h"
 #include "Passes/ParticlePass.h"
 #include "Interface/Vulkan/VulkanRHI.h"
+#include "Interface/DX12/D3D12RHI.h"
 #include "RenderResource.h"
 #include "Runtime/Function/GlobalContext.h"
 
 #include "Passes/TestPass.h"
 
 NAMESPACE_XYH_BEGIN
+
+//#define USE_VULKAN
 
 void RenderPipeline::Initialize(ST_RenderPipelineInitInfo initInfo)
 {
@@ -68,9 +71,15 @@ void RenderPipeline::Initialize(ST_RenderPipelineInitInfo initInfo)
 	ST_MainCameraPassInitInfo mainCameraPassInitInfo;
 	mainCameraPassInitInfo.m_enableFXAA = initInfo.m_enableFXAA;	// 设置是否启用FXAA, 抗锯齿
 	pMainCameraPass->SetParticlePass(pParticlePass);	// 设置粒子渲染通道
-	m_pMainCameraPass->Initialize(&mainCameraPassInitInfo);	// 初始化主摄像机渲染通道
 
+#ifdef USE_VULKAN
+	m_pMainCameraPass->Initialize(&mainCameraPassInitInfo);	// 初始化主摄像机渲染通道
 	pParticlePass->SetupParticlePass();
+#else
+
+#endif // USE_VULKAN
+
+
 
 	//std::vector<RHIDescriptorSetLayout*> descriptor_layouts = _main_camera_pass->getDescriptorSetLayouts();
 	//std::static_pointer_cast<PointLightShadowPass>(m_point_light_shadow_pass)
@@ -159,18 +168,39 @@ void RenderPipeline::ForwardRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<Re
 
 void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource)
 {
+#ifdef USE_VULKAN
 	VulkanRHI* pVulkanRHI = static_cast<VulkanRHI*>(pRHI.get());
+#else
+	D3D12RHI* pD3D12RHI = static_cast<D3D12RHI*>(pRHI.get());
+#endif // USE_VULKAN
+	
 	RenderResource* pVulkanResource = static_cast<RenderResource*>(pRenderResource.get());
-
+#ifdef USE_VULKAN
 	pVulkanResource->ResetRingBufferOffset(pVulkanRHI->GetCurrentFrameIndex());	// 重置环形缓冲区偏移
+#else
+	pVulkanResource->ResetRingBufferOffset(pD3D12RHI->GetCurrentFrameIndex());
+#endif // USE_VULKAN
 
+
+#ifdef USE_VULKAN
 	pVulkanRHI->WaitForFences();
 	pVulkanRHI->ResetCommandPool();
+#else
+	pD3D12RHI->WaitForFences();
+	pD3D12RHI->ResetCommandPool();
+#endif // USE_VULKAN
 
+
+#ifdef USE_VULKAN
 	// 开始录制命令
 	bool recreateSwapchain = pVulkanRHI->PrepareBeforePass(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// 在渲染通道更新后重建交换链???
 	if (recreateSwapchain)
 		return;
+#else
+
+
+#endif // USE_VULKAN
+
 
 	// 绘制阴影
 	static_cast<DirectionalLightShadowPass*>(m_pDirectionalLightPass.get())->Draw();	// 直射光阴影
@@ -199,11 +229,21 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 	TestPass* pTestPass = static_cast<TestPass*>(m_pTestPass.get());
 	pTestPass->Draw();
 
+#ifdef USE_VULKAN
 	// 结束命令，提交渲染
 	pVulkanRHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// 提交渲染
+#else
+	pD3D12RHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));
+#endif // USE_VULKAN
 
+
+#ifdef USE_VULKAN
 	pParticlePassPtr->CopyNormalAndDepthImage();	// 复制法线和深度图像
 	pParticlePassPtr->Simulate();	// 计算
+#else
+
+#endif // USE_VULKAN
+
 }
 
 void RenderPipeline::PassUpdateAfterRecreateSwapchain()

@@ -13,7 +13,7 @@
 NAMESPACE_XYH_BEGIN
 
 #define USE_DX12
-#define USE_VK
+//#define USE_VK
 
 RenderSystem::~RenderSystem()
 {
@@ -95,7 +95,9 @@ void RenderSystem::Tick(float deltaTime)
 	m_pRenderScene->UpdateVisibleObjects(std::static_pointer_cast<RenderResource>(m_pRenderResource), m_pRenderCamera);
 
 	// 准备渲染用到的资源和数据
+#ifdef USE_VK	// 使用Vulkan
 	m_pRenderPipeline->PreparePassData(m_pRenderResource);
+#endif // USE_VK
 
 	// 执行渲染流程
 	if (m_renderPipelineType == ERENDER_PIPELINE_TYPE::FORWARD_PIPELINE)	// 前向渲染

@@ -64,13 +64,15 @@ void D3D12RHI::Initialize(ST_RHIInitInfo initInfo)
 		rtvPointer.ptr = rtvHeapStart.ptr + i * m_rtvDescriptorSize;
 		m_pDevice->CreateRenderTargetView(m_pColorRenderTarget[i], nullptr, rtvPointer);
 	}
+	m_currentRenderTargetIndex = m_pSwapChain->GetCurrentBackBufferIndex();	// 获取当前渲染目标的索引
+
 	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc{};
 	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	depthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	m_pDevice->CreateDepthStencilView(m_pDepthStencilRenderTarget, &depthStencilViewDesc, m_pDSVHeap->GetCPUDescriptorHandleForHeapStart());
 
 	m_pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_pCommandAllocator));
-	m_pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pCommandAllocator, nullptr, IID_PPV_ARGS(&m_pCommandList));
+	m_pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pCommandAllocator, nullptr, IID_PPV_ARGS(&m_pGraphicsCommandList));
 
 	m_pDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_pFence));
 	m_fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
@@ -104,10 +106,25 @@ void D3D12RHI::CreateSwapChain()
 
 void D3D12RHI::WaitForFences()
 {
+	WaitForCompletionOfCommandList();
+}
+
+void D3D12RHI::ResetCommandPool()
+{
+	m_pCommandAllocator->Reset();
+	m_pGraphicsCommandList->Reset(m_pCommandAllocator, nullptr);
+}
+
+uint8_t D3D12RHI::GetCurrentFrameIndex() const
+{
+	return m_currentRenderTargetIndex;
 }
 
 void D3D12RHI::SubmitRendering(std::function<void()> passUpdateAfterRecreateSwapchain)
 {
+	EndCommandList();
+
+	m_pSwapChain->Present(0, 0);
 }
 
 void D3D12RHI::CreateDXGIFactory()
@@ -179,12 +196,63 @@ void D3D12RHI::WaitForCompletionOfCommandList()
 		m_pFence->SetEventOnCompletion(m_fenceValue, m_fenceEvent);
 		WaitForSingleObject(m_fenceEvent, INFINITE);
 	}
+
+	m_currentRenderTargetIndex = m_pSwapChain->GetCurrentBackBufferIndex();
 }
 
 void D3D12RHI::EndCommandList()
 {
+	m_pGraphicsCommandList->Close();
+	std::array<ID3D12CommandList*, 1> pCommandLists = { m_pGraphicsCommandList };
+	m_pCommandQueue->ExecuteCommandLists(pCommandLists.size(), pCommandLists.data());
+
 	m_fenceValue += 1;
 	m_pCommandQueue->Signal(m_pFence, m_fenceValue);
+}
+
+D3D12_RESOURCE_BARRIER D3D12RHI::InitResourceBarrier(ID3D12Resource* pResource, D3D12_RESOURCE_STATES srcState, D3D12_RESOURCE_STATES dstState)
+{
+	D3D12_RESOURCE_BARRIER resourceBarrier{};
+	memset(&resourceBarrier, 0, sizeof(resourceBarrier));
+	resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	resourceBarrier.Transition.pResource = pResource;
+	resourceBarrier.Transition.StateBefore = srcState;
+	resourceBarrier.Transition.StateAfter = dstState;
+	resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	return resourceBarrier;
+}
+
+void D3D12RHI::BeginRenderToSwapChain(ID3D12GraphicsCommandList* pGraphicsCommandList)
+{
+	D3D12_RESOURCE_BARRIER barrier = InitResourceBarrier(m_pColorRenderTarget[m_currentRenderTargetIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	pGraphicsCommandList->ResourceBarrier(1, &barrier);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE colorRenderTarget;
+	D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView;
+	colorRenderTarget.ptr = m_pRTVHeap->GetCPUDescriptorHandleForHeapStart().ptr + m_currentRenderTargetIndex * m_rtvDescriptorSize;
+	depthStencilView.ptr = m_pDSVHeap->GetCPUDescriptorHandleForHeapStart().ptr;
+	pGraphicsCommandList->OMSetRenderTargets(1, &colorRenderTarget, FALSE, &depthStencilView);
+
+	D3D12_VIEWPORT viewport = { 0.0f, 0.0f, 1280.0f, 720.0f };
+	D3D12_RECT scissorRect = { 0.0f, 0.0f, 1280.0f, 720.0f };
+	m_pGraphicsCommandList->RSSetViewports(1, &viewport);
+	m_pGraphicsCommandList->RSSetScissorRects(1, &scissorRect);
+
+	const float clearColor[] = { 0.1f, 0.4f, 0.6f, 1.0f };
+	m_pGraphicsCommandList->ClearRenderTargetView(colorRenderTarget, clearColor, 0, nullptr);
+	m_pGraphicsCommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+}
+
+void D3D12RHI::EndRenderToSwapChain(ID3D12GraphicsCommandList* pGraphicsCommandList)
+{
+	D3D12_RESOURCE_BARRIER barrier = InitResourceBarrier(m_pColorRenderTarget[m_currentRenderTargetIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	pGraphicsCommandList->ResourceBarrier(1, &barrier);
+}
+
+ID3D12GraphicsCommandList* D3D12RHI::GetGraphicsCommandList() const
+{
+	return m_pGraphicsCommandList;
 }
 
 NAMESPACE_XYH_END
