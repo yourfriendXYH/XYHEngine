@@ -55,6 +55,8 @@ private:
 	RHIBuffer* m_pPerDrawcallStorageBuffer = nullptr;
 	RHIDeviceMemory* m_pPerDrawcallMemory = nullptr;
 
+	ID3D12PipelineState* m_pPSO = nullptr;
+
 	// 每帧用到的通用数据（全局数据）
 	ST_TestPerframeStorageBufferObject m_perframeStorageBufferObj;
 

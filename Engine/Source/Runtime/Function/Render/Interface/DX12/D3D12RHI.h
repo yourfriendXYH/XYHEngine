@@ -307,6 +307,8 @@ private:
 
 	D3D12_RESOURCE_BARRIER InitResourceBarrier(ID3D12Resource* pResource, D3D12_RESOURCE_STATES srcState, D3D12_RESOURCE_STATES dstState);
 
+	ID3D12PipelineState* CreatePSO(ID3D12RootSignature* pRootSignature, D3D12_SHADER_BYTECODE VSByteCode, D3D12_SHADER_BYTECODE PSByteCode);
+
 public:
 	GLFWwindow* m_pGLFWwindow = nullptr;
 
