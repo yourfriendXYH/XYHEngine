@@ -34,15 +34,23 @@ void D3D12RHI::Initialize(ST_RHIInitInfo initInfo)
 
 	CreateSwapChain();	// 创建交换链
 
+	D3D12_CLEAR_VALUE clearValue{};
+	clearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	clearValue.DepthStencil.Depth = 1.0f;
+	clearValue.DepthStencil.Stencil = 0;
 	D3D12Util::CreateResource(
 		m_pDepthStencilRenderTarget, 
-		m_pDevice, 
+		m_pDevice,
+		D3D12_HEAP_TYPE_DEFAULT,
 		m_viewport.m_width,
 		m_viewport.m_height,
 		0,
 		DXGI_FORMAT_D24_UNORM_S8_UINT,
 		1,
-		D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+		D3D12_TEXTURE_LAYOUT_UNKNOWN,
+		D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL,
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		&clearValue);
 
 	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDescRTV{};
 	descriptorHeapDescRTV.NumDescriptors = s_maxFramesInFlight;
@@ -210,19 +218,6 @@ void D3D12RHI::EndCommandList()
 	m_pCommandQueue->Signal(m_pFence, m_fenceValue);
 }
 
-D3D12_RESOURCE_BARRIER D3D12RHI::InitResourceBarrier(ID3D12Resource* pResource, D3D12_RESOURCE_STATES srcState, D3D12_RESOURCE_STATES dstState)
-{
-	D3D12_RESOURCE_BARRIER resourceBarrier{};
-	memset(&resourceBarrier, 0, sizeof(resourceBarrier));
-	resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	resourceBarrier.Transition.pResource = pResource;
-	resourceBarrier.Transition.StateBefore = srcState;
-	resourceBarrier.Transition.StateAfter = dstState;
-	resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	return resourceBarrier;
-}
-
 ID3D12PipelineState* D3D12RHI::CreatePSO(ID3D12RootSignature* pRootSignature, D3D12_SHADER_BYTECODE VSByteCode, D3D12_SHADER_BYTECODE PSByteCode)
 {
 	const size_t elementSize = 3u;
@@ -284,7 +279,7 @@ ID3D12PipelineState* D3D12RHI::CreatePSO(ID3D12RootSignature* pRootSignature, D3
 
 void D3D12RHI::BeginRenderToSwapChain(ID3D12GraphicsCommandList* pGraphicsCommandList)
 {
-	D3D12_RESOURCE_BARRIER barrier = InitResourceBarrier(m_pColorRenderTarget[m_currentRenderTargetIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	D3D12_RESOURCE_BARRIER barrier = D3D12Util::InitResourceBarrier(m_pColorRenderTarget[m_currentRenderTargetIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	pGraphicsCommandList->ResourceBarrier(1, &barrier);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE colorRenderTarget;
@@ -305,7 +300,7 @@ void D3D12RHI::BeginRenderToSwapChain(ID3D12GraphicsCommandList* pGraphicsComman
 
 void D3D12RHI::EndRenderToSwapChain(ID3D12GraphicsCommandList* pGraphicsCommandList)
 {
-	D3D12_RESOURCE_BARRIER barrier = InitResourceBarrier(m_pColorRenderTarget[m_currentRenderTargetIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	D3D12_RESOURCE_BARRIER barrier = D3D12Util::InitResourceBarrier(m_pColorRenderTarget[m_currentRenderTargetIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 	pGraphicsCommandList->ResourceBarrier(1, &barrier);
 }
 
