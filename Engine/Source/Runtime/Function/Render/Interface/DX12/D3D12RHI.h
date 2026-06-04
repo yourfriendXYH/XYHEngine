@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <d3d12.h>
 #include <dxgi1_4.h>
+#include <d3dcompiler.h>
 #include <array>
 // 链接库
 #pragma comment(lib, "d3d12.lib")
@@ -306,6 +307,8 @@ private:
 	void EndCommandList();
 
 	ID3D12PipelineState* CreatePSO(ID3D12RootSignature* pRootSignature, D3D12_SHADER_BYTECODE VSByteCode, D3D12_SHADER_BYTECODE PSByteCode);
+
+	void CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunctionName, const char* target, D3D12_SHADER_BYTECODE* pShader);
 
 public:
 	GLFWwindow* m_pGLFWwindow = nullptr;

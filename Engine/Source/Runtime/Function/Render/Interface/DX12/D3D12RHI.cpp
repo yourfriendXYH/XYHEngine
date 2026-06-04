@@ -277,6 +277,19 @@ ID3D12PipelineState* D3D12RHI::CreatePSO(ID3D12RootSignature* pRootSignature, D3
 	return pPSO;
 }
 
+void D3D12RHI::CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunctionName, const char* target, D3D12_SHADER_BYTECODE* pShader)
+{
+	ID3DBlob* pShaderBuffer = nullptr;
+	ID3DBlob* pErrorBuffer = nullptr;
+	HRESULT hResult = D3DCompileFromFile(shaderFilePath, nullptr, nullptr, mainFunctionName, target, D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pShaderBuffer, &pErrorBuffer);
+	if (FAILED(hResult))
+	{
+		return;
+	}
+	pShader->pShaderBytecode = pShaderBuffer->GetBufferPointer();
+	pShader->BytecodeLength = pShaderBuffer->GetBufferSize();
+}
+
 void D3D12RHI::BeginRenderToSwapChain(ID3D12GraphicsCommandList* pGraphicsCommandList)
 {
 	D3D12_RESOURCE_BARRIER barrier = D3D12Util::InitResourceBarrier(m_pColorRenderTarget[m_currentRenderTargetIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
