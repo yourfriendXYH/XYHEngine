@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <Common.h>
 #include <Runtime/Function/Render/RenderPass.h>
+#include <d3d12.h>
 
 NAMESPACE_XYH_BEGIN
 
