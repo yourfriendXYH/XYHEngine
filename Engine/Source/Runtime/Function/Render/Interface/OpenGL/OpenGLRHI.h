@@ -300,4 +300,8 @@ private:
 	RHISemaphore* m_pRHISemaphore = nullptr;
 };
 
+void CheckLastOpenGLError(const char* prefix, const char* file, long line, const char* operation);
+#define GLAssert(x) 	{ CheckLastOpenGLError (NULL,__FILE__, __LINE__,#x); }
+#define OGL_CALL(x) do { x; GLAssert(x); } while(0)
+
 NAMESPACE_XYH_END

@@ -37,6 +37,8 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHI.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Util.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLRHI.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLUtil.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\Util.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanUtil.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanVMA.cpp" />
@@ -103,6 +105,8 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHI.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Util.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLRHI.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLUtil.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\Util.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHI.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHIStruct.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.h" />
@@ -147,6 +151,8 @@
   <ItemGroup>
     <None Include="Engine\Shader\glsl\deferred_lighting.frag" />
     <None Include="Engine\Shader\glsl\deferred_lighting.vert" />
+    <None Include="Engine\Shader\glsl\fsqFS.glsl" />
+    <None Include="Engine\Shader\glsl\fsqVS.glsl" />
     <None Include="Engine\Shader\glsl\mesh.vert" />
     <None Include="Engine\Shader\glsl\mesh_gbuffer.frag" />
     <None Include="Engine\Shader\glsl\testVk.frag" />

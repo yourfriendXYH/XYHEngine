@@ -3,6 +3,8 @@
 #include <Runtime/Function/Render/RenderPass.h>
 #include <d3d12.h>
 
+#include <Runtime/Function/Render/Interface/OpenGL/OpenGLUtil.h>
+
 NAMESPACE_XYH_BEGIN
 
 class TestPass : public RenderPass
@@ -59,6 +61,12 @@ private:
 	RHIDeviceMemory* m_pPerDrawcallMemory = nullptr;
 
 	ID3D12PipelineState* m_pPSO = nullptr;
+
+	// Nanite
+
+	FullScreenQuad m_FSQ;
+	GLuint m_shaderProgramFSQ;
+	Texture2D* m_pVisualizationTexture = nullptr;
 
 	// 每帧用到的通用数据（全局数据）
 	ST_TestPerframeStorageBufferObject m_perframeStorageBufferObj;

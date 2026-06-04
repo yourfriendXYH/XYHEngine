@@ -43,4 +43,50 @@ void OpenGLRHI::SubmitRendering(std::function<void()> passUpdateAfterRecreateSwa
 	glfwSwapBuffers(m_pGLFWwindow);
 }
 
+void CheckLastOpenGLError(const char* prefix, const char* file, long line, const char* operation)
+{
+	GLenum glerr;
+	while ((glerr = glGetError()) != GL_NO_ERROR) {
+		switch (glerr) {
+		case GL_INVALID_VALUE:
+			printf("%s GL_INVALID_VALUE\n", operation);
+			break;
+		default:
+			printf("gl error  0x%x\n", (int)glerr);
+			break;
+		}
+		std::string str = file;
+		const int kMaxErrors = 10;
+		int counter = 0;
+		int pos = str.find_last_of('\\');
+		printf("%s:%ld :", str.substr(pos + 1, str.length() - pos).c_str(), line);
+		if (prefix) {
+			std::string errorString = prefix;
+			errorString += ": ";
+			const char* gluMsg = reinterpret_cast<const char*>(gluErrorString(glerr));
+			if (gluMsg) {
+				printf("prefix error  %s\n", gluMsg);
+
+			}
+			else {
+				printf("prefix error : unkown error 0x%x\n", glerr);
+			}
+		}
+		else {
+			const char* gluMsg = reinterpret_cast<const char*>(gluErrorString(glerr));
+			if (gluMsg) {
+				printf("%s %s\n", operation, gluMsg);
+			}
+			else {
+				printf("%s 0x%x\n", operation, glerr);
+			}
+		}
+		++counter;
+		if (counter > kMaxErrors) {
+			printf("GL: error count exceeds %i, stop reporting errors\n", kMaxErrors);
+			return;
+		}
+	}
+}
+
 NAMESPACE_XYH_END

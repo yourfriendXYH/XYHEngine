@@ -3,6 +3,7 @@
 #include <Runtime/Function/Render/Interface/Vulkan/VulkanRHI.h>
 #include <Runtime/Function/Render/Interface/DX12/D3D12RHI.h>
 #include <Runtime/Function/Render/RenderMesh.h>
+#include <Runtime/Function/Render/Interface/OpenGL/Util.h>
 
 #include <random>
 
@@ -49,6 +50,30 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 #endif // USE_DX12
 #ifdef USE_OPENGL
+
+	m_FSQ.Init();
+
+	size_t fileSize = 0;
+	unsigned char* fileContent = LoadFileContent("Engine/Shader/glsl/fsqVS.glsl", fileSize);
+	char* shaderCode = new char[fileSize + 1];
+	memcpy(shaderCode, fileContent, fileSize);
+	shaderCode[fileSize] = 0;
+	GLuint vsShader = OpenGLUtil::CompileShader(GL_VERTEX_SHADER, shaderCode);
+	delete[] shaderCode;
+	delete[] fileContent;
+
+	fileContent = LoadFileContent("Engine/Shader/glsl/fsqFS.glsl", fileSize);
+	shaderCode = new char[fileSize + 1];
+	memcpy(shaderCode, fileContent, fileSize);
+	shaderCode[fileSize] = 0;
+	GLuint fsShader = OpenGLUtil::CompileShader(GL_FRAGMENT_SHADER, shaderCode);
+	delete[] shaderCode;
+	delete[] fileContent;
+
+	m_shaderProgramFSQ = OpenGLUtil::CreateProgram(vsShader, fsShader);
+
+	m_pVisualizationTexture = OpenGLUtil::CreateTexture2D(nullptr, 1280, 720, GL_RGBA32F, GL_RGBA);
+	OpenGLUtil::SetObjectName(GL_TEXTURE, m_pVisualizationTexture->mTexture, "VisualizationTexture");
 
 #endif // USE_OPENGL
 
@@ -564,7 +589,7 @@ void TestPass::VulkanDrawTest()
 	// 绑定索引缓冲区
 	m_pRHI->CmdBindIndexBufferPFN(m_pRHI->GetCurrentCommandBuffer(), m_pIndexBuffer, 0, RHI_INDEX_TYPE_UINT16);
 
-	m_perDrawcallStorageBufferObj.m_modelMatrix = Matrix4x4(Vector3(0.f, 0.f, 0.f), Vector3(1.f, 1.f, 1.f), Quaternion(Radian(Degree(m_tempDegree)), Vector3(0.0, 0.0, 1.0)));
+	m_perDrawcallStorageBufferObj.m_modelMatrix = Matrix4x4(Vector3(0.f, 0.f, 0.f), Vector3(1.f, 1.f, 1.f), Quaternion(Radian(Degree(static_cast<float>(m_tempDegree))), Vector3(0.0, 0.0, 1.0)));
 	m_tempDegree = (m_tempDegree + 1) % 360;
 
 	// 转为列主序矩阵
@@ -582,7 +607,7 @@ void TestPass::VulkanDrawTest()
 
 	// 绘制
 	//vkCmdDraw(((VulkanCommandBuffer*)m_pRHI->GetCurrentCommandBuffer())->GetResource(), 4, 1, 0, 0);
-	m_pRHI->CmdDrawIndexedPFN(m_pRHI->GetCurrentCommandBuffer(), s_indexDatas.size(), 1, 0, 0, 0);
+	m_pRHI->CmdDrawIndexedPFN(m_pRHI->GetCurrentCommandBuffer(), static_cast<uint32_t>(s_indexDatas.size()), 1, 0, 0, 0);
 
 	m_pRHI->PopEvent(m_pRHI->GetCurrentCommandBuffer());	// 结束
 
@@ -602,10 +627,24 @@ void TestPass::D3D12DrawTest()
 
 void TestPass::OpenGLDrawTest()
 {
-	glViewport(0, 0, 1280, 720);
-	glScissor(0, 0, 1280, 720);
-	glClearColor(0.1f, 0.4f, 0.6f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	OGL_CALL(glViewport(0, 0, 1280, 720));
+	OGL_CALL(glScissor(0, 0, 1280, 720));
+	OGL_CALL(glClearColor(0.1f, 0.4f, 0.6f, 1.0f));
+	OGL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
+	OGL_CALL(glFrontFace(GL_CCW));
+
+	OGL_CALL(glUseProgram(m_shaderProgramFSQ));
+
+	OGL_CALL(glBindVertexArray(m_FSQ.m_VAO));
+
+	OGL_CALL(glActiveTexture(GL_TEXTURE0));
+	OGL_CALL(glBindTexture(GL_TEXTURE_2D, m_pVisualizationTexture->mTexture));
+	OGL_CALL(glUniform1i(0, 0));
+
+	OGL_CALL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
+
+	OGL_CALL(glUseProgram(0));
 }
 
 NAMESPACE_XYH_END
