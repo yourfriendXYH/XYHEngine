@@ -39,6 +39,8 @@ private:
 
 	void D3D12DrawTest();
 
+	void OpenGLDrawTest();
+
 private:
 
 	// 没有使用基类RenderPass中的Framebuffer指针

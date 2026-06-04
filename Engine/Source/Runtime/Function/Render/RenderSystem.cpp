@@ -2,18 +2,20 @@
 #include "../GlobalContext.h"
 #include "../../Resource/ConfigManager.h"
 #include "Interface/RHI.h"
-#include "Interface/Vulkan/VulkanRHI.h"
 #include "RenderResource.h"
 #include "RenderCamera.h"
 #include "RenderScene.h"
 #include "RenderPipeline.h"
+#include <Runtime/Function/Render/Interface/OpenGL/OpenGLRHI.h>
+#include <Runtime/Function/Render/Interface/Vulkan/VulkanRHI.h>
 #include <Runtime/Function/Render/Interface/DX12/D3D12RHI.h>
 #include <Runtime/Function/Render/Passes/ParticlePass.h>
 
 NAMESPACE_XYH_BEGIN
 
-#define USE_DX12
+//#define USE_DX12
 //#define USE_VK
+#define USE_OPENGL
 
 RenderSystem::~RenderSystem()
 {
@@ -35,6 +37,11 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 	m_pRHI = std::make_shared<VulkanRHI>();
 	m_pRHI->Initialize(rhiInitInfo);
 #endif // USE_VK
+#ifdef USE_OPENGL
+	m_pRHI = std::make_shared<OpenGLRHI>();
+	m_pRHI->Initialize(rhiInitInfo);
+#endif // OPENGL
+
 
 	// 全局渲染资源
 	// GlobalRenderingRes globalRenderingRes;

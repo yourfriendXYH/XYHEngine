@@ -1,9 +1,11 @@
 ﻿#include "TestPass.h"
+#include <Runtime/Function/Render/Interface/OpenGL/OpenGLRHI.h>
 #include <Runtime/Function/Render/Interface/Vulkan/VulkanRHI.h>
+#include <Runtime/Function/Render/Interface/DX12/D3D12RHI.h>
 #include <Runtime/Function/Render/RenderMesh.h>
 
 #include <random>
-#include <Runtime/Function/Render/Interface/DX12/D3D12RHI.h>
+
 
 NAMESPACE_XYH_BEGIN
 
@@ -22,6 +24,9 @@ namespace
 	};
 }
 
+//#define USE_VULKAN
+//#define USE_DX12
+#define USE_OPENGL
 
 void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 {
@@ -39,18 +44,27 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	CreateVertexBuffer();
 
 	CreateIndexBuffer();
-#else
+#endif 
+#ifdef USE_DX12
 
-#endif // USE_VULKAN
+#endif // USE_DX12
+#ifdef USE_OPENGL
+
+#endif // USE_OPENGL
+
 }
 
 void TestPass::Draw()
 {
 #ifdef USE_VULKAN
 	VulkanDrawTest();
-#else
-	D3D12DrawTest();
 #endif // USE_VULKAN
+#ifdef USE_DX12
+	D3D12DrawTest();
+#endif // USE_DX12
+#ifdef USE_OPENGL
+	OpenGLDrawTest();
+#endif // USE_OPENGL
 }
 
 void TestPass::UpdateAfterFramebufferRecreate()
@@ -584,6 +598,14 @@ void TestPass::D3D12DrawTest()
 
 
 	pD3D12RHI->EndRenderToSwapChain(pD3D12RHI->GetGraphicsCommandList());
+}
+
+void TestPass::OpenGLDrawTest()
+{
+	glViewport(0, 0, 1280, 720);
+	glScissor(0, 0, 1280, 720);
+	glClearColor(0.1f, 0.4f, 0.6f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 NAMESPACE_XYH_END

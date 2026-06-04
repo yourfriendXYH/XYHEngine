@@ -107,6 +107,7 @@ private:
 	std::vector<OnWindowSizeFunc>  m_onWindowSizeFunc;
 	std::vector<OnWindowCloseFunc> m_onWindowCloseFunc;
 
+	bool m_useOpenGL = true;
 };
 
 NAMESPACE_XYH_END

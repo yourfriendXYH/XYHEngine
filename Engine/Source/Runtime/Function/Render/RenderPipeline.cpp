@@ -9,6 +9,7 @@
 #include "Passes/PickPass.h"
 #include "Passes/FXAAPass.h"
 #include "Passes/ParticlePass.h"
+#include "Interface/OpenGL/OpenGLRHI.h"
 #include "Interface/Vulkan/VulkanRHI.h"
 #include "Interface/DX12/D3D12RHI.h"
 #include "RenderResource.h"
@@ -19,6 +20,8 @@
 NAMESPACE_XYH_BEGIN
 
 //#define USE_VULKAN
+//#define USE_DX12
+#define USE_OPENGL
 
 void RenderPipeline::Initialize(ST_RenderPipelineInitInfo initInfo)
 {
@@ -170,25 +173,34 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 {
 #ifdef USE_VULKAN
 	VulkanRHI* pVulkanRHI = static_cast<VulkanRHI*>(pRHI.get());
-#else
-	D3D12RHI* pD3D12RHI = static_cast<D3D12RHI*>(pRHI.get());
 #endif // USE_VULKAN
+#ifdef USE_DX12
+	D3D12RHI* pD3D12RHI = static_cast<D3D12RHI*>(pRHI.get());
+#endif // USE_DX12
+#ifdef USE_OPENGL
+	OpenGLRHI* pOpenGLRHI = static_cast<OpenGLRHI*>(pRHI.get());
+#endif // USE_OPENGL
+
+
 	
 	RenderResource* pVulkanResource = static_cast<RenderResource*>(pRenderResource.get());
 #ifdef USE_VULKAN
 	pVulkanResource->ResetRingBufferOffset(pVulkanRHI->GetCurrentFrameIndex());	// 重置环形缓冲区偏移
-#else
-	pVulkanResource->ResetRingBufferOffset(pD3D12RHI->GetCurrentFrameIndex());
 #endif // USE_VULKAN
+#ifdef USE_DX12
+	pVulkanResource->ResetRingBufferOffset(pD3D12RHI->GetCurrentFrameIndex());
+#endif // DEBUG
+
 
 
 #ifdef USE_VULKAN
 	pVulkanRHI->WaitForFences();
 	pVulkanRHI->ResetCommandPool();
-#else
+#endif // USE_VULKAN
+#ifdef USE_DX12
 	pD3D12RHI->WaitForFences();
 	pD3D12RHI->ResetCommandPool();
-#endif // USE_VULKAN
+#endif // USE_DX12
 
 
 #ifdef USE_VULKAN
@@ -232,9 +244,14 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 #ifdef USE_VULKAN
 	// 结束命令，提交渲染
 	pVulkanRHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// 提交渲染
-#else
-	pD3D12RHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));
 #endif // USE_VULKAN
+#ifdef USE_DX12
+	pD3D12RHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));
+#endif // USE_DX12
+#ifdef USE_OPENGL
+	pOpenGLRHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));
+#endif // USE_OPENGL
+
 
 
 #ifdef USE_VULKAN

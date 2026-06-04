@@ -12,7 +12,8 @@ void OpenGLRHI::Initialize(ST_RHIInitInfo initInfo)
 
 	glfwMakeContextCurrent(m_pGLFWwindow);
 
-
+	if (glewInit() != GLEW_OK)
+		return;
 }
 
 OpenGLRHI::~OpenGLRHI()

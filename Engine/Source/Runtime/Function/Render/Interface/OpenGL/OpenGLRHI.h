@@ -1,6 +1,17 @@
 #pragma once
+#include "glew.h"
+#ifdef _WIN32
+#include "wglew.h"
+#endif
 #include <GLFW/glfw3.h>
 #include <array>
+
+
+
+
+#pragma comment(lib,"opengl32.lib")
+#pragma comment(lib,"glew32.lib")
+#pragma comment(lib,"glu32.lib")
 
 #include <Runtime/Function/Render/Interface/RHI.h>
 
