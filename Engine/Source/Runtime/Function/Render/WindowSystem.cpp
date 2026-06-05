@@ -24,16 +24,14 @@ void WindowSystem::Initialize(ST_WindowCreateInfo createInfo)
 	m_width = createInfo.m_width;   // 设置窗口宽度
 	m_height = createInfo.m_height; // 设置窗口高度
 
-    if (m_useOpenGL)
-    {
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    }
-    else
-    {
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);   // 设置客户端API为无API
-    }
+#ifdef USE_OPENGL
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#else
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);   // 设置客户端API为无API
+#endif // USE_OPENGL
+
     m_pWindow = glfwCreateWindow(createInfo.m_width, createInfo.m_height, createInfo.m_title, nullptr, nullptr); // 创建窗口
     if (!m_pWindow)
     {

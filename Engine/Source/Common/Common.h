@@ -1,8 +1,14 @@
-#pragma once
+ï»¿#pragma once
+#include <cstdint>
 
-// ÃüÃû¿Õ¼äºê
+// å‘½åç©ºé—´å®
 #define NAMESPACE_XYH_BEGIN \
 namespace XYH \
 {
 #define NAMESPACE_XYH_END \
 } // namespace XYH
+
+
+// USE_VULKAN
+// USE_D3D12
+// USE_OPENGL

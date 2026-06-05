@@ -42,6 +42,7 @@ void D3D12RHI::Initialize(ST_RHIInitInfo initInfo)
 		m_pDepthStencilRenderTarget, 
 		m_pDevice,
 		D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_RESOURCE_DIMENSION_TEXTURE2D,
 		m_viewport.m_width,
 		m_viewport.m_height,
 		0,
@@ -290,6 +291,20 @@ void D3D12RHI::CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunc
 	pShader->BytecodeLength = pShaderBuffer->GetBufferSize();
 }
 
+ID3D12RootSignature* D3D12RHI::InitRootSignature()
+{
+	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
+	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	ID3DBlob* signature;
+	HRESULT hResult = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, nullptr);
+
+	ID3D12RootSignature* pRootSignature;
+	m_pDevice->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&pRootSignature));
+
+	return pRootSignature;
+}
+
 void D3D12RHI::BeginRenderToSwapChain(ID3D12GraphicsCommandList* pGraphicsCommandList)
 {
 	D3D12_RESOURCE_BARRIER barrier = D3D12Util::InitResourceBarrier(m_pColorRenderTarget[m_currentRenderTargetIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -306,7 +321,7 @@ void D3D12RHI::BeginRenderToSwapChain(ID3D12GraphicsCommandList* pGraphicsComman
 	m_pGraphicsCommandList->RSSetViewports(1, &viewport);
 	m_pGraphicsCommandList->RSSetScissorRects(1, &scissorRect);
 
-	const float clearColor[] = { 0.1f, 0.4f, 0.6f, 1.0f };
+	const float clearColor[] = { 1.0f, 0.4f, 0.6f, 1.0f };
 	m_pGraphicsCommandList->ClearRenderTargetView(colorRenderTarget, clearColor, 0, nullptr);
 	m_pGraphicsCommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 }
@@ -320,6 +335,11 @@ void D3D12RHI::EndRenderToSwapChain(ID3D12GraphicsCommandList* pGraphicsCommandL
 ID3D12GraphicsCommandList* D3D12RHI::GetGraphicsCommandList() const
 {
 	return m_pGraphicsCommandList;
+}
+
+ID3D12Device* D3D12RHI::GetDevice() const
+{
+	return m_pDevice;
 }
 
 NAMESPACE_XYH_END

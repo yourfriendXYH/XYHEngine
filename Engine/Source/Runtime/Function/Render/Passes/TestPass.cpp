@@ -2,6 +2,7 @@
 #include <Runtime/Function/Render/Interface/OpenGL/OpenGLRHI.h>
 #include <Runtime/Function/Render/Interface/Vulkan/VulkanRHI.h>
 #include <Runtime/Function/Render/Interface/DX12/D3D12RHI.h>
+#include <Runtime/Function/Render/Interface/DX12/D3D12Util.h>
 #include <Runtime/Function/Render/RenderMesh.h>
 #include <Runtime/Function/Render/Interface/OpenGL/Util.h>
 
@@ -25,10 +26,6 @@ namespace
 	};
 }
 
-//#define USE_VULKAN
-//#define USE_DX12
-#define USE_OPENGL
-
 void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 {
 #ifdef USE_VULKAN
@@ -45,10 +42,40 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	CreateVertexBuffer();
 
 	CreateIndexBuffer();
-#endif 
-#ifdef USE_DX12
+#endif
+
+#ifdef USE_D3D12
+
+	D3D12RHI* pD3D12RHI = static_cast<D3D12RHI*>(m_pRHI.get());
+
+	float vertexData[] = {
+		-0.5f, -0.5f, 0.5f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.5f, 0.5f, 1.0f,
+		0.0f, 1.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 0.0f,
+		0.5f, -0.5f, 0.5f, 1.0f,
+		0.0f, 0.0f, 1.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 0.0f
+	};
+
+	m_pVBO = D3D12Util::CreateBufferObject(pD3D12RHI->GetGraphicsCommandList(), pD3D12RHI->GetDevice(), vertexData, sizeof(vertexData), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+
+	m_pRootSignature = pD3D12RHI->InitRootSignature();
+	D3D12_SHADER_BYTECODE vs, ps;
+	pD3D12RHI->CreateShaderFromFile(L"Engine/Shader/hlsl/NDCTriangle.hlsl", "MainVS", "vs_5_0", &vs);
+	pD3D12RHI->CreateShaderFromFile(L"Engine/Shader/hlsl/NDCTriangle.hlsl", "MainPS", "ps_5_0", &ps);
+	m_pPSO = pD3D12RHI->CreatePSO(m_pRootSignature, vs, ps);
+
+	D3D12_VERTEX_BUFFER_VIEW vboBufferView{};
+	vboBufferView.BufferLocation = m_pVBO->GetGPUVirtualAddress();
+	vboBufferView.SizeInBytes = sizeof(float) * 36;
+	vboBufferView.StrideInBytes = sizeof(float) * 12;
+	m_vbos[0] = vboBufferView;
 
 #endif // USE_DX12
+
 #ifdef USE_OPENGL
 
 	m_FSQ.Init();
@@ -84,7 +111,7 @@ void TestPass::Draw()
 #ifdef USE_VULKAN
 	VulkanDrawTest();
 #endif // USE_VULKAN
-#ifdef USE_DX12
+#ifdef USE_D3D12
 	D3D12DrawTest();
 #endif // USE_DX12
 #ifdef USE_OPENGL
@@ -621,6 +648,12 @@ void TestPass::D3D12DrawTest()
 
 	pD3D12RHI->BeginRenderToSwapChain(pD3D12RHI->GetGraphicsCommandList());
 
+	ID3D12GraphicsCommandList* pCommandList = pD3D12RHI->GetGraphicsCommandList();
+	pCommandList->SetPipelineState(m_pPSO);
+	pCommandList->SetGraphicsRootSignature(m_pRootSignature);
+	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	pCommandList->IASetVertexBuffers(0, m_vbos.size(), m_vbos.data());
+	pCommandList->DrawInstanced(3, 1, 0, 0);
 
 	pD3D12RHI->EndRenderToSwapChain(pD3D12RHI->GetGraphicsCommandList());
 }

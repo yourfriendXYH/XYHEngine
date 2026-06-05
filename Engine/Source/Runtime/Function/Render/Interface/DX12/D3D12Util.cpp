@@ -6,6 +6,7 @@ void D3D12Util::CreateResource(
 	ID3D12Resource*& outResource,
 	ID3D12Device* pDevice,
 	D3D12_HEAP_TYPE heapType,
+	D3D12_RESOURCE_DIMENSION dimension,
 	UINT width, 
 	UINT height, 
 	UINT16 mipLevels, 
@@ -20,7 +21,7 @@ void D3D12Util::CreateResource(
 	heapProperties.Type = heapType;	// 内存放的位置
 
 	D3D12_RESOURCE_DESC resourceDesc{};
-	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	resourceDesc.Dimension = dimension;
 	resourceDesc.Alignment = 0;
 	resourceDesc.Width = width;
 	resourceDesc.Height = height;
@@ -36,7 +37,7 @@ void D3D12Util::CreateResource(
 		&heapProperties, 
 		D3D12_HEAP_FLAG_NONE, 
 		&resourceDesc,
-		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		resStates,
 		pClearValue,
 		IID_PPV_ARGS(&outResource)
 	);
@@ -51,6 +52,7 @@ ID3D12Resource* D3D12Util::CreateBufferObject(ID3D12GraphicsCommandList* pComman
 		pBufferObject,
 		pDevice,
 		D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_RESOURCE_DIMENSION_BUFFER,
 		dataLength,
 		1,
 		1,
@@ -81,7 +83,8 @@ ID3D12Resource* D3D12Util::CreateBufferObject(ID3D12GraphicsCommandList* pComman
 	D3D12Util::CreateResource(
 		pTempBufferObject,
 		pDevice,
-		D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_HEAP_TYPE_UPLOAD,
+		D3D12_RESOURCE_DIMENSION_BUFFER,
 		dataLength,
 		1,
 		1,

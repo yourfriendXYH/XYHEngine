@@ -7,6 +7,7 @@
 // 链接库
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "D3DCompiler.lib")
 
 #include <Runtime/Function/Render/Interface/RHI.h>
 
@@ -290,6 +291,14 @@ public:
 
 	ID3D12GraphicsCommandList* GetGraphicsCommandList() const;
 
+	ID3D12Device* GetDevice() const;
+
+	ID3D12RootSignature* InitRootSignature();
+
+	void CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunctionName, const char* target, D3D12_SHADER_BYTECODE* pShader);
+
+	ID3D12PipelineState* CreatePSO(ID3D12RootSignature* pRootSignature, D3D12_SHADER_BYTECODE VSByteCode, D3D12_SHADER_BYTECODE PSByteCode);
+
 private:
 
 	// 创建DXGI
@@ -305,10 +314,6 @@ private:
 	void WaitForCompletionOfCommandList();
 
 	void EndCommandList();
-
-	ID3D12PipelineState* CreatePSO(ID3D12RootSignature* pRootSignature, D3D12_SHADER_BYTECODE VSByteCode, D3D12_SHADER_BYTECODE PSByteCode);
-
-	void CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunctionName, const char* target, D3D12_SHADER_BYTECODE* pShader);
 
 public:
 	GLFWwindow* m_pGLFWwindow = nullptr;

@@ -12,6 +12,7 @@ public:
 		ID3D12Resource*& outResource, 
 		ID3D12Device* pDevice,
 		D3D12_HEAP_TYPE heapType,
+		D3D12_RESOURCE_DIMENSION dimension,
 		UINT width,
 		UINT height,
 		UINT16 mipLevels,

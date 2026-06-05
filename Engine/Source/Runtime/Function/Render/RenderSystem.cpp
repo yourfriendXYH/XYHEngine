@@ -13,10 +13,6 @@
 
 NAMESPACE_XYH_BEGIN
 
-//#define USE_DX12
-//#define USE_VK
-#define USE_OPENGL
-
 RenderSystem::~RenderSystem()
 {
 	Clear();
@@ -29,11 +25,11 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 	// RHI初始化
 	ST_RHIInitInfo rhiInitInfo;
 	rhiInitInfo.m_pWindowSystem = initInfo.m_pWindowSystem;
-#ifdef USE_DX12	// 使用Direct3D12
+#ifdef USE_D3D12	// 使用Direct3D12
 	m_pRHI = std::make_shared<D3D12RHI>();
 	m_pRHI->Initialize(rhiInitInfo);
 #endif // USE_DX12
-#ifdef USE_VK	// 使用Vulkan
+#ifdef USE_VULKAN	// 使用Vulkan
 	m_pRHI = std::make_shared<VulkanRHI>();
 	m_pRHI->Initialize(rhiInitInfo);
 #endif // USE_VK
@@ -102,7 +98,7 @@ void RenderSystem::Tick(float deltaTime)
 	m_pRenderScene->UpdateVisibleObjects(std::static_pointer_cast<RenderResource>(m_pRenderResource), m_pRenderCamera);
 
 	// 准备渲染用到的资源和数据
-#ifdef USE_VK	// 使用Vulkan
+#ifdef USE_VULKAN	// 使用Vulkan
 	m_pRenderPipeline->PreparePassData(m_pRenderResource);
 #endif // USE_VK
 

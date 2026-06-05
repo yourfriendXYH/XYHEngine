@@ -60,7 +60,15 @@ private:
 	RHIBuffer* m_pPerDrawcallStorageBuffer = nullptr;
 	RHIDeviceMemory* m_pPerDrawcallMemory = nullptr;
 
+
+	// D3D12
 	ID3D12PipelineState* m_pPSO = nullptr;
+
+	ID3D12Resource* m_pVBO = nullptr;
+
+	ID3D12RootSignature* m_pRootSignature = nullptr;
+
+	std::array<D3D12_VERTEX_BUFFER_VIEW, 1> m_vbos{};
 
 	// Nanite
 

@@ -19,10 +19,6 @@
 
 NAMESPACE_XYH_BEGIN
 
-//#define USE_VULKAN
-//#define USE_DX12
-#define USE_OPENGL
-
 void RenderPipeline::Initialize(ST_RenderPipelineInitInfo initInfo)
 {
 	m_pPointLightShadowPass = std::make_shared<PointLightShadowPass>();
@@ -174,20 +170,18 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 #ifdef USE_VULKAN
 	VulkanRHI* pVulkanRHI = static_cast<VulkanRHI*>(pRHI.get());
 #endif // USE_VULKAN
-#ifdef USE_DX12
+#ifdef USE_D3D12
 	D3D12RHI* pD3D12RHI = static_cast<D3D12RHI*>(pRHI.get());
 #endif // USE_DX12
 #ifdef USE_OPENGL
 	OpenGLRHI* pOpenGLRHI = static_cast<OpenGLRHI*>(pRHI.get());
 #endif // USE_OPENGL
-
-
 	
 	RenderResource* pVulkanResource = static_cast<RenderResource*>(pRenderResource.get());
 #ifdef USE_VULKAN
 	pVulkanResource->ResetRingBufferOffset(pVulkanRHI->GetCurrentFrameIndex());	// 重置环形缓冲区偏移
 #endif // USE_VULKAN
-#ifdef USE_DX12
+#ifdef USE_D3D12
 	pVulkanResource->ResetRingBufferOffset(pD3D12RHI->GetCurrentFrameIndex());
 #endif // DEBUG
 
@@ -197,7 +191,7 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 	pVulkanRHI->WaitForFences();
 	pVulkanRHI->ResetCommandPool();
 #endif // USE_VULKAN
-#ifdef USE_DX12
+#ifdef USE_D3D12
 	pD3D12RHI->WaitForFences();
 	pD3D12RHI->ResetCommandPool();
 #endif // USE_DX12
@@ -245,7 +239,7 @@ void RenderPipeline::DeferredRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<R
 	// 结束命令，提交渲染
 	pVulkanRHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));	// 提交渲染
 #endif // USE_VULKAN
-#ifdef USE_DX12
+#ifdef USE_D3D12
 	pD3D12RHI->SubmitRendering(std::bind(&RenderPipeline::PassUpdateAfterRecreateSwapchain, this));
 #endif // USE_DX12
 #ifdef USE_OPENGL
