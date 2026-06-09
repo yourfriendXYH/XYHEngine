@@ -125,4 +125,57 @@ D3D12_RESOURCE_BARRIER D3D12Util::InitResourceBarrier(ID3D12Resource* pResource,
 	return resourceBarrier;
 }
 
+void StaticMeshComponent::InitFromFile()
+{
+}
+
+void StaticMeshComponent::SetVertexCount(int vertexCount)
+{
+	m_vertexCount = vertexCount;
+	m_vertexData = new ST_StaticMeshComponentVertexData[vertexCount];
+	memset(m_vertexData, 0, sizeof(ST_StaticMeshComponentVertexData) * vertexCount);
+}
+
+void StaticMeshComponent::SetVertexPosition(int index, float x, float y, float z, float w)
+{
+	m_vertexData[index].m_position[0] = x;
+	m_vertexData[index].m_position[1] = y;
+	m_vertexData[index].m_position[2] = z;
+	m_vertexData[index].m_position[3] = w;
+}
+
+void StaticMeshComponent::SetVertexTexcoord(int index, float x, float y, float z, float w)
+{
+	m_vertexData[index].m_texcoord[0] = x;
+	m_vertexData[index].m_texcoord[1] = y;
+	m_vertexData[index].m_texcoord[2] = z;
+	m_vertexData[index].m_texcoord[3] = w;
+}
+
+void StaticMeshComponent::SetVertexNormal(int index, float x, float y, float z, float w)
+{
+	m_vertexData[index].m_normal[0] = x;
+	m_vertexData[index].m_normal[1] = y;
+	m_vertexData[index].m_normal[2] = z;
+	m_vertexData[index].m_normal[3] = w;
+}
+
+void StaticMeshComponent::SetVertexTangent(int index, float x, float y, float z, float w)
+{
+	m_vertexData[index].m_tangent[0] = x;
+	m_vertexData[index].m_tangent[1] = y;
+	m_vertexData[index].m_tangent[2] = z;
+	m_vertexData[index].m_tangent[3] = w;
+}
+
+const int StaticMeshComponent::GetVertexDataSize() const
+{
+	return sizeof(ST_StaticMeshComponentVertexData) * m_vertexCount;
+}
+
+const int StaticMeshComponent::OnceVertexDataSize() const
+{
+	return sizeof(ST_StaticMeshComponentVertexData);
+}
+
 NAMESPACE_XYH_END

@@ -32,4 +32,42 @@ private:
 
 };
 
+// 静态网格组件，用于封装顶点数据（临时使用）
+struct ST_StaticMeshComponentVertexData
+{
+	float m_position[4];
+	float m_texcoord[4];
+	float m_normal[4];
+	float m_tangent[4];
+};
+
+class StaticMeshComponent
+{
+public:
+
+	void InitFromFile();
+
+	void SetVertexCount(int vertexCount);
+
+	void SetVertexPosition(int index, float x, float y, float z, float w = 1.0f);
+
+	void SetVertexTexcoord(int index, float x, float y, float z, float w = 1.0f);
+
+	void SetVertexNormal(int index, float x, float y, float z, float w = 1.0f);
+
+	void SetVertexTangent(int index, float x, float y, float z, float w = 1.0f);
+
+	const int GetVertexDataSize() const;
+
+	const int OnceVertexDataSize() const;
+
+public:
+	ID3D12Resource* m_pVBO = nullptr;
+
+	D3D12_VERTEX_BUFFER_VIEW m_vboView;
+
+	int m_vertexCount;
+	ST_StaticMeshComponentVertexData* m_vertexData;
+};
+
 NAMESPACE_XYH_END

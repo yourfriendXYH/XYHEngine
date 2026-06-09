@@ -48,19 +48,22 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 	D3D12RHI* pD3D12RHI = static_cast<D3D12RHI*>(m_pRHI.get());
 
-	float vertexData[] = {
-		-0.5f, -0.5f, 0.5f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 0.5f, 0.5f, 1.0f,
-		0.0f, 1.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 0.0f, 0.0f,
-		0.5f, -0.5f, 0.5f, 1.0f,
-		0.0f, 0.0f, 1.0f, 1.0f,
-		0.0f, 0.0f, 0.0f, 0.0f
-	};
+	StaticMeshComponent staticMeshComponent;
+	staticMeshComponent.SetVertexCount(3);
+	staticMeshComponent.SetVertexPosition(0, -0.5f, -0.5f, 0.5f, 1.0f);
+	staticMeshComponent.SetVertexTexcoord(0, 1.0f, 0.0f, 0.0f, 1.0f);
+	staticMeshComponent.SetVertexPosition(1, 0.0f, 0.5f, 0.5f, 1.0f);
+	staticMeshComponent.SetVertexTexcoord(1, 0.0f, 1.0f, 0.0f, 1.0f);
+	staticMeshComponent.SetVertexPosition(2, 0.5f, -0.5f, 0.5f, 1.0f);
+	staticMeshComponent.SetVertexTexcoord(2, 0.0f, 0.0f, 1.0f, 1.0f);
 
-	m_pVBO = D3D12Util::CreateBufferObject(pD3D12RHI->GetGraphicsCommandList(), pD3D12RHI->GetDevice(), vertexData, sizeof(vertexData), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+	m_pVBO = D3D12Util::CreateBufferObject(
+		pD3D12RHI->GetGraphicsCommandList(), 
+		pD3D12RHI->GetDevice(), 
+		staticMeshComponent.m_vertexData, 
+		staticMeshComponent.GetVertexDataSize(), 
+		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
+	);
 
 	m_pRootSignature = pD3D12RHI->InitRootSignature();
 	D3D12_SHADER_BYTECODE vs, ps;
@@ -68,11 +71,10 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	pD3D12RHI->CreateShaderFromFile(L"Engine/Shader/hlsl/NDCTriangle.hlsl", "MainPS", "ps_5_0", &ps);
 	m_pPSO = pD3D12RHI->CreatePSO(m_pRootSignature, vs, ps);
 
-	D3D12_VERTEX_BUFFER_VIEW vboBufferView{};
-	vboBufferView.BufferLocation = m_pVBO->GetGPUVirtualAddress();
-	vboBufferView.SizeInBytes = sizeof(float) * 36;
-	vboBufferView.StrideInBytes = sizeof(float) * 12;
-	m_vbos[0] = vboBufferView;
+	staticMeshComponent.m_vboView.BufferLocation = m_pVBO->GetGPUVirtualAddress();
+	staticMeshComponent.m_vboView.SizeInBytes = staticMeshComponent.GetVertexDataSize();
+	staticMeshComponent.m_vboView.StrideInBytes = staticMeshComponent.OnceVertexDataSize();
+	m_vbos[0] = staticMeshComponent.m_vboView;
 
 #endif // USE_DX12
 
