@@ -76,6 +76,11 @@ private:
 	GLuint m_shaderProgramFSQ;
 	Texture2D* m_pVisualizationTexture = nullptr;
 
+	// 每一个像素用64位存储（32位：深度值 ）
+	GLuint m_visBuffer64;
+
+
+
 	// 每帧用到的通用数据（全局数据）
 	ST_TestPerframeStorageBufferObject m_perframeStorageBufferObj;
 

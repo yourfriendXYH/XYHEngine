@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Common.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
@@ -40,16 +40,23 @@ enum
 
 struct ST_VisibleNodes
 {
-	std::vector<ST_RenderMeshNode>* m_pDirectionalLightVisibleMeshNodes = nullptr;	// Æ½ĞĞ¹â¿É¼ûÍø¸ñ½Úµã
-	std::vector<ST_RenderMeshNode>* m_pPointLightsVisibleMeshNodes = nullptr;	// µã¹âÔ´¿É¼ûÍø¸ñ½Úµã
-	std::vector<ST_RenderMeshNode>* m_pMainCameraVisibleMeshNodes = nullptr;	// Ö÷ÉãÏñ»ú¿É¼ûÍø¸ñ½Úµã
-	ST_RenderAxisNode* m_pAxisNode = nullptr;	// ×ø±êÖá½Úµã
+	std::vector<ST_RenderMeshNode>* m_pDirectionalLightVisibleMeshNodes = nullptr;	// å¹³è¡Œå…‰å¯è§ç½‘æ ¼èŠ‚ç‚¹
+	std::vector<ST_RenderMeshNode>* m_pPointLightsVisibleMeshNodes = nullptr;	// ç‚¹å…‰æºå¯è§ç½‘æ ¼èŠ‚ç‚¹
+	std::vector<ST_RenderMeshNode>* m_pMainCameraVisibleMeshNodes = nullptr;	// ä¸»æ‘„åƒæœºå¯è§ç½‘æ ¼èŠ‚ç‚¹
+	ST_RenderAxisNode* m_pAxisNode = nullptr;	// åæ ‡è½´èŠ‚ç‚¹
+};
+
+// passç±»å‹
+enum class ERenderPassType
+{
+	ERPT_GRAPHICS,	// å›¾å½¢
+	ERPT_COMPUTE,	// è®¡ç®—
 };
 
 class RenderPass : public RenderPassBase
 {
 public:
-	struct ST_FramebufferAttachment	// Ö¡»º³åÇø¸½¼ş
+	struct ST_FramebufferAttachment	// å¸§ç¼“å†²åŒºé™„ä»¶
 	{
 		RHIImage* m_pImage = nullptr;
 		RHIDeviceMemory* m_pMemory = nullptr;
@@ -57,7 +64,7 @@ public:
 		ERHIFormat m_format;
 	};
 
-	struct ST_Framebuffer	// Ö¡»º³åÇø
+	struct ST_Framebuffer	// å¸§ç¼“å†²åŒº
 	{
 		int m_width = 0;
 		int m_height = 0;
@@ -66,38 +73,58 @@ public:
 		std::vector<ST_FramebufferAttachment> m_attachments;
 	};
 
-	struct ST_Descriptor	// ÃèÊö·û
+	struct ST_Descriptor	// æè¿°ç¬¦
 	{
-		RHIDescriptorSetLayout* m_pDescriptorSetLayout = nullptr;	// ÃèÊö·û¼¯²¼¾Ö
-		RHIDescriptorSet* m_pDescriptorSet = nullptr;	// ÃèÊö·û¼¯
+		RHIDescriptorSetLayout* m_pDescriptorSetLayout = nullptr;	// æè¿°ç¬¦é›†å¸ƒå±€
+		RHIDescriptorSet* m_pDescriptorSet = nullptr;	// æè¿°ç¬¦é›†
 	};
 
-	struct ST_RenderPipelineBase	// äÖÈ¾¹ÜÏß
+	struct ST_RenderPipelineBase	// æ¸²æŸ“ç®¡çº¿
 	{
-		RHIPipelineLayout* m_pipelineLayout = nullptr;	// ¹ÜÏß²¼¾Ö
-		RHIPipeline* m_pipeline = nullptr;	// ¹ÜÏß
+		RHIPipelineLayout* m_pipelineLayout = nullptr;	// ç®¡çº¿å¸ƒå±€
+		RHIPipeline* m_pipeline = nullptr;	// ç®¡çº¿
 	};
+
+public:
+	RenderPass() = default;
+
+	RenderPass(ERenderPassType renderPassType, const char* name);
 
 public:
 	void Initialize(const ST_RenderPassInitInfo* initInfo) override;
 	void PostInitialize() override;
 
+	void Build(uint32_t width = 0, uint32_t height = 0);
+
 	virtual void Draw();
 
 	virtual RHIRenderPass* GetRenderPass() const;
-	virtual std::vector<RHIImageView*> GetFramebufferImageViews() const;	// »ñÈ¡Ö¡»º³åÇøÍ¼ÏñÊÓÍ¼ÁĞ±í
-	virtual std::vector<RHIDescriptorSetLayout*> GetDescriptorSetLayouts() const;	// »ñÈ¡ÃèÊö·û¼¯²¼¾ÖÁĞ±í
+	virtual std::vector<RHIImageView*> GetFramebufferImageViews() const;	// è·å–å¸§ç¼“å†²åŒºå›¾åƒè§†å›¾åˆ—è¡¨
+	virtual std::vector<RHIDescriptorSetLayout*> GetDescriptorSetLayouts() const;	// è·å–æè¿°ç¬¦é›†å¸ƒå±€åˆ—è¡¨
+
+	void SetComputeShader(const char* computeShaderPath);
+
+	void SetComputeImage(int binding);
 
 public:
 	ST_GlobalRenderResource* m_pGlobalRenderResource{ nullptr };
 
-	std::vector<ST_Descriptor> m_descriptorInfos;	// ÃèÊö·ûÁĞ±í
-	std::vector<ST_RenderPipelineBase> m_renderPipelines;	// äÖÈ¾¹ÜÏßÁĞ±í
-	ST_Framebuffer m_framebuffer;	// Ö¡»º³åÇø
+	std::vector<ST_Descriptor> m_descriptorInfos;	// æè¿°ç¬¦åˆ—è¡¨
+	std::vector<ST_RenderPipelineBase> m_renderPipelines;	// æ¸²æŸ“ç®¡çº¿åˆ—è¡¨
+	ST_Framebuffer m_framebuffer;	// å¸§ç¼“å†²åŒº
 
-	static ST_VisibleNodes s_visibleNodes;	// ¿É¼û½Úµã
+	static ST_VisibleNodes s_visibleNodes;	// å¯è§èŠ‚ç‚¹
 
 	//ST_GlobalRenderResource* m_pGlobalRenderResource{ nullptr };
+
+private:
+	// passç±»å‹
+	ERenderPassType m_renderPassType;
+	//
+	std::string m_name;
+	// è§†å£å®½é«˜
+	uint32_t m_viewportWidth;
+	uint32_t m_viewportHeight;
 };
 
 NAMESPACE_XYH_END

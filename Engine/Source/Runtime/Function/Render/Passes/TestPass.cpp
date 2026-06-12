@@ -104,6 +104,9 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	m_pVisualizationTexture = OpenGLUtil::CreateTexture2D(nullptr, 1280, 720, GL_RGBA32F, GL_RGBA);
 	OpenGLUtil::SetObjectName(GL_TEXTURE, m_pVisualizationTexture->mTexture, "VisualizationTexture");
 
+	m_visBuffer64 = OpenGLUtil::CreateBufferObject(GL_SHADER_STORAGE_BUFFER, 1280 * 720 * sizeof(uint64_t), GL_STATIC_DRAW, nullptr);
+	OpenGLUtil::SetObjectName(GL_BUFFER, m_visBuffer64, "VisBuffer64");
+
 #endif // USE_OPENGL
 
 }
