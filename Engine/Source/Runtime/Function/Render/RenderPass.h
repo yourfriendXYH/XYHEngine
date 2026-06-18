@@ -94,7 +94,11 @@ public:
 	void Initialize(const ST_RenderPassInitInfo* initInfo) override;
 	void PostInitialize() override;
 
+	// 
 	void Build(uint32_t width = 0, uint32_t height = 0);
+
+	// 执行 绘制 或 计算
+	void Execute(RHIBuffer* pIndirectBuffer = nullptr);
 
 	virtual void Draw();
 
@@ -102,9 +106,18 @@ public:
 	virtual std::vector<RHIImageView*> GetFramebufferImageViews() const;	// 获取帧缓冲区图像视图列表
 	virtual std::vector<RHIDescriptorSetLayout*> GetDescriptorSetLayouts() const;	// 获取描述符集布局列表
 
+	// 设置图形着色器的文件路径
+	void SetGraphicsShader(const char* vertexShaderPath, const char* fragmentShaderPath);
+	// 设置计算着色器的文件路径
 	void SetComputeShader(const char* computeShaderPath);
-
-	void SetComputeImage(int binding);
+	// 给计算着色器 绑定 纹理数据
+	void SetComputeImage(int binding, RHIImage* pImage, bool isOutputResource = false);
+	// 设置SSBO
+	void SetStorageBuffer(int binding, RHIBuffer* pBuffer, bool isOutputResource = false);
+	// 设置UBO
+	void SetUniformBuffer(int binding, RHIBuffer* pBuffer);
+	// 
+	void SetComputeDispatchArgs(int x, int y, int z);
 
 public:
 	ST_GlobalRenderResource* m_pGlobalRenderResource{ nullptr };
@@ -125,6 +138,27 @@ private:
 	// 视口宽高
 	uint32_t m_viewportWidth;
 	uint32_t m_viewportHeight;
+
+	// 着色器
+	union
+	{
+		RHIShader* m_pGraphicsShader;
+		RHIShader* m_pComputeShader = nullptr;
+	};
+
+	// 输入输出的纹理数据
+	std::vector<ST_ImageResource*> m_inputTextures;
+	std::vector<ST_ImageResource*> m_outputTextures;
+
+	// 缓冲区数据
+	std::vector<ST_BufferResource*> m_uniformBuffers;
+	std::vector<ST_BufferResource*> m_inputBuffers;
+	std::vector<ST_BufferResource*> m_outputBuffers;
+
+	// 
+	int m_dispatchX = 0;
+	int m_dispatchY = 0;
+	int m_dispatchZ = 0;
 };
 
 NAMESPACE_XYH_END

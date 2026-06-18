@@ -52,6 +52,11 @@ void FullScreenQuad::SetTexcoord(int index, float x, float y, float z, float w)
 	m_vertices[index].mTexcoord[3] = w;
 }
 
+GLenum OpenGLUtil::TranslateBufferType(RHIBufferUsageFlags type)
+{
+	return GLenum();
+}
+
 GLuint OpenGLUtil::CreateBufferObject(GLenum bufferType, GLsizeiptr size, GLenum usage, void* data)
 {
 	GLuint object;
@@ -121,7 +126,28 @@ GLuint OpenGLUtil::CreateProgram(GLuint vsShader, GLuint fsShader)
 	return program;
 }
 
-Texture2D* OpenGLUtil::CreateTexture2D(
+GLuint OpenGLUtil::CreateProgram(GLuint csShader)
+{
+	GLuint program = 0;
+	OGL_CALL(program = glCreateProgram());
+	OGL_CALL(glAttachShader(program, csShader));
+	OGL_CALL(glLinkProgram(program));
+	OGL_CALL(glDetachShader(program, csShader));
+	GLint nResult;
+	OGL_CALL(glGetProgramiv(program, GL_LINK_STATUS, &nResult));
+	if (nResult == GL_FALSE)
+	{
+		char log[10240] = { 0 };
+		GLsizei writed = 0;
+		OGL_CALL(glGetProgramInfoLog(program, 10240, &writed, log));
+		printf("create gpu program fail,link error : %s\n", log);
+		OGL_CALL(glDeleteProgram(program));
+		program = 0;
+	}
+	return program;
+}
+
+OpenGLImage* OpenGLUtil::CreateTexture2D(
 	unsigned char* pixelData, 
 	int width, 
 	int height, 
@@ -131,22 +157,22 @@ Texture2D* OpenGLUtil::CreateTexture2D(
 	GLenum minFilter, 
 	GLenum magFilter)
 {
-	Texture2D* texture = new Texture2D;
+	OpenGLImage* texture = new OpenGLImage;
 	GLenum basicType = GL_UNSIGNED_BYTE;
 	if (gpu_format == GL_RGBA32F) {
 		basicType = GL_FLOAT;
 	}
-	OGL_CALL(glGenTextures(1, &texture->mTexture));
-	OGL_CALL(glBindTexture(GL_TEXTURE_2D, texture->mTexture));
+	OGL_CALL(glGenTextures(1, &texture->m_image));
+	OGL_CALL(glBindTexture(GL_TEXTURE_2D, texture->m_image));
 	OGL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode));
 	OGL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode));
 	OGL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter));
 	OGL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter));
 	OGL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, gpu_format, width, height, 0, cpu_format, basicType, pixelData));
 	OGL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-	texture->mFormat = gpu_format;
-	texture->mWidth = width;
-	texture->mHeight = height;
+	texture->m_format = gpu_format;
+	texture->m_width = width;
+	texture->m_height = height;
 	return texture;
 }
 

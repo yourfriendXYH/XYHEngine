@@ -6,9 +6,6 @@
 #include <GLFW/glfw3.h>
 #include <array>
 
-
-
-
 #pragma comment(lib,"opengl32.lib")
 #pragma comment(lib,"glew32.lib")
 #pragma comment(lib,"glu32.lib")
@@ -49,7 +46,7 @@ public:
 
 	virtual void CreateBuffer(RHIDeviceSize size, RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory) override {};	// 创建缓冲区
 
-	virtual void CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory, RHIDeviceSize size, void* data = nullptr, int datasize = 0) override {};	// 创建缓冲区并初始化
+	virtual void CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory, RHIDeviceSize size, void* data = nullptr, int datasize = 0) override;	// 创建缓冲区并初始化
 
 	virtual bool CreateBufferVMA(
 		VmaAllocator allocator,
@@ -289,6 +286,7 @@ public:
 	virtual RHISemaphore*& GetTextureCopySemaphore(uint32_t index) override { return m_pRHISemaphore; };	// 
 
 public:
+	void CreateBufferObject(RHIBuffer*& pOutBuffer, GLenum bufferType, GLsizeiptr size, GLenum usage, void* data = nullptr);
 
 private:
 

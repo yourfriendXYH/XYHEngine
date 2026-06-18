@@ -20,7 +20,12 @@ class RHIDeviceMemory {};
 class RHIEvent {};
 class RHIFence {};
 class RHIFramebuffer {};
-class RHIImage {};
+class RHIImage
+{
+public:
+	int m_width;
+	int m_height;
+};
 class RHIImageView {};
 class RHIInstance {};
 class RHIQueue {};
@@ -878,6 +883,18 @@ struct ST_RHIBufferCreateInfo
 	ERHISharingMode m_sharingMode;
 	uint32_t m_queueFamilyIndexCount;
 	const uint32_t* m_pQueueFamilyIndices;
+};
+
+struct ST_ImageResource
+{
+	RHIImage* m_pImage = nullptr;
+	int m_binding = -1;
+};
+
+struct ST_BufferResource
+{
+	RHIBuffer* m_pBuffer = nullptr;
+	int m_binding = -1;
 };
 
 NAMESPACE_XYH_END

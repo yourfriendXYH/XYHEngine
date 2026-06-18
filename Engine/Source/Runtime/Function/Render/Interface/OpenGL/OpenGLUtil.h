@@ -1,4 +1,6 @@
+#pragma once
 #include "OpenGLRHI.h"
+#include "OpenGLRHIResource.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -52,6 +54,8 @@ struct Texture2D
 class OpenGLUtil
 {
 public:
+	static GLenum TranslateBufferType(RHIBufferUsageFlags type);
+
 	static GLuint CreateBufferObject(GLenum bufferType, GLsizeiptr size, GLenum usage, void* data = nullptr);
 
 	static GLuint BuildVAO(GLuint inVBO, int inAttributeCount, const char** inAttributeNames, int inVertexSizeInBytes);
@@ -59,8 +63,10 @@ public:
 	static GLuint CompileShader(GLenum shaderType, const char* shaderCode);
 
 	static GLuint CreateProgram(GLuint vsShader, GLuint fsShader);
+	// 创建计算着色器
+	static GLuint CreateProgram(GLuint csShader);
 
-	static Texture2D* CreateTexture2D(
+	static OpenGLImage* CreateTexture2D(
 		unsigned char* pixelData, 
 		int width, 
 		int height, 

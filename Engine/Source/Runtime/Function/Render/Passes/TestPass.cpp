@@ -5,6 +5,7 @@
 #include <Runtime/Function/Render/Interface/DX12/D3D12Util.h>
 #include <Runtime/Function/Render/RenderMesh.h>
 #include <Runtime/Function/Render/Interface/OpenGL/Util.h>
+#include <Runtime/Function/Render/Interface/OpenGL/OpenGLRHIResource.h>
 
 #include <random>
 
@@ -24,6 +25,8 @@ namespace
 		0, 1, 3,
 		1, 2, 3
 	};
+
+#define _4MB 4194304
 }
 
 void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
@@ -80,6 +83,8 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 #ifdef USE_OPENGL
 
+	OpenGLRHI* pOpenGLRHI = static_cast<OpenGLRHI*>(m_pRHI.get());
+
 	m_FSQ.Init();
 
 	size_t fileSize = 0;
@@ -101,11 +106,52 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 	m_shaderProgramFSQ = OpenGLUtil::CreateProgram(vsShader, fsShader);
 
-	m_pVisualizationTexture = OpenGLUtil::CreateTexture2D(nullptr, 1280, 720, GL_RGBA32F, GL_RGBA);
-	OpenGLUtil::SetObjectName(GL_TEXTURE, m_pVisualizationTexture->mTexture, "VisualizationTexture");
+	pOpenGLRHI->CreateBufferObject(m_workArgs[0], GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
+	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_workArgs[0])->GetResource(), "workArgs[0]");
+	pOpenGLRHI->CreateBufferObject(m_workArgs[1], GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
+	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_workArgs[1])->GetResource(), "workArgs[1]");
+	pOpenGLRHI->CreateBufferObject(m_workArgs[2], GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
+	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_workArgs[2])->GetResource(), "workArgs[2]");
+	
+	pOpenGLRHI->CreateBufferObject(m_pGlobalConstants, GL_UNIFORM_BUFFER, 4096, GL_STATIC_DRAW, nullptr);
+	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pGlobalConstants)->GetResource(), "GlobalConstants");
 
-	m_visBuffer64 = OpenGLUtil::CreateBufferObject(GL_SHADER_STORAGE_BUFFER, 1280 * 720 * sizeof(uint64_t), GL_STATIC_DRAW, nullptr);
+	pOpenGLRHI->CreateBufferObject(m_pNaniteMesh, GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
+	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pNaniteMesh)->GetResource(), "NaniteMesh");
+
+	pOpenGLRHI->CreateBufferObject(m_pVisibleClusterSoftwareHardware, GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
+	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pVisibleClusterSoftwareHardware)->GetResource(), "VisibleClusterSoftwareHardware");
+
+	m_pVisualizationTexture = OpenGLUtil::CreateTexture2D(nullptr, 1280, 720, GL_RGBA32F, GL_RGBA);
+	OpenGLUtil::SetObjectName(GL_TEXTURE, m_pVisualizationTexture->m_image, "VisualizationTexture");
+
+	m_visBuffer64 = OpenGLUtil::CreateBufferObject(GL_SHADER_STORAGE_BUFFER, 1280 * 720 * sizeof(unsigned int), GL_STATIC_DRAW, nullptr);
 	OpenGLUtil::SetObjectName(GL_BUFFER, m_visBuffer64, "VisBuffer64");
+	OpenGLBuffer* pVisBuffer64 = new OpenGLBuffer;
+	pVisBuffer64->SetResource(m_visBuffer64);
+
+	// 
+	m_pHardwareRasterizePass = std::make_shared<RenderPass>(ERenderPassType::ERPT_GRAPHICS, "HardwareRasterize");
+	if (nullptr != m_pHardwareRasterizePass)
+	{
+		m_pHardwareRasterizePass->SetGraphicsShader("Engine/Shader/glsl/HardwareRasterizeVS.glsl", "Engine/Shader/glsl/HardwareRasterizeFS.glsl");
+		m_pHardwareRasterizePass->SetUniformBuffer(0, m_pGlobalConstants);
+		m_pHardwareRasterizePass->SetStorageBuffer(1, m_pNaniteMesh);
+		m_pHardwareRasterizePass->SetStorageBuffer(2, m_pVisibleClusterSoftwareHardware);
+		m_pHardwareRasterizePass->SetStorageBuffer(3, pVisBuffer64);
+		m_pHardwareRasterizePass->Build(1280, 720);
+	}
+
+	// VisualizationPass 初始化
+	m_pVisualizationPass = std::make_shared<RenderPass>(ERenderPassType::ERPT_COMPUTE, "Visualization");
+	if (nullptr != m_pVisualizationPass)
+	{
+		m_pVisualizationPass->SetStorageBuffer(0, pVisBuffer64);
+		m_pVisualizationPass->SetComputeImage(0, m_pVisualizationTexture);
+		m_pVisualizationPass->SetComputeShader("Engine/Shader/glsl/VisualizationCS.glsl");
+		m_pVisualizationPass->SetComputeDispatchArgs(1, 1, 1);
+		m_pVisualizationPass->Build();
+	}
 
 #endif // USE_OPENGL
 
@@ -665,6 +711,10 @@ void TestPass::D3D12DrawTest()
 
 void TestPass::OpenGLDrawTest()
 {
+	m_pHardwareRasterizePass->Execute(m_workArgs[0]);
+
+	m_pVisualizationPass->Execute();
+
 	OGL_CALL(glViewport(0, 0, 1280, 720));
 	OGL_CALL(glScissor(0, 0, 1280, 720));
 	OGL_CALL(glClearColor(0.1f, 0.4f, 0.6f, 1.0f));
@@ -677,7 +727,7 @@ void TestPass::OpenGLDrawTest()
 	OGL_CALL(glBindVertexArray(m_FSQ.m_VAO));
 
 	OGL_CALL(glActiveTexture(GL_TEXTURE0));
-	OGL_CALL(glBindTexture(GL_TEXTURE_2D, m_pVisualizationTexture->mTexture));
+	OGL_CALL(glBindTexture(GL_TEXTURE_2D, m_pVisualizationTexture->m_image));
 	OGL_CALL(glUniform1i(0, 0));
 
 	OGL_CALL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));

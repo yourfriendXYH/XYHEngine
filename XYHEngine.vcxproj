@@ -105,6 +105,7 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHI.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Util.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLRHI.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLRHIResource.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLUtil.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\Util.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHI.h" />
@@ -153,10 +154,13 @@
     <None Include="Engine\Shader\glsl\deferred_lighting.vert" />
     <None Include="Engine\Shader\glsl\fsqFS.glsl" />
     <None Include="Engine\Shader\glsl\fsqVS.glsl" />
+    <None Include="Engine\Shader\glsl\HardwareRasterizeFS.glsl" />
+    <None Include="Engine\Shader\glsl\HardwareRasterizeVS.glsl" />
     <None Include="Engine\Shader\glsl\mesh.vert" />
     <None Include="Engine\Shader\glsl\mesh_gbuffer.frag" />
     <None Include="Engine\Shader\glsl\testVk.frag" />
     <None Include="Engine\Shader\glsl\testVk.vert" />
+    <None Include="Engine\Shader\glsl\VisualizationCS.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -245,7 +249,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS;USE_OPENGL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS;USE_D3D12;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)Engine/3rdparty/glfw-3.4.bin.WIN64/include;$(ProjectDir)Engine/3rdparty/spdlog/include;$(ProjectDir)Engine/Source/Common;$(ProjectDir)Engine/3rdparty/VulkanSDK/include;$(ProjectDir)Engine/3rdparty/vulkanmemoryallocator/include;$(ProjectDir)Engine/Source;$(ProjectDir)Engine/Shader/Generated/Cpp;$(ProjectDir)Engine/3rdparty/GL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

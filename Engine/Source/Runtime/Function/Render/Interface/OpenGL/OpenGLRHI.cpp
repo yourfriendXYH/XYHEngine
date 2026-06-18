@@ -1,5 +1,6 @@
 #include "OpenGLRHI.h"
 #include <Runtime/Function/Render/WindowSystem.h>
+#include "OpenGLUtil.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -24,6 +25,12 @@ void OpenGLRHI::CreateSwapChain()
 {
 }
 
+void OpenGLRHI::CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory, RHIDeviceSize size, void* data, int datasize)
+{
+	GLenum bufferType;
+	OpenGLUtil::CreateBufferObject(GL_SHADER_STORAGE_BUFFER, 1280 * 720 * sizeof(unsigned int), GL_STATIC_DRAW, nullptr);
+}
+
 void OpenGLRHI::WaitForFences()
 {
 }
@@ -41,6 +48,16 @@ void OpenGLRHI::SubmitRendering(std::function<void()> passUpdateAfterRecreateSwa
 {
 	// 交换前后缓冲区
 	glfwSwapBuffers(m_pGLFWwindow);
+}
+
+void OpenGLRHI::CreateBufferObject(RHIBuffer*& pOutBuffer, GLenum bufferType, GLsizeiptr size, GLenum usage, void* data)
+{
+	GLuint buffer = OpenGLUtil::CreateBufferObject(bufferType, size, usage, data);
+	if (nullptr == pOutBuffer)
+	{
+		pOutBuffer = new OpenGLBuffer();
+	}
+	((OpenGLBuffer*)pOutBuffer)->SetResource(buffer);
 }
 
 void CheckLastOpenGLError(const char* prefix, const char* file, long line, const char* operation)
