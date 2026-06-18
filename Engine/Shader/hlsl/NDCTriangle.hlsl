@@ -21,7 +21,7 @@ VSOut MainVS(VertexData inVertexData)
 {
     VSOut vsOut;
     vsOut.position = inVertexData.postion;
-    vsOut.color = inVertexData.texcoord;
+    vsOut.color = inVertexData.texcoord + color;
     
     return vsOut;
 }

@@ -702,6 +702,10 @@ void TestPass::D3D12DrawTest()
 	ID3D12GraphicsCommandList* pCommandList = pD3D12RHI->GetGraphicsCommandList();
 	pCommandList->SetPipelineState(m_pPSO);
 	pCommandList->SetGraphicsRootSignature(m_pRootSignature);
+
+	// 设置4个32bit -> 4个float
+	pCommandList->SetGraphicsRoot32BitConstants(0, 4, m_testColor, 0);
+
 	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	pCommandList->IASetVertexBuffers(0, m_vbos.size(), m_vbos.data());
 	pCommandList->DrawInstanced(3, 1, 0, 0);

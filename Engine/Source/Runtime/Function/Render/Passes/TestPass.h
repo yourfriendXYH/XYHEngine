@@ -70,6 +70,8 @@ private:
 
 	std::array<D3D12_VERTEX_BUFFER_VIEW, 1> m_vbos{};
 
+	float m_testColor[4] = {0.5, 0.5, 0.5, 1.0};
+
 	// Nanite
 
 	FullScreenQuad m_FSQ;

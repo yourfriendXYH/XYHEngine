@@ -221,11 +221,12 @@ void D3D12RHI::EndCommandList()
 
 ID3D12PipelineState* D3D12RHI::CreatePSO(ID3D12RootSignature* pRootSignature, D3D12_SHADER_BYTECODE VSByteCode, D3D12_SHADER_BYTECODE PSByteCode)
 {
-	const size_t elementSize = 3u;
+	const size_t elementSize = 4u;
 	D3D12_INPUT_ELEMENT_DESC vertexDataElementDesc[elementSize] = {
 		{"POSITIONT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, sizeof(float) * 4, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, sizeof(float) * 8, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+		{"NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, sizeof(float) * 8, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{"TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, sizeof(float) * 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
 	};
 
 	D3D12_INPUT_LAYOUT_DESC vertexDataLayoutDesc{};
@@ -293,9 +294,19 @@ void D3D12RHI::CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunc
 
 ID3D12RootSignature* D3D12RHI::InitRootSignature()
 {
+	D3D12_ROOT_PARAMETER parameters[1] = {};
+	parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+	parameters[0].Constants.RegisterSpace = 0;
+	parameters[0].Constants.ShaderRegister = 0;	// 对应shader中的 b0
+	parameters[0].Constants.Num32BitValues = 4;	// 4个float
+
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
+	rootSignatureDesc.NumParameters = 1;
+	rootSignatureDesc.pParameters = parameters;
 	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
+	// 32bit constants 最多存储64个DWORD -> 64 * 4 = 256字节
 	ID3DBlob* signature;
 	HRESULT hResult = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, nullptr);
 
