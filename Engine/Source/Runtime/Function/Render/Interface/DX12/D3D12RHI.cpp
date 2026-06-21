@@ -39,7 +39,7 @@ void D3D12RHI::Initialize(ST_RHIInitInfo initInfo)
 	clearValue.DepthStencil.Depth = 1.0f;
 	clearValue.DepthStencil.Stencil = 0;
 	D3D12Util::CreateResource(
-		m_pDepthStencilRenderTarget, 
+		m_pDepthStencilRenderTarget,
 		m_pDevice,
 		D3D12_HEAP_TYPE_DEFAULT,
 		D3D12_RESOURCE_DIMENSION_TEXTURE2D,
@@ -294,15 +294,21 @@ void D3D12RHI::CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunc
 
 ID3D12RootSignature* D3D12RHI::InitRootSignature()
 {
-	D3D12_ROOT_PARAMETER parameters[1] = {};
+	const unsigned int parameterSize = 2u;
+	D3D12_ROOT_PARAMETER parameters[parameterSize] = {};
 	parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 	parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	parameters[0].Constants.RegisterSpace = 0;
 	parameters[0].Constants.ShaderRegister = 0;	// 对应shader中的 b0
 	parameters[0].Constants.Num32BitValues = 4;	// 4个float
 
+	parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+	parameters[1].Descriptor.RegisterSpace = 0;
+	parameters[1].Descriptor.ShaderRegister = 1;	// b1
+
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
-	rootSignatureDesc.NumParameters = 1;
+	rootSignatureDesc.NumParameters = parameterSize;
 	rootSignatureDesc.pParameters = parameters;
 	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 

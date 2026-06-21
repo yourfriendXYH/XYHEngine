@@ -61,10 +61,10 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	staticMeshComponent.SetVertexTexcoord(2, 0.0f, 0.0f, 1.0f, 1.0f);
 
 	m_pVBO = D3D12Util::CreateBufferObject(
-		pD3D12RHI->GetGraphicsCommandList(), 
-		pD3D12RHI->GetDevice(), 
-		staticMeshComponent.m_vertexData, 
-		staticMeshComponent.GetVertexDataSize(), 
+		pD3D12RHI->GetGraphicsCommandList(),
+		pD3D12RHI->GetDevice(),
+		staticMeshComponent.m_vertexData,
+		staticMeshComponent.GetVertexDataSize(),
 		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
 	);
 
@@ -78,6 +78,24 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	staticMeshComponent.m_vboView.SizeInBytes = staticMeshComponent.GetVertexDataSize();
 	staticMeshComponent.m_vboView.StrideInBytes = staticMeshComponent.OnceVertexDataSize();
 	m_vbos[0] = staticMeshComponent.m_vboView;
+
+	// 创建索引数据
+	unsigned int indices[] = { 0, 1, 2 };
+	ID3D12Resource* pIBO = D3D12Util::CreateBufferObject(
+		pD3D12RHI->GetGraphicsCommandList(),
+		pD3D12RHI->GetDevice(),
+		indices,
+		sizeof(unsigned int) * 3,
+		D3D12_RESOURCE_STATE_INDEX_BUFFER
+	);
+	m_ibo.BufferLocation = pIBO->GetGPUVirtualAddress();
+	m_ibo.SizeInBytes = sizeof(unsigned int) * 3;
+	m_ibo.Format = DXGI_FORMAT_R32_UINT;
+
+	// test constant buffer
+	m_pTestConstantBuffer = D3D12Util::CreateConstantBufferObject(pD3D12RHI->GetDevice(), 65536);	// 1024 * 64( 4*4的矩阵-> 16个4字节(float) )
+	//m_perframeStorageBufferObj.m_projViewMatrix = m_perframeStorageBufferObj.m_projViewMatrix.transpose();
+	//D3D12Util::UpdateConstantBuffer(m_pTestConstantBuffer, &m_perframeStorageBufferObj.m_projViewMatrix, sizeof(Matrix4x4));
 
 #endif // USE_DX12
 
@@ -112,7 +130,7 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_workArgs[1])->GetResource(), "workArgs[1]");
 	pOpenGLRHI->CreateBufferObject(m_workArgs[2], GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
 	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_workArgs[2])->GetResource(), "workArgs[2]");
-	
+
 	pOpenGLRHI->CreateBufferObject(m_pGlobalConstants, GL_UNIFORM_BUFFER, 4096, GL_STATIC_DRAW, nullptr);
 	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pGlobalConstants)->GetResource(), "GlobalConstants");
 
@@ -318,7 +336,7 @@ void TestPass::SetupDescriptorSet()
 	perframeStorageBufferInfo.m_offset = 0;	// 这个偏移量加上dynamic_offset不应该大于缓冲区的大小
 	perframeStorageBufferInfo.m_range = sizeof(ST_TestPerframeStorageBufferObject);	// 范围是指每次绘制调用时着色器实际使用的大小
 	perframeStorageBufferInfo.m_pBuffer = m_pPerframeStorageBuffer;
-	
+
 	ST_RHIDescriptorBufferInfo perDrawcallStorageBufferInfo = {};
 	perDrawcallStorageBufferInfo.m_offset = 0;	// 这个偏移量加上dynamic_offset不应该大于缓冲区的大小
 	perDrawcallStorageBufferInfo.m_range = sizeof(ST_TestPerDrawcallStorageBufferObject);	// 范围是指每次绘制调用时着色器实际使用的大小
@@ -705,10 +723,21 @@ void TestPass::D3D12DrawTest()
 
 	// 设置4个32bit -> 4个float
 	pCommandList->SetGraphicsRoot32BitConstants(0, 4, m_testColor, 0);
+	// 设置constant buffer
+	pCommandList->SetGraphicsRootConstantBufferView(1, m_pTestConstantBuffer->GetGPUVirtualAddress());
 
 	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	pCommandList->IASetVertexBuffers(0, m_vbos.size(), m_vbos.data());
-	pCommandList->DrawInstanced(3, 1, 0, 0);
+	pCommandList->IASetIndexBuffer(&m_ibo);
+
+	m_perDrawcallStorageBufferObj.m_modelMatrix = Matrix4x4(Vector3(0.f, 0.f, 0.f), Vector3(1.f, 1.f, 1.f), Quaternion(Radian(Degree(static_cast<float>(m_tempDegree))), Vector3(0.0, 0.0, 1.0)));
+	m_tempDegree = (m_tempDegree + 1) % 360;
+
+	m_perframeStorageBufferObj.m_projViewMatrix = m_perframeStorageBufferObj.m_projViewMatrix.transpose();
+	D3D12Util::UpdateConstantBuffer(m_pTestConstantBuffer, &m_perDrawcallStorageBufferObj.m_modelMatrix, sizeof(Matrix4x4));
+
+	pCommandList->DrawIndexedInstanced(3, 1, 0, 0, 0);
+	//pCommandList->DrawInstanced(3, 1, 0, 0);
 
 	pD3D12RHI->EndRenderToSwapChain(pD3D12RHI->GetGraphicsCommandList());
 }

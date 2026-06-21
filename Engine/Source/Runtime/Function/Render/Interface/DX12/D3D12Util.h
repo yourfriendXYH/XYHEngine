@@ -6,10 +6,10 @@ NAMESPACE_XYH_BEGIN
 class D3D12Util
 {
 public:
-	
+
 	// 创建resource
 	static void CreateResource(
-		ID3D12Resource*& outResource, 
+		ID3D12Resource*& outResource,
 		ID3D12Device* pDevice,
 		D3D12_HEAP_TYPE heapType,
 		D3D12_RESOURCE_DIMENSION dimension,
@@ -24,7 +24,14 @@ public:
 		D3D12_CLEAR_VALUE* pClearValue
 	);
 
+	//
 	static ID3D12Resource* CreateBufferObject(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pDevice, void* pData, int dataLength, D3D12_RESOURCE_STATES dstStates);
+
+	// 创建ConstantBuffer
+	static ID3D12Resource* CreateConstantBufferObject(ID3D12Device* pDevice, int dataLength);
+
+	// 更新ConstantBuffer
+	static void UpdateConstantBuffer(ID3D12Resource* pConstantBuffer, const void* pData, int dataLength);
 
 	static D3D12_RESOURCE_BARRIER InitResourceBarrier(ID3D12Resource* pResource, D3D12_RESOURCE_STATES srcState, D3D12_RESOURCE_STATES dstState);
 

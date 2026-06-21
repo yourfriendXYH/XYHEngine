@@ -17,10 +17,16 @@ cbuffer globalConstants : register(b0)
     float4 color;
 };
 
+cbuffer testMatrix1024 : register(b1)
+{
+    float4x4 testMatrix;
+    float4x4 append[1023];
+};
+
 VSOut MainVS(VertexData inVertexData)
 {
     VSOut vsOut;
-    vsOut.position = inVertexData.postion;
+    vsOut.position = mul(testMatrix, inVertexData.postion);
     vsOut.color = inVertexData.texcoord + color;
     
     return vsOut;

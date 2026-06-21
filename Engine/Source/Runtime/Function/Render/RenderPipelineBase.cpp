@@ -14,7 +14,7 @@ void RenderPipelineBase::PreparePassData(std::shared_ptr<RenderResourceBase> pRe
 
 	m_pPointLightShadowPass->PreparePassData(pRenderResource);
 
-	m_pParticlePass->PreparePassData(pRenderResource);
+	//m_pParticlePass->PreparePassData(pRenderResource);
 
 	m_pTestPass->PreparePassData(pRenderResource);
 

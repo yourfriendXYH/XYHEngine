@@ -7,9 +7,9 @@ void D3D12Util::CreateResource(
 	ID3D12Device* pDevice,
 	D3D12_HEAP_TYPE heapType,
 	D3D12_RESOURCE_DIMENSION dimension,
-	UINT width, 
-	UINT height, 
-	UINT16 mipLevels, 
+	UINT width,
+	UINT height,
+	UINT16 mipLevels,
 	DXGI_FORMAT format,
 	UINT sampleCount,
 	D3D12_TEXTURE_LAYOUT layout,
@@ -32,17 +32,17 @@ void D3D12Util::CreateResource(
 	resourceDesc.SampleDesc.Quality = 0;
 	resourceDesc.Layout = layout;	// ÄÃÈ¥¸ÉÂï
 	resourceDesc.Flags = flags;	// ÓÃÍ¾
-	
+
 	pDevice->CreateCommittedResource(
-		&heapProperties, 
-		D3D12_HEAP_FLAG_NONE, 
+		&heapProperties,
+		D3D12_HEAP_FLAG_NONE,
 		&resourceDesc,
 		resStates,
 		pClearValue,
 		IID_PPV_ARGS(&outResource)
 	);
 
-	return ;
+	return;
 }
 
 ID3D12Resource* D3D12Util::CreateBufferObject(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pDevice, void* pData, int dataLength, D3D12_RESOURCE_STATES dstStates)
@@ -110,6 +110,36 @@ ID3D12Resource* D3D12Util::CreateBufferObject(ID3D12GraphicsCommandList* pComman
 	D3D12_RESOURCE_BARRIER barrier = InitResourceBarrier(pBufferObject, D3D12_RESOURCE_STATE_COPY_DEST, dstStates);
 	pCommandList->ResourceBarrier(1, &barrier);
 	return pBufferObject;
+}
+
+ID3D12Resource* D3D12Util::CreateConstantBufferObject(ID3D12Device* pDevice, int dataLength)
+{
+	ID3D12Resource* pBufferObject = nullptr;
+	D3D12Util::CreateResource(
+		pBufferObject,
+		pDevice,
+		D3D12_HEAP_TYPE_UPLOAD,
+		D3D12_RESOURCE_DIMENSION_BUFFER,
+		dataLength,
+		1,
+		1,
+		DXGI_FORMAT_UNKNOWN,
+		1,
+		D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
+		D3D12_RESOURCE_FLAG_NONE,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr
+	);
+	return pBufferObject;
+}
+
+void D3D12Util::UpdateConstantBuffer(ID3D12Resource* pConstantBuffer, const void* pData, int dataLength)
+{
+	D3D12_RANGE range = { 0 };
+	unsigned char* pBuffer = nullptr;
+	pConstantBuffer->Map(0, &range, reinterpret_cast<void**>(&pBuffer));
+	memcpy(pBuffer, pData, dataLength);
+	pConstantBuffer->Unmap(0, nullptr);
 }
 
 D3D12_RESOURCE_BARRIER D3D12Util::InitResourceBarrier(ID3D12Resource* pResource, D3D12_RESOURCE_STATES srcState, D3D12_RESOURCE_STATES dstState)

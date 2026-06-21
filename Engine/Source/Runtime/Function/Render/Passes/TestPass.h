@@ -70,14 +70,18 @@ private:
 
 	std::array<D3D12_VERTEX_BUFFER_VIEW, 1> m_vbos{};
 
-	float m_testColor[4] = {0.5, 0.5, 0.5, 1.0};
+	D3D12_INDEX_BUFFER_VIEW m_ibo;
+
+	float m_testColor[4] = { 0.5, 0.5, 0.5, 1.0 };
+
+	ID3D12Resource* m_pTestConstantBuffer = nullptr;
 
 	// Nanite
 
 	FullScreenQuad m_FSQ;
 	GLuint m_shaderProgramFSQ;
 
-	
+
 	RHIBuffer* m_workArgs[3];	// 间接绘制命令Buffer
 
 	RHIBuffer* m_pGlobalConstants = nullptr;	// 全局使用的UniformBuffer
@@ -88,7 +92,7 @@ private:
 
 	std::shared_ptr<RenderPass> m_pHardwareRasterizePass = nullptr;
 
-	
+
 	GLuint m_visBuffer64;	// 每一个像素用64位存储（32位：深度值 ）
 
 	OpenGLImage* m_pVisualizationTexture = nullptr;
