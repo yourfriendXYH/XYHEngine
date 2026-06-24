@@ -155,8 +155,71 @@ D3D12_RESOURCE_BARRIER D3D12Util::InitResourceBarrier(ID3D12Resource* pResource,
 	return resourceBarrier;
 }
 
-void StaticMeshComponent::InitFromFile()
+void StaticMeshComponent::InitFromFile(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pDevice, const char* filePath)
 {
+	// windows读取文件
+	FILE* pFile = nullptr;
+	errno_t error = fopen_s(&pFile, filePath, "rb");
+	if (error == 0)
+	{
+		int tempCount = 0;
+		// 顶点数量
+		fread(&tempCount, 4, 1, pFile);
+		m_vertexCount = tempCount;
+		// 顶点数据
+		m_vertexData = new ST_StaticMeshComponentVertexData[m_vertexCount];
+		fread(m_vertexData, 1, sizeof(ST_StaticMeshComponentVertexData) * m_vertexCount, pFile);
+		// vbo
+		m_pVBO = D3D12Util::CreateBufferObject(
+			pCommandList,
+			pDevice,
+			m_vertexData,
+			GetVertexDataSize(),
+			D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
+		);
+		m_vboView.BufferLocation = m_pVBO->GetGPUVirtualAddress();
+		m_vboView.SizeInBytes = GetVertexDataSize();
+		m_vboView.StrideInBytes = OnceVertexDataSize();
+		// 索引数据
+		while (!feof(pFile))
+		{
+			// 名字长度
+			fread(&tempCount, 4, 1, pFile);
+			if (!feof(pFile))
+			{
+				break;
+			}
+			// 名字
+			char name[256] = { 0 };
+			fread(&name, 1, tempCount, pFile);
+			// 索引数量
+			fread(&tempCount, 4, 1, pFile);
+			SubMesh* pSubMesh = new SubMesh;
+			pSubMesh->m_indexCount = tempCount;
+			// 索引数据
+			unsigned int* indices = new unsigned int[tempCount];
+			fread(&indices, 1, sizeof(unsigned int) * tempCount, pFile);
+			// ibo
+			pSubMesh->m_pIBO = D3D12Util::CreateBufferObject(
+				pCommandList,
+				pDevice,
+				indices,
+				sizeof(unsigned int) * tempCount,
+				D3D12_RESOURCE_STATE_INDEX_BUFFER
+			);
+			pSubMesh->m_iboView.BufferLocation = pSubMesh->m_pIBO->GetGPUVirtualAddress();
+			pSubMesh->m_iboView.SizeInBytes = sizeof(unsigned int) * 3;
+			pSubMesh->m_iboView.Format = DXGI_FORMAT_R32_UINT;
+
+			m_subMeshData.insert(std::pair<std::string, SubMesh*>(name, pSubMesh));
+
+			delete[] indices;
+		}
+		// 关闭读取
+		fclose(pFile);
+	}
+
+
 }
 
 void StaticMeshComponent::SetVertexCount(int vertexCount)

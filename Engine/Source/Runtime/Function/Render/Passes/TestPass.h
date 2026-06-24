@@ -4,6 +4,7 @@
 #include <d3d12.h>
 
 #include <Runtime/Function/Render/Interface/OpenGL/OpenGLUtil.h>
+#include <Runtime/Function/Render/Interface/DX12/D3D12Util.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -64,8 +65,6 @@ private:
 	// D3D12
 	ID3D12PipelineState* m_pPSO = nullptr;
 
-	ID3D12Resource* m_pVBO = nullptr;
-
 	ID3D12RootSignature* m_pRootSignature = nullptr;
 
 	std::array<D3D12_VERTEX_BUFFER_VIEW, 1> m_vbos{};
@@ -75,6 +74,8 @@ private:
 	float m_testColor[4] = { 0.5, 0.5, 0.5, 1.0 };
 
 	ID3D12Resource* m_pTestConstantBuffer = nullptr;
+
+	StaticMeshComponent m_testMesh;
 
 	// Nanite
 

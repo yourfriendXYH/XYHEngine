@@ -1,5 +1,6 @@
 #pragma once
 #include "D3D12RHI.h"
+#include <unordered_map>
 
 NAMESPACE_XYH_BEGIN
 
@@ -48,11 +49,21 @@ struct ST_StaticMeshComponentVertexData
 	float m_tangent[4];
 };
 
+class SubMesh
+{
+public:
+	ID3D12Resource* m_pIBO = nullptr;
+
+	D3D12_INDEX_BUFFER_VIEW m_iboView;
+
+	unsigned int m_indexCount = 0;
+};
+
 class StaticMeshComponent
 {
 public:
 
-	void InitFromFile();
+	void InitFromFile(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pDevice, const char* filePath);
 
 	void SetVertexCount(int vertexCount);
 
@@ -75,6 +86,9 @@ public:
 
 	int m_vertexCount;
 	ST_StaticMeshComponentVertexData* m_vertexData;
+
+	// 模型的索引数据
+	std::unordered_map<std::string, SubMesh*> m_subMeshData;
 };
 
 NAMESPACE_XYH_END

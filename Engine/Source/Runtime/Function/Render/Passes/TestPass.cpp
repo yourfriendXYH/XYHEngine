@@ -2,7 +2,6 @@
 #include <Runtime/Function/Render/Interface/OpenGL/OpenGLRHI.h>
 #include <Runtime/Function/Render/Interface/Vulkan/VulkanRHI.h>
 #include <Runtime/Function/Render/Interface/DX12/D3D12RHI.h>
-#include <Runtime/Function/Render/Interface/DX12/D3D12Util.h>
 #include <Runtime/Function/Render/RenderMesh.h>
 #include <Runtime/Function/Render/Interface/OpenGL/Util.h>
 #include <Runtime/Function/Render/Interface/OpenGL/OpenGLRHIResource.h>
@@ -51,22 +50,6 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 	D3D12RHI* pD3D12RHI = static_cast<D3D12RHI*>(m_pRHI.get());
 
-	StaticMeshComponent staticMeshComponent;
-	staticMeshComponent.SetVertexCount(3);
-	staticMeshComponent.SetVertexPosition(0, -0.5f, -0.5f, 0.5f, 1.0f);
-	staticMeshComponent.SetVertexTexcoord(0, 1.0f, 0.0f, 0.0f, 1.0f);
-	staticMeshComponent.SetVertexPosition(1, 0.0f, 0.5f, 0.5f, 1.0f);
-	staticMeshComponent.SetVertexTexcoord(1, 0.0f, 1.0f, 0.0f, 1.0f);
-	staticMeshComponent.SetVertexPosition(2, 0.5f, -0.5f, 0.5f, 1.0f);
-	staticMeshComponent.SetVertexTexcoord(2, 0.0f, 0.0f, 1.0f, 1.0f);
-
-	m_pVBO = D3D12Util::CreateBufferObject(
-		pD3D12RHI->GetGraphicsCommandList(),
-		pD3D12RHI->GetDevice(),
-		staticMeshComponent.m_vertexData,
-		staticMeshComponent.GetVertexDataSize(),
-		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
-	);
 
 	m_pRootSignature = pD3D12RHI->InitRootSignature();
 	D3D12_SHADER_BYTECODE vs, ps;
@@ -74,23 +57,8 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	pD3D12RHI->CreateShaderFromFile(L"Engine/Shader/hlsl/NDCTriangle.hlsl", "MainPS", "ps_5_0", &ps);
 	m_pPSO = pD3D12RHI->CreatePSO(m_pRootSignature, vs, ps);
 
-	staticMeshComponent.m_vboView.BufferLocation = m_pVBO->GetGPUVirtualAddress();
-	staticMeshComponent.m_vboView.SizeInBytes = staticMeshComponent.GetVertexDataSize();
-	staticMeshComponent.m_vboView.StrideInBytes = staticMeshComponent.OnceVertexDataSize();
-	m_vbos[0] = staticMeshComponent.m_vboView;
-
-	// 创建索引数据
-	unsigned int indices[] = { 0, 1, 2 };
-	ID3D12Resource* pIBO = D3D12Util::CreateBufferObject(
-		pD3D12RHI->GetGraphicsCommandList(),
-		pD3D12RHI->GetDevice(),
-		indices,
-		sizeof(unsigned int) * 3,
-		D3D12_RESOURCE_STATE_INDEX_BUFFER
-	);
-	m_ibo.BufferLocation = pIBO->GetGPUVirtualAddress();
-	m_ibo.SizeInBytes = sizeof(unsigned int) * 3;
-	m_ibo.Format = DXGI_FORMAT_R32_UINT;
+	m_testMesh.InitFromFile(pD3D12RHI->GetGraphicsCommandList(), pD3D12RHI->GetDevice(), "");
+	m_vbos[0] = m_testMesh.m_vboView;
 
 	// test constant buffer
 	m_pTestConstantBuffer = D3D12Util::CreateConstantBufferObject(pD3D12RHI->GetDevice(), 65536);	// 1024 * 64( 4*4的矩阵-> 16个4字节(float) )
@@ -728,15 +696,28 @@ void TestPass::D3D12DrawTest()
 
 	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	pCommandList->IASetVertexBuffers(0, m_vbos.size(), m_vbos.data());
-	pCommandList->IASetIndexBuffer(&m_ibo);
 
 	m_perDrawcallStorageBufferObj.m_modelMatrix = Matrix4x4(Vector3(0.f, 0.f, 0.f), Vector3(1.f, 1.f, 1.f), Quaternion(Radian(Degree(static_cast<float>(m_tempDegree))), Vector3(0.0, 0.0, 1.0)));
 	m_tempDegree = (m_tempDegree + 1) % 360;
 
 	m_perframeStorageBufferObj.m_projViewMatrix = m_perframeStorageBufferObj.m_projViewMatrix.transpose();
-	D3D12Util::UpdateConstantBuffer(m_pTestConstantBuffer, &m_perDrawcallStorageBufferObj.m_modelMatrix, sizeof(Matrix4x4));
 
-	pCommandList->DrawIndexedInstanced(3, 1, 0, 0, 0);
+	struct ST_GlobalMatrix
+	{
+		Matrix4x4 m_modelMatrix;
+		Matrix4x4 m_viewProjMatrix;
+	}tempGlobalMatrix;
+	tempGlobalMatrix.m_modelMatrix = m_perDrawcallStorageBufferObj.m_modelMatrix;
+	tempGlobalMatrix.m_viewProjMatrix = m_perframeStorageBufferObj.m_projViewMatrix;
+
+	D3D12Util::UpdateConstantBuffer(m_pTestConstantBuffer, &tempGlobalMatrix, sizeof(ST_GlobalMatrix));
+
+	for (auto iter = m_testMesh.m_subMeshData.begin(); iter != m_testMesh.m_subMeshData.end(); ++iter)
+	{
+		pCommandList->IASetIndexBuffer(&iter->second->m_iboView);
+		pCommandList->DrawIndexedInstanced(iter->second->m_indexCount, 1, 0, 0, 0);
+	}
+
 	//pCommandList->DrawInstanced(3, 1, 0, 0);
 
 	pD3D12RHI->EndRenderToSwapChain(pD3D12RHI->GetGraphicsCommandList());
