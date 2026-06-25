@@ -508,5 +508,11 @@
     <None Include="Engine\Shader\glsl\HardwareRasterizeFS.glsl">
       <Filter>Engine\Shader\glsl</Filter>
     </None>
+    <None Include="Engine\Shader\glsl\NodeAndClusterCull.glsl">
+      <Filter>Engine\Shader\glsl</Filter>
+    </None>
+    <None Include="Engine\Shader\glsl\RasterClear.glsl">
+      <Filter>Engine\Shader\glsl</Filter>
+    </None>
   </ItemGroup>
 </Project>

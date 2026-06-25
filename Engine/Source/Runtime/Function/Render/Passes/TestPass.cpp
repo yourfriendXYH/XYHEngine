@@ -96,11 +96,15 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_workArgs[0])->GetResource(), "workArgs[0]");
 	pOpenGLRHI->CreateBufferObject(m_workArgs[1], GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
 	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_workArgs[1])->GetResource(), "workArgs[1]");
-	pOpenGLRHI->CreateBufferObject(m_workArgs[2], GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
-	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_workArgs[2])->GetResource(), "workArgs[2]");
 
 	pOpenGLRHI->CreateBufferObject(m_pGlobalConstants, GL_UNIFORM_BUFFER, 4096, GL_STATIC_DRAW, nullptr);
 	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pGlobalConstants)->GetResource(), "GlobalConstants");
+
+	pOpenGLRHI->CreateBufferObject(m_pMainAndPostNodeAndClusterBatches, GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
+	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pMainAndPostNodeAndClusterBatches)->GetResource(), "MainAndPostNodeAndClusterBatches");
+
+	pOpenGLRHI->CreateBufferObject(m_pBVH, GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
+	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pBVH)->GetResource(), "BVH");
 
 	pOpenGLRHI->CreateBufferObject(m_pNaniteMesh, GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
 	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pNaniteMesh)->GetResource(), "NaniteMesh");
@@ -115,6 +119,30 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	OpenGLUtil::SetObjectName(GL_BUFFER, m_visBuffer64, "VisBuffer64");
 	OpenGLBuffer* pVisBuffer64 = new OpenGLBuffer;
 	pVisBuffer64->SetResource(m_visBuffer64);
+
+	m_pRasterClearPass = std::make_shared<RenderPass>(ERenderPassType::ERPT_COMPUTE, "RasterClear");
+	if (nullptr != m_pRasterClearPass)
+	{
+		m_pRasterClearPass->SetComputeShader("Engine/Shader/glsl/RasterClear.glsl");
+		m_pRasterClearPass->SetStorageBuffer(0, m_workArgs[0]);
+		m_pRasterClearPass->SetStorageBuffer(1, m_workArgs[1]);
+		m_pRasterClearPass->SetStorageBuffer(2, pVisBuffer64);
+		m_pRasterClearPass->SetComputeDispatchArgs(1, 1, 1);
+		m_pRasterClearPass->Build();
+	}
+
+	m_pNodeAndClusterCullPass = std::make_shared<RenderPass>(ERenderPassType::ERPT_COMPUTE, "NodeAndClusterCull");
+	if (nullptr != m_pNodeAndClusterCullPass)
+	{
+		m_pNodeAndClusterCullPass->SetComputeShader("Engine/Shader/glsl/NodeAndClusterCull.glsl");
+		m_pNodeAndClusterCullPass->SetUniformBuffer(0, m_pGlobalConstants);
+		m_pNodeAndClusterCullPass->SetStorageBuffer(1, m_pBVH);
+		m_pNodeAndClusterCullPass->SetStorageBuffer(2, m_workArgs[0]);
+		m_pNodeAndClusterCullPass->SetStorageBuffer(3, m_workArgs[1]);
+		m_pNodeAndClusterCullPass->SetStorageBuffer(4, m_pMainAndPostNodeAndClusterBatches);
+		m_pNodeAndClusterCullPass->SetComputeDispatchArgs(1, 1, 1);
+		m_pNodeAndClusterCullPass->Build();
+	}
 
 	// 
 	m_pHardwareRasterizePass = std::make_shared<RenderPass>(ERenderPassType::ERPT_GRAPHICS, "HardwareRasterize");
@@ -706,9 +734,11 @@ void TestPass::D3D12DrawTest()
 	{
 		Matrix4x4 m_modelMatrix;
 		Matrix4x4 m_viewProjMatrix;
+		Matrix4x4 m_normalMatrix;
 	}tempGlobalMatrix;
 	tempGlobalMatrix.m_modelMatrix = m_perDrawcallStorageBufferObj.m_modelMatrix;
 	tempGlobalMatrix.m_viewProjMatrix = m_perframeStorageBufferObj.m_projViewMatrix;
+	tempGlobalMatrix.m_normalMatrix = m_perDrawcallStorageBufferObj.m_modelMatrix.inverse().transpose();	// 逆转置矩阵
 
 	D3D12Util::UpdateConstantBuffer(m_pTestConstantBuffer, &tempGlobalMatrix, sizeof(ST_GlobalMatrix));
 
@@ -725,6 +755,10 @@ void TestPass::D3D12DrawTest()
 
 void TestPass::OpenGLDrawTest()
 {
+	m_pRasterClearPass->Execute();
+
+	m_pNodeAndClusterCullPass->Execute();
+
 	m_pHardwareRasterizePass->Execute(m_workArgs[0]);
 
 	m_pVisualizationPass->Execute();

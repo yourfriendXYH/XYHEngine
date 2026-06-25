@@ -83,13 +83,21 @@ private:
 	GLuint m_shaderProgramFSQ;
 
 
-	RHIBuffer* m_workArgs[3];	// 间接绘制命令Buffer
+	RHIBuffer* m_workArgs[2];	// 间接绘制命令Buffer
 
 	RHIBuffer* m_pGlobalConstants = nullptr;	// 全局使用的UniformBuffer
 
 	RHIBuffer* m_pNaniteMesh = nullptr;	// 
 
 	RHIBuffer* m_pVisibleClusterSoftwareHardware = nullptr;	// 
+
+	RHIBuffer* m_pMainAndPostNodeAndClusterBatches = nullptr;
+
+	RHIBuffer* m_pBVH = nullptr;
+
+	std::shared_ptr<RenderPass> m_pRasterClearPass = nullptr;
+
+	std::shared_ptr<RenderPass> m_pNodeAndClusterCullPass = nullptr;
 
 	std::shared_ptr<RenderPass> m_pHardwareRasterizePass = nullptr;
 

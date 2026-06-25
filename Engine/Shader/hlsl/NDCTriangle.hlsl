@@ -24,7 +24,8 @@ cbuffer testMatrix1024 : register(b1)
 {
     float4x4 modelMatrix;
     float4x4 viewProjMatrix;
-    float4x4 append[1022];
+    float4x4 normalMatrix;
+    float4x4 append[1021];
 };
 
 VSOut MainVS(VertexData inVertexData)
@@ -32,7 +33,7 @@ VSOut MainVS(VertexData inVertexData)
     VSOut vsOut;
     vsOut.position = mul(viewProjMatrix, mul(modelMatrix, inVertexData.postion));
     vsOut.color = inVertexData.texcoord + color;
-    vsOut.normal = inVertexData.normal;
+    vsOut.normal = mul(normalMatrix, inVertexData.normal);
     return vsOut;
 }
 
