@@ -9,15 +9,16 @@ struct VertexData
 struct VSOut
 {
     float4 position : SV_Position;
-    float4 color : TEXCOORD0;
+    float4 texcoord : TEXCOORD0;
     float4 normal : NORMAL;
+    float4 positionWS : TEXCOORD1;
 };
 
 static const float PI = 3.1415926;
 
 cbuffer globalConstants : register(b0)
 {
-    float4 color;
+    float4 testValue;
 };
 
 cbuffer testMatrix1024 : register(b1)
@@ -31,24 +32,42 @@ cbuffer testMatrix1024 : register(b1)
 VSOut MainVS(VertexData inVertexData)
 {
     VSOut vsOut;
-    vsOut.position = mul(viewProjMatrix, mul(modelMatrix, inVertexData.postion));
-    vsOut.color = inVertexData.texcoord + color;
     vsOut.normal = mul(normalMatrix, inVertexData.normal);
+    float3 testPosition = inVertexData.postion.xyz + vsOut.normal.xyz * sin(testValue.x);
+    vsOut.positionWS = mul(modelMatrix, float4(testPosition, 1.0));
+    vsOut.position = mul(viewProjMatrix, vsOut.positionWS);
+    vsOut.texcoord = inVertexData.texcoord;
     return vsOut;
 }
 
 float4 MainPS(VSOut inPSInput) : SV_Target
 {
-    float3 topColor = float3(0.1, 0.4, 0.6);
-    float3 bottomColor = float3(0.7, 0.7, 0.7);
+    float3 bottomColor = float3(0.1, 0.4, 0.6);
+    float3 topColor = float3(0.7, 0.7, 0.7);
+    float3 lightDir = normalize(float3(1.0, 1.0, -1.0));
+    float3 cameraPosition = float3(0.0, 0.0, -2.0);
     
-    float3 n = normalize(inPSInput.normal);
-    float theta = asin(n.y);    // -PI/2 - PI/2
+    // 环境光
+    float3 n = normalize(inPSInput.normal.xyz);
+    float theta = asin(n.y); // -PI/2 - PI/2
     theta /= PI;
     theta += 0.5;
-    float3 ambientColor = lerp(bottomColor, topColor, theta);
-    float3 diffuseColor = float3(0.0, 0.0, 0.0);
+    float ambientColorIntensity = 0.2;
+    float3 ambientColor = lerp(bottomColor, topColor, theta) * ambientColorIntensity;
+    // 漫反射
+    float diffuseIntensity = max(0.0, dot(n, lightDir));
+    float3 diffuseLightColor = float3(0.1, 0.4, 0.6);
+    float3 diffuseColor = diffuseLightColor * diffuseIntensity;
+    // 高光
     float3 specularColor = float3(0.0, 0.0, 0.0);
+    if (diffuseIntensity > 0.0) // 有光的地方才有高光
+    {
+        float3 V = normalize(cameraPosition - inPSInput.positionWS.xyz);
+        float3 R = normalize(reflect(-lightDir, n));
+        float3 specularIntensity = pow(max(0.0, dot(V, R)), 64.0);
+        specularColor = float3(1.0, 1.0, 1.0) * specularIntensity;
+    }
+    
     float3 surfaceColor = ambientColor + diffuseColor + specularColor;
     return float4(surfaceColor, 1.0);
 }

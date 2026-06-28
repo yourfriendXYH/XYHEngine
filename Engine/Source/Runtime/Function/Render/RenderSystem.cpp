@@ -61,7 +61,7 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 	// 渲染相机
 	// 初始化相机参数
 	m_pRenderCamera = std::make_shared<RenderCamera>();	// 创建渲染相机
-	m_pRenderCamera->LookAt(Vector3(2.0f, 2.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));	// 设置相机初始位置和方向
+	m_pRenderCamera->LookAt(Vector3(0.0f, 0.0f, -2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));	// 设置相机初始位置和方向
 	m_pRenderCamera->m_zFar = 100.0f;	// 设置远裁剪面
 	m_pRenderCamera->m_zNear = 0.1f;		// 设置近裁剪面
 	m_pRenderCamera->SetAspectRatio(1280.0f / 720.0f);	// 设置宽高比

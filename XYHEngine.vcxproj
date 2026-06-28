@@ -150,6 +150,7 @@
     <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Global\GlobalRendering.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Engine\Shader\glsl\ClusterCull.glsl" />
     <None Include="Engine\Shader\glsl\deferred_lighting.frag" />
     <None Include="Engine\Shader\glsl\deferred_lighting.vert" />
     <None Include="Engine\Shader\glsl\fsqFS.glsl" />

@@ -88,6 +88,9 @@
     <Filter Include="Engine\Shader\glsl">
       <UniqueIdentifier>{55188a66-40d1-46d9-bae7-e77874a6e67d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL">
+      <UniqueIdentifier>{0ce040d4-cfaf-4f4e-9790-b5d4f04b5692}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Source\main.cpp">
@@ -226,13 +229,13 @@
       <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLRHI.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLUtil.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\Util.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -462,16 +465,16 @@
       <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLRHI.h">
-      <Filter>头文件</Filter>
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLRHIResource.h">
-      <Filter>头文件</Filter>
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLUtil.h">
-      <Filter>头文件</Filter>
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\Util.h">
-      <Filter>头文件</Filter>
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -512,6 +515,9 @@
       <Filter>Engine\Shader\glsl</Filter>
     </None>
     <None Include="Engine\Shader\glsl\RasterClear.glsl">
+      <Filter>Engine\Shader\glsl</Filter>
+    </None>
+    <None Include="Engine\Shader\glsl\ClusterCull.glsl">
       <Filter>Engine\Shader\glsl</Filter>
     </None>
   </ItemGroup>

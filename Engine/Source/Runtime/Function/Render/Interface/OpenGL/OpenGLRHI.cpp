@@ -39,6 +39,14 @@ void OpenGLRHI::ResetCommandPool()
 {
 }
 
+ST_RHISwapChainDesc OpenGLRHI::GetSwapchainInfo()
+{
+	ST_RHISwapChainDesc desc;
+	desc.m_pViewport = &m_viewport;
+	desc.m_pScissor = &m_scissor;
+	return desc;
+}
+
 uint8_t OpenGLRHI::GetCurrentFrameIndex() const
 {
 	return 0;

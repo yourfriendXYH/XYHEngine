@@ -211,7 +211,7 @@ public:
 
 	virtual RHIQueue* GetComputeQueue() const override { return nullptr; };	// 获取计算队列
 
-	virtual ST_RHISwapChainDesc GetSwapchainInfo() override { return ST_RHISwapChainDesc(); };	// 获取交换链信息
+	virtual ST_RHISwapChainDesc GetSwapchainInfo() override;	// 获取交换链信息
 
 	virtual ST_RHIDepthImageDesc GetDepthImageInfo() const override { return ST_RHIDepthImageDesc(); };	// 获取深度图像信息
 

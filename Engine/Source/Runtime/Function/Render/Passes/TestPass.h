@@ -99,6 +99,8 @@ private:
 
 	std::shared_ptr<RenderPass> m_pNodeAndClusterCullPass = nullptr;
 
+	std::shared_ptr<RenderPass> m_pClusterCullPass = nullptr;
+
 	std::shared_ptr<RenderPass> m_pHardwareRasterizePass = nullptr;
 
 

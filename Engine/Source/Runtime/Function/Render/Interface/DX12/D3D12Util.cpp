@@ -185,7 +185,7 @@ void StaticMeshComponent::InitFromFile(ID3D12GraphicsCommandList* pCommandList, 
 		{
 			// 名字长度
 			fread(&tempCount, 4, 1, pFile);
-			if (!feof(pFile))
+			if (feof(pFile))
 			{
 				break;
 			}
@@ -198,7 +198,7 @@ void StaticMeshComponent::InitFromFile(ID3D12GraphicsCommandList* pCommandList, 
 			pSubMesh->m_indexCount = tempCount;
 			// 索引数据
 			unsigned int* indices = new unsigned int[tempCount];
-			fread(&indices, 1, sizeof(unsigned int) * tempCount, pFile);
+			fread(indices, 1, sizeof(unsigned int) * tempCount, pFile);
 			// ibo
 			pSubMesh->m_pIBO = D3D12Util::CreateBufferObject(
 				pCommandList,
@@ -208,7 +208,7 @@ void StaticMeshComponent::InitFromFile(ID3D12GraphicsCommandList* pCommandList, 
 				D3D12_RESOURCE_STATE_INDEX_BUFFER
 			);
 			pSubMesh->m_iboView.BufferLocation = pSubMesh->m_pIBO->GetGPUVirtualAddress();
-			pSubMesh->m_iboView.SizeInBytes = sizeof(unsigned int) * 3;
+			pSubMesh->m_iboView.SizeInBytes = sizeof(unsigned int) * tempCount;
 			pSubMesh->m_iboView.Format = DXGI_FORMAT_R32_UINT;
 
 			m_subMeshData.insert(std::pair<std::string, SubMesh*>(name, pSubMesh));

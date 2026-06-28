@@ -57,7 +57,7 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	pD3D12RHI->CreateShaderFromFile(L"Engine/Shader/hlsl/NDCTriangle.hlsl", "MainPS", "ps_5_0", &ps);
 	m_pPSO = pD3D12RHI->CreatePSO(m_pRootSignature, vs, ps);
 
-	m_testMesh.InitFromFile(pD3D12RHI->GetGraphicsCommandList(), pD3D12RHI->GetDevice(), "");
+	m_testMesh.InitFromFile(pD3D12RHI->GetGraphicsCommandList(), pD3D12RHI->GetDevice(), "Engine/Resource/Sphere.lhsm");
 	m_vbos[0] = m_testMesh.m_vboView;
 
 	// test constant buffer
@@ -103,11 +103,21 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	pOpenGLRHI->CreateBufferObject(m_pMainAndPostNodeAndClusterBatches, GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
 	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pMainAndPostNodeAndClusterBatches)->GetResource(), "MainAndPostNodeAndClusterBatches");
 
-	pOpenGLRHI->CreateBufferObject(m_pBVH, GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
-	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pBVH)->GetResource(), "BVH");
+	{
+		size_t fileSize = 0;
+		unsigned char* fileContent = LoadFileContent("Engine/Resource/HierarchyBuffer.data", fileSize);	// 加载 BVH
+		pOpenGLRHI->CreateBufferObject(m_pBVH, GL_SHADER_STORAGE_BUFFER, fileSize, GL_STATIC_DRAW, fileContent);
+		OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pBVH)->GetResource(), "BVH");
+		delete[] fileContent;
+	}
 
-	pOpenGLRHI->CreateBufferObject(m_pNaniteMesh, GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
-	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pNaniteMesh)->GetResource(), "NaniteMesh");
+	{
+		size_t fileSize = 0;
+		unsigned char* fileContent = LoadFileContent("Engine/Resource/mitsuba.nanitemesh", fileSize);	// 加载 Nanite Mesh
+		pOpenGLRHI->CreateBufferObject(m_pNaniteMesh, GL_SHADER_STORAGE_BUFFER, fileSize, GL_STATIC_DRAW, fileContent);
+		OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pNaniteMesh)->GetResource(), "NaniteMesh");
+		delete[] fileContent;
+	}
 
 	pOpenGLRHI->CreateBufferObject(m_pVisibleClusterSoftwareHardware, GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
 	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pVisibleClusterSoftwareHardware)->GetResource(), "VisibleClusterSoftwareHardware");
@@ -120,6 +130,9 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	OpenGLBuffer* pVisBuffer64 = new OpenGLBuffer;
 	pVisBuffer64->SetResource(m_visBuffer64);
 
+	int workGroupCountX = int(ceilf(pOpenGLRHI->GetSwapchainInfo().m_pViewport->m_width / 8.0f));
+	int workGroupCountY = int(ceilf(pOpenGLRHI->GetSwapchainInfo().m_pViewport->m_height / 8.0f));
+
 	m_pRasterClearPass = std::make_shared<RenderPass>(ERenderPassType::ERPT_COMPUTE, "RasterClear");
 	if (nullptr != m_pRasterClearPass)
 	{
@@ -127,7 +140,7 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 		m_pRasterClearPass->SetStorageBuffer(0, m_workArgs[0]);
 		m_pRasterClearPass->SetStorageBuffer(1, m_workArgs[1]);
 		m_pRasterClearPass->SetStorageBuffer(2, pVisBuffer64);
-		m_pRasterClearPass->SetComputeDispatchArgs(1, 1, 1);
+		m_pRasterClearPass->SetComputeDispatchArgs(workGroupCountX, workGroupCountY, 1);
 		m_pRasterClearPass->Build();
 	}
 
@@ -142,6 +155,19 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 		m_pNodeAndClusterCullPass->SetStorageBuffer(4, m_pMainAndPostNodeAndClusterBatches);
 		m_pNodeAndClusterCullPass->SetComputeDispatchArgs(1, 1, 1);
 		m_pNodeAndClusterCullPass->Build();
+	}
+
+	m_pClusterCullPass = std::make_shared<RenderPass>(ERenderPassType::ERPT_COMPUTE, "ClusterCull");
+	if (nullptr != m_pNodeAndClusterCullPass)
+	{
+		m_pClusterCullPass->SetComputeShader("Engine/Shader/glsl/ClusterCull.glsl");
+		m_pClusterCullPass->SetUniformBuffer(0, m_pGlobalConstants);
+		m_pClusterCullPass->SetStorageBuffer(1, m_pNaniteMesh);
+		m_pClusterCullPass->SetStorageBuffer(2, m_workArgs[0]);
+		m_pClusterCullPass->SetStorageBuffer(3, m_pVisibleClusterSoftwareHardware);
+		m_pClusterCullPass->SetStorageBuffer(4, m_pMainAndPostNodeAndClusterBatches);
+		m_pClusterCullPass->SetComputeDispatchArgs(1, 1, 1);
+		m_pClusterCullPass->Build();
 	}
 
 	// 
@@ -163,7 +189,7 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 		m_pVisualizationPass->SetStorageBuffer(0, pVisBuffer64);
 		m_pVisualizationPass->SetComputeImage(0, m_pVisualizationTexture);
 		m_pVisualizationPass->SetComputeShader("Engine/Shader/glsl/VisualizationCS.glsl");
-		m_pVisualizationPass->SetComputeDispatchArgs(1, 1, 1);
+		m_pVisualizationPass->SetComputeDispatchArgs(workGroupCountX, workGroupCountY, 1);
 		m_pVisualizationPass->Build();
 	}
 
@@ -709,6 +735,8 @@ void TestPass::VulkanDrawTest()
 
 void TestPass::D3D12DrawTest()
 {
+	DWORD currentTime = timeGetTime();
+
 	D3D12RHI* pD3D12RHI = static_cast<D3D12RHI*>(m_pRHI.get());
 
 	pD3D12RHI->BeginRenderToSwapChain(pD3D12RHI->GetGraphicsCommandList());
@@ -718,6 +746,7 @@ void TestPass::D3D12DrawTest()
 	pCommandList->SetGraphicsRootSignature(m_pRootSignature);
 
 	// 设置4个32bit -> 4个float
+	m_testColor[0] = currentTime / 1000.0f;
 	pCommandList->SetGraphicsRoot32BitConstants(0, 4, m_testColor, 0);
 	// 设置constant buffer
 	pCommandList->SetGraphicsRootConstantBufferView(1, m_pTestConstantBuffer->GetGPUVirtualAddress());
@@ -758,6 +787,8 @@ void TestPass::OpenGLDrawTest()
 	m_pRasterClearPass->Execute();
 
 	m_pNodeAndClusterCullPass->Execute();
+
+	m_pClusterCullPass->Execute();
 
 	m_pHardwareRasterizePass->Execute(m_workArgs[0]);
 

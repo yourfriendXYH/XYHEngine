@@ -124,6 +124,14 @@ void D3D12RHI::ResetCommandPool()
 	m_pGraphicsCommandList->Reset(m_pCommandAllocator, nullptr);
 }
 
+ST_RHISwapChainDesc D3D12RHI::GetSwapchainInfo()
+{
+	ST_RHISwapChainDesc desc;
+	desc.m_pViewport = &m_viewport;
+	desc.m_pScissor = &m_scissor;
+	return desc;
+}
+
 uint8_t D3D12RHI::GetCurrentFrameIndex() const
 {
 	return m_currentRenderTargetIndex;
@@ -338,7 +346,7 @@ void D3D12RHI::BeginRenderToSwapChain(ID3D12GraphicsCommandList* pGraphicsComman
 	m_pGraphicsCommandList->RSSetViewports(1, &viewport);
 	m_pGraphicsCommandList->RSSetScissorRects(1, &scissorRect);
 
-	const float clearColor[] = { 1.0f, 0.4f, 0.6f, 1.0f };
+	const float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	m_pGraphicsCommandList->ClearRenderTargetView(colorRenderTarget, clearColor, 0, nullptr);
 	m_pGraphicsCommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 }
