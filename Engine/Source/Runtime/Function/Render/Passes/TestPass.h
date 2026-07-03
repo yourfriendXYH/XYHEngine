@@ -77,6 +77,10 @@ private:
 
 	StaticMeshComponent m_testMesh;
 
+	ID3D12Resource* pTestTexture = nullptr;
+
+	std::vector<ID3D12DescriptorHeap*> m_descriptorHeaps;
+
 	// Nanite
 
 	FullScreenQuad m_FSQ;

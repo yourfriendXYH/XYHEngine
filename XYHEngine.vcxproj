@@ -252,7 +252,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS;USE_OPENGL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS;USE_D3D12;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)Engine/3rdparty/glfw-3.4.bin.WIN64/include;$(ProjectDir)Engine/3rdparty/spdlog/include;$(ProjectDir)Engine/Source/Common;$(ProjectDir)Engine/3rdparty/VulkanSDK/include;$(ProjectDir)Engine/3rdparty/vulkanmemoryallocator/include;$(ProjectDir)Engine/Source;$(ProjectDir)Engine/Shader/Generated/Cpp;$(ProjectDir)Engine/3rdparty/GL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

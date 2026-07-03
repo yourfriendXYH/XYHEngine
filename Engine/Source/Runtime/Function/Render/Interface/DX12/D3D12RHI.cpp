@@ -43,8 +43,8 @@ void D3D12RHI::Initialize(ST_RHIInitInfo initInfo)
 		m_pDevice,
 		D3D12_HEAP_TYPE_DEFAULT,
 		D3D12_RESOURCE_DIMENSION_TEXTURE2D,
-		m_viewport.m_width,
-		m_viewport.m_height,
+		(UINT)m_viewport.m_width,
+		(UINT)m_viewport.m_height,
 		0,
 		DXGI_FORMAT_D24_UNORM_S8_UINT,
 		1,
@@ -227,7 +227,7 @@ void D3D12RHI::EndCommandList()
 	m_pCommandQueue->Signal(m_pFence, m_fenceValue);
 }
 
-ID3D12PipelineState* D3D12RHI::CreatePSO(ID3D12RootSignature* pRootSignature, D3D12_SHADER_BYTECODE VSByteCode, D3D12_SHADER_BYTECODE PSByteCode)
+ID3D12PipelineState* D3D12RHI::CreatePSO(ID3D12RootSignature* pRootSignature, D3D12_SHADER_BYTECODE VSByteCode, D3D12_SHADER_BYTECODE PSByteCode, D3D12_SHADER_BYTECODE GSByteCode)
 {
 	const size_t elementSize = 4u;
 	D3D12_INPUT_ELEMENT_DESC vertexDataElementDesc[elementSize] = {
@@ -244,6 +244,7 @@ ID3D12PipelineState* D3D12RHI::CreatePSO(ID3D12RootSignature* pRootSignature, D3
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
 	psoDesc.pRootSignature = pRootSignature;
 	psoDesc.VS = VSByteCode;
+	psoDesc.GS = GSByteCode;
 	psoDesc.PS = PSByteCode;
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -287,6 +288,78 @@ ID3D12PipelineState* D3D12RHI::CreatePSO(ID3D12RootSignature* pRootSignature, D3
 	return pPSO;
 }
 
+ID3D12Resource* D3D12RHI::CreateTexture2D(UINT width, UINT height, void* pData)
+{
+	ID3D12Resource* pTexture2DResource = nullptr;
+	D3D12Util::CreateResource(
+		pTexture2DResource,
+		m_pDevice,
+		D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_RESOURCE_DIMENSION_TEXTURE2D,
+		width,
+		height,
+		1,
+		DXGI_FORMAT_R8G8B8A8_UNORM,
+		1,
+		D3D12_TEXTURE_LAYOUT_UNKNOWN,
+		D3D12_RESOURCE_FLAG_NONE,
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		nullptr
+	);
+
+	D3D12_RESOURCE_DESC desc = pTexture2DResource->GetDesc();
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT subresourceFootprint;
+	UINT numRows = 0;
+	UINT64 rowSizeInBytes = 0;
+	UINT64 textureUploadBufferSize;
+	m_pDevice->GetCopyableFootprints(&desc, 0, 1, 0, &subresourceFootprint, &numRows, &rowSizeInBytes, &textureUploadBufferSize);
+
+	ID3D12Resource* pTempBufferResource = nullptr;
+	D3D12Util::CreateResource(
+		pTempBufferResource,
+		m_pDevice,
+		D3D12_HEAP_TYPE_UPLOAD,
+		D3D12_RESOURCE_DIMENSION_BUFFER,
+		textureUploadBufferSize,
+		1,
+		1,
+		DXGI_FORMAT_UNKNOWN,
+		1,
+		D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
+		D3D12_RESOURCE_FLAG_NONE,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr
+	);
+
+	BYTE* pWriteData;
+	pTempBufferResource->Map(0, nullptr, reinterpret_cast<void**>(&pWriteData));
+	BYTE* pDst = reinterpret_cast<BYTE*>(pWriteData + subresourceFootprint.Offset);
+	BYTE* pSrcData = reinterpret_cast<BYTE*>(pData);
+	for (UINT i = 0; i < numRows; ++i)
+	{
+		memcpy(pDst + subresourceFootprint.Footprint.RowPitch * i, pSrcData + rowSizeInBytes * i, rowSizeInBytes);
+	}
+	pTempBufferResource->Unmap(0, nullptr);
+
+	// 拷贝texture
+	D3D12_TEXTURE_COPY_LOCATION dst{};
+	dst.pResource = pTexture2DResource;
+	dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+	dst.SubresourceIndex = 0;
+
+	D3D12_TEXTURE_COPY_LOCATION src{};
+	src.pResource = pTempBufferResource;
+	src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+	src.PlacedFootprint = subresourceFootprint;
+
+	m_pGraphicsCommandList->CopyTextureRegion(&dst, 0, 0, 0, &src, nullptr);
+
+	D3D12_RESOURCE_BARRIER barrier = D3D12Util::InitResourceBarrier(pTexture2DResource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	m_pGraphicsCommandList->ResourceBarrier(1, &barrier);
+
+	return pTexture2DResource;
+}
+
 void D3D12RHI::CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunctionName, const char* target, D3D12_SHADER_BYTECODE* pShader)
 {
 	ID3DBlob* pShaderBuffer = nullptr;
@@ -302,7 +375,7 @@ void D3D12RHI::CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunc
 
 ID3D12RootSignature* D3D12RHI::InitRootSignature()
 {
-	const unsigned int parameterSize = 2u;
+	const unsigned int parameterSize = 3u;
 	D3D12_ROOT_PARAMETER parameters[parameterSize] = {};
 	parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 	parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
@@ -311,13 +384,39 @@ ID3D12RootSignature* D3D12RHI::InitRootSignature()
 	parameters[0].Constants.Num32BitValues = 4;	// 4个float
 
 	parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+	parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 	parameters[1].Descriptor.RegisterSpace = 0;
 	parameters[1].Descriptor.ShaderRegister = 1;	// b1
+
+	D3D12_DESCRIPTOR_RANGE descriptorRange[1];
+	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	descriptorRange[0].RegisterSpace = 0;
+	descriptorRange[0].BaseShaderRegister = 0;	// t0
+	descriptorRange[0].NumDescriptors = 1;
+	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	parameters[2].DescriptorTable.NumDescriptorRanges = 1;
+	parameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
+
+	D3D12_STATIC_SAMPLER_DESC samplerDesc[1];
+	memset(samplerDesc, 0, sizeof(D3D12_STATIC_SAMPLER_DESC) * 1);
+	samplerDesc[0].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	samplerDesc[0].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	samplerDesc[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplerDesc[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplerDesc[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplerDesc[0].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK;
+	samplerDesc[0].MaxLOD = D3D12_FLOAT32_MAX;
+	samplerDesc[0].RegisterSpace = 0;
+	samplerDesc[0].ShaderRegister = 0;	// s0
+	samplerDesc[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
 	rootSignatureDesc.NumParameters = parameterSize;
 	rootSignatureDesc.pParameters = parameters;
+	rootSignatureDesc.NumStaticSamplers = 1;
+	rootSignatureDesc.pStaticSamplers = samplerDesc;
 	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	// 32bit constants 最多存储64个DWORD -> 64 * 4 = 256字节

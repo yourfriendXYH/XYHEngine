@@ -52,10 +52,11 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 
 	m_pRootSignature = pD3D12RHI->InitRootSignature();
-	D3D12_SHADER_BYTECODE vs, ps;
+	D3D12_SHADER_BYTECODE vs, gs, ps;
 	pD3D12RHI->CreateShaderFromFile(L"Engine/Shader/hlsl/NDCTriangle.hlsl", "MainVS", "vs_5_0", &vs);
+	pD3D12RHI->CreateShaderFromFile(L"Engine/Shader/hlsl/NDCTriangle.hlsl", "MainGS", "gs_5_0", &gs);
 	pD3D12RHI->CreateShaderFromFile(L"Engine/Shader/hlsl/NDCTriangle.hlsl", "MainPS", "ps_5_0", &ps);
-	m_pPSO = pD3D12RHI->CreatePSO(m_pRootSignature, vs, ps);
+	m_pPSO = pD3D12RHI->CreatePSO(m_pRootSignature, vs, ps, gs);
 
 	m_testMesh.InitFromFile(pD3D12RHI->GetGraphicsCommandList(), pD3D12RHI->GetDevice(), "Engine/Resource/Sphere.lhsm");
 	m_vbos[0] = m_testMesh.m_vboView;
@@ -64,6 +65,44 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	m_pTestConstantBuffer = D3D12Util::CreateConstantBufferObject(pD3D12RHI->GetDevice(), 65536);	// 1024 * 64( 4*4的矩阵-> 16个4字节(float) )
 	//m_perframeStorageBufferObj.m_projViewMatrix = m_perframeStorageBufferObj.m_projViewMatrix.transpose();
 	//D3D12Util::UpdateConstantBuffer(m_pTestConstantBuffer, &m_perframeStorageBufferObj.m_projViewMatrix, sizeof(Matrix4x4));
+	
+	unsigned int textureWidth = 256;
+	unsigned int textureheight = 256;
+	unsigned char* pixelData = new unsigned char[textureWidth * textureheight * 4];
+	memset(pixelData, 0, textureWidth * textureheight * 4);
+	for (int y = 0; y < textureheight; y++)
+	{
+		for (int x = 0; x < textureWidth; x++)
+		{
+			float radiusSqrt = float((x - textureWidth / 2.0) * (x - textureWidth / 2.0) + (y - textureheight / 2.0) * (y - textureheight / 2.0));
+			if (radiusSqrt <= (textureWidth / 2.0) * (textureheight / 2.0))
+			{
+				float radius = sqrtf(radiusSqrt);
+				float alpha = radius / 128.0f;
+				unsigned int pixelIndex = y * textureWidth + x;
+				pixelData[pixelIndex * 4] = 255;
+				pixelData[pixelIndex * 4 + 1] = 255;
+				pixelData[pixelIndex * 4 + 2] = 255;
+				pixelData[pixelIndex * 4 + 3] = unsigned char(255 * alpha);
+			}
+		}
+	}
+	pTestTexture = pD3D12RHI->CreateTexture2D(textureWidth, textureheight, pixelData);
+
+	ID3D12DescriptorHeap* srvHeap = nullptr;
+	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDescSRV{};
+	descriptorHeapDescSRV.NumDescriptors = 1;
+	descriptorHeapDescSRV.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	descriptorHeapDescSRV.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	pD3D12RHI->GetDevice()->CreateDescriptorHeap(&descriptorHeapDescSRV, IID_PPV_ARGS(&srvHeap));
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+	pD3D12RHI->GetDevice()->CreateShaderResourceView(pTestTexture, nullptr, srvHeap->GetCPUDescriptorHandleForHeapStart());
+
+	m_descriptorHeaps.push_back(srvHeap);
 
 #endif // USE_DX12
 
@@ -744,12 +783,15 @@ void TestPass::D3D12DrawTest()
 	ID3D12GraphicsCommandList* pCommandList = pD3D12RHI->GetGraphicsCommandList();
 	pCommandList->SetPipelineState(m_pPSO);
 	pCommandList->SetGraphicsRootSignature(m_pRootSignature);
+	pCommandList->SetDescriptorHeaps(m_descriptorHeaps.size(), m_descriptorHeaps.data());
 
 	// 设置4个32bit -> 4个float
 	m_testColor[0] = currentTime / 1000.0f;
 	pCommandList->SetGraphicsRoot32BitConstants(0, 4, m_testColor, 0);
 	// 设置constant buffer
 	pCommandList->SetGraphicsRootConstantBufferView(1, m_pTestConstantBuffer->GetGPUVirtualAddress());
+
+	pCommandList->SetGraphicsRootDescriptorTable(2, m_descriptorHeaps[0]->GetGPUDescriptorHandleForHeapStart());
 
 	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	pCommandList->IASetVertexBuffers(0, m_vbos.size(), m_vbos.data());

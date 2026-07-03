@@ -297,7 +297,10 @@ public:
 
 	void CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunctionName, const char* target, D3D12_SHADER_BYTECODE* pShader);
 
-	ID3D12PipelineState* CreatePSO(ID3D12RootSignature* pRootSignature, D3D12_SHADER_BYTECODE VSByteCode, D3D12_SHADER_BYTECODE PSByteCode);
+	ID3D12PipelineState* CreatePSO(ID3D12RootSignature* pRootSignature, D3D12_SHADER_BYTECODE VSByteCode, D3D12_SHADER_BYTECODE PSByteCode, D3D12_SHADER_BYTECODE GSByteCode = {});
+
+	// test create texture2D
+	ID3D12Resource* CreateTexture2D(UINT width, UINT height, void* pData);
 
 private:
 
