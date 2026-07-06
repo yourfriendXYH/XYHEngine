@@ -79,6 +79,9 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 			{
 				float radius = sqrtf(radiusSqrt);
 				float alpha = radius / 128.0f;
+				alpha = alpha > 1.0f ? 1.0 : alpha;
+				//alpha = 1 - alpha;
+				alpha = powf(alpha, 2.0f);
 				unsigned int pixelIndex = y * textureWidth + x;
 				pixelData[pixelIndex * 4] = 255;
 				pixelData[pixelIndex * 4 + 1] = 255;
