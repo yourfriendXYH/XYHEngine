@@ -254,7 +254,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS;USE_D3D12;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS;USE_OPENGL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)Engine/3rdparty/glfw-3.4.bin.WIN64/include;$(ProjectDir)Engine/3rdparty/spdlog/include;$(ProjectDir)Engine/Source/Common;$(ProjectDir)Engine/3rdparty/VulkanSDK/include;$(ProjectDir)Engine/3rdparty/vulkanmemoryallocator/include;$(ProjectDir)Engine/Source;$(ProjectDir)Engine/Shader/Generated/Cpp;$(ProjectDir)Engine/3rdparty/GL/include;$(ProjectDir)Engine/3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -264,6 +264,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>glfw3.lib;vulkan-1.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(ProjectDir)Engine\Shader\*" "$(TargetDir)Engine\Shader\" /E /I /Y
+xcopy "$(ProjectDir)Engine\Resource\*" "$(TargetDir)Engine\Resource\" /E /I /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

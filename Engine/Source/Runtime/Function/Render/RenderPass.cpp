@@ -53,6 +53,7 @@ void RenderPass::Execute(RHIBuffer* pIndirectBuffer)
 		if (nullptr != pIndirectBuffer)
 		{
 #ifdef USE_OPENGL
+			SCOPED_EVENT(m_name.c_str());
 			OGL_CALL(glViewport(0, 0, m_viewportWidth, m_viewportHeight));
 			OGL_CALL(glFrontFace(GL_CW));
 			OGL_CALL(glUseProgram(((OpenGLShader*)m_pGraphicsShader)->GetResource()));
@@ -88,6 +89,7 @@ void RenderPass::Execute(RHIBuffer* pIndirectBuffer)
 	else if (m_renderPassType == ERenderPassType::ERPT_COMPUTE)	// 计算
 	{
 #ifdef USE_OPENGL
+		SCOPED_EVENT(m_name.c_str());
 		OGL_CALL(glUseProgram(((OpenGLShader*)m_pComputeShader)->GetResource()));
 		int uboSlot = 0;
 		// UBO

@@ -1,4 +1,4 @@
-#include "OpenGLRHI.h"
+ï»¿#include "OpenGLRHI.h"
 #include <Runtime/Function/Render/WindowSystem.h>
 #include "OpenGLUtil.h"
 
@@ -6,10 +6,10 @@ NAMESPACE_XYH_BEGIN
 
 void OpenGLRHI::Initialize(ST_RHIInitInfo initInfo)
 {
-	m_pGLFWwindow = initInfo.m_pWindowSystem->GetWindow();	// »ñÈ¡´°¿Ú
-	std::array<int, 2> windowSize = initInfo.m_pWindowSystem->GetWindowSize(); // »ñÈ¡´°¿Ú´óĞ¡
-	m_viewport = { 0.0f, 0.0f, static_cast<float>(windowSize[0]), static_cast<float>(windowSize[1]), 0.0f, 1.0f }; // ÉèÖÃÊÓ¿Ú´óĞ¡
-	m_scissor = { { 0, 0 }, { (uint32_t)windowSize[0], (uint32_t)windowSize[1] } }; // ÉèÖÃ²Ã¼ôÇøÓò´óĞ¡
+	m_pGLFWwindow = initInfo.m_pWindowSystem->GetWindow();	// è·å–çª—å£
+	std::array<int, 2> windowSize = initInfo.m_pWindowSystem->GetWindowSize(); // è·å–çª—å£å¤§å°
+	m_viewport = { 0.0f, 0.0f, static_cast<float>(windowSize[0]), static_cast<float>(windowSize[1]), 0.0f, 1.0f }; // è®¾ç½®è§†å£å¤§å°
+	m_scissor = { { 0, 0 }, { (uint32_t)windowSize[0], (uint32_t)windowSize[1] } }; // è®¾ç½®è£å‰ªåŒºåŸŸå¤§å°
 
 	glfwMakeContextCurrent(m_pGLFWwindow);
 
@@ -54,7 +54,7 @@ uint8_t OpenGLRHI::GetCurrentFrameIndex() const
 
 void OpenGLRHI::SubmitRendering(std::function<void()> passUpdateAfterRecreateSwapchain)
 {
-	// ½»»»Ç°ºó»º³åÇø
+	// äº¤æ¢å‰åç¼“å†²åŒº
 	glfwSwapBuffers(m_pGLFWwindow);
 }
 

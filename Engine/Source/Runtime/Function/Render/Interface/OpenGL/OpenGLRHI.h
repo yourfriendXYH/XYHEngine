@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "glew.h"
 #ifdef _WIN32
 #include "wglew.h"
@@ -24,29 +24,29 @@ public:
 
 	virtual void PrepareContext() override {};
 
-	virtual bool IsPointLightShadowEnabled() override { return false; };	// ÊÇ·ñÆôÓÃµã¹âÔ´ÒõÓ°
+	virtual bool IsPointLightShadowEnabled() override { return false; };	// æ˜¯å¦å¯ç”¨ç‚¹å…‰æºé˜´å½±
 
-	// ·ÖÅäºÍ´´½¨
-	virtual bool AllocateCommandBuffers(const ST_RHICommandBufferAllocateInfo* pAllocateInfo, RHICommandBuffer*& pCommandBuffers) override { return false; };	// ÅäÖÃÃüÁî»º³åÇø
-	virtual bool AllocateDescriptorSets(const ST_RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet*& pDescriptorSets) override { return false; };	// ÅäÖÃÃèÊö·û¼¯
+	// åˆ†é…å’Œåˆ›å»º
+	virtual bool AllocateCommandBuffers(const ST_RHICommandBufferAllocateInfo* pAllocateInfo, RHICommandBuffer*& pCommandBuffers) override { return false; };	// é…ç½®å‘½ä»¤ç¼“å†²åŒº
+	virtual bool AllocateDescriptorSets(const ST_RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet*& pDescriptorSets) override { return false; };	// é…ç½®æè¿°ç¬¦é›†
 
-	virtual void CreateSwapChain() override;	// ´´½¨½»»»Á´
+	virtual void CreateSwapChain() override;	// åˆ›å»ºäº¤æ¢é“¾
 
-	virtual void RecreateSwapChain() override {};	// ÖØĞÂ´´½¨½»»»Á´
+	virtual void RecreateSwapChain() override {};	// é‡æ–°åˆ›å»ºäº¤æ¢é“¾
 
-	virtual void CreateSwapChainImageViews() override {};	// ´´½¨½»»»Á´Í¼ÏñÊÓÍ¼
+	virtual void CreateSwapChainImageViews() override {};	// åˆ›å»ºäº¤æ¢é“¾å›¾åƒè§†å›¾
 
-	virtual void CreateFramebufferImageAndViews() override {};	// ´´½¨Ö¡»º³åÍ¼ÏñºÍÊÓÍ¼
+	virtual void CreateFramebufferImageAndViews() override {};	// åˆ›å»ºå¸§ç¼“å†²å›¾åƒå’Œè§†å›¾
 
-	virtual RHISampler* GetOrCreateDefaultSampler(ERHIDefaultSamplerType type) override { return nullptr; };	// »ñÈ¡»ò´´½¨Ä¬ÈÏ²ÉÑùÆ÷
+	virtual RHISampler* GetOrCreateDefaultSampler(ERHIDefaultSamplerType type) override { return nullptr; };	// è·å–æˆ–åˆ›å»ºé»˜è®¤é‡‡æ ·å™¨
 
-	virtual RHISampler* GetOrCreateMipmapSampler(uint32_t width, uint32_t height) override { return nullptr; };	// »ñÈ¡»ò´´½¨mipmap²ÉÑùÆ÷
+	virtual RHISampler* GetOrCreateMipmapSampler(uint32_t width, uint32_t height) override { return nullptr; };	// è·å–æˆ–åˆ›å»ºmipmapé‡‡æ ·å™¨
 
-	virtual RHIShader* CreateShaderModule(const std::vector<unsigned char>& shaderCode) override { return nullptr; };	// ´´½¨×ÅÉ«Æ÷Ä£¿é
+	virtual RHIShader* CreateShaderModule(const std::vector<unsigned char>& shaderCode) override { return nullptr; };	// åˆ›å»ºç€è‰²å™¨æ¨¡å—
 
-	virtual void CreateBuffer(RHIDeviceSize size, RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory) override {};	// ´´½¨»º³åÇø
+	virtual void CreateBuffer(RHIDeviceSize size, RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory) override {};	// åˆ›å»ºç¼“å†²åŒº
 
-	virtual void CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory, RHIDeviceSize size, void* data = nullptr, int datasize = 0) override;	// ´´½¨»º³åÇø²¢³õÊ¼»¯
+	virtual void CreateBufferAndInitialize(RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer*& buffer, RHIDeviceMemory*& bufferMemory, RHIDeviceSize size, void* data = nullptr, int datasize = 0) override;	// åˆ›å»ºç¼“å†²åŒºå¹¶åˆå§‹åŒ–
 
 	virtual bool CreateBufferVMA(
 		VmaAllocator allocator,
@@ -56,7 +56,7 @@ public:
 		VmaAllocation* pAllocation,
 		VmaAllocationInfo* pAllocationInfo) override {
 		return false;
-	};	// Ê¹ÓÃVMA´´½¨»º³åÇø
+	};	// ä½¿ç”¨VMAåˆ›å»ºç¼“å†²åŒº
 
 	virtual bool CreateBufferWithAlignmentVMA(
 		VmaAllocator allocator,
@@ -67,73 +67,73 @@ public:
 		VmaAllocation* pAllocation,
 		VmaAllocationInfo* pAllocationInfo) override {
 		return false;
-	};	// Ê¹ÓÃVMA´´½¨»º³åÇø²¢¶ÔÆë
+	};	// ä½¿ç”¨VMAåˆ›å»ºç¼“å†²åŒºå¹¶å¯¹é½
 
-	virtual void CopyBuffer(RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, RHIDeviceSize srcOffset, RHIDeviceSize dstOffset, RHIDeviceSize size) override {};	// ¸´ÖÆ»º³åÇø
+	virtual void CopyBuffer(RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, RHIDeviceSize srcOffset, RHIDeviceSize dstOffset, RHIDeviceSize size) override {};	// å¤åˆ¶ç¼“å†²åŒº
 
 	virtual void CreateImage(uint32_t image_width, uint32_t image_height, ERHIFormat format, ERHIImageTiling image_tiling, RHIImageUsageFlags image_usage_flags, RHIMemoryPropertyFlags memory_property_flags,
 		RHIImage*& image, RHIDeviceMemory*& memory, RHIImageCreateFlags image_create_flags, uint32_t array_layers, uint32_t miplevels) override {
-	};	// ´´½¨Í¼Ïñ
+	};	// åˆ›å»ºå›¾åƒ
 
 	virtual void CreateImageView(RHIImage* image, ERHIFormat format, RHIImageAspectFlags image_aspect_flags, ERHIImageViewType view_type, uint32_t layout_count, uint32_t miplevels,
 		RHIImageView*& image_view) override {
-	};	// ´´½¨Í¼ÏñÊÓÍ¼
+	};	// åˆ›å»ºå›¾åƒè§†å›¾
 
 	virtual void CreateGlobalImage(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, void* texture_image_pixels,
 		ERHIFormat texture_image_format, uint32_t miplevels = 0) override {
-	};	// ´´½¨È«¾ÖÍ¼Ïñ
+	};	// åˆ›å»ºå…¨å±€å›¾åƒ
 
 	virtual void CreateCubeMap(RHIImage*& image, RHIImageView*& image_view, VmaAllocation& image_allocation, uint32_t texture_image_width, uint32_t texture_image_height, std::array<void*, 6> texture_image_pixels,
 		ERHIFormat texture_image_format, uint32_t miplevels) override {
-	};	// ´´½¨Á¢·½ÌåÌùÍ¼
+	};	// åˆ›å»ºç«‹æ–¹ä½“è´´å›¾
 
-	virtual void CreateCommandPool() override {};	// ´´½¨ÃüÁî³Ø
+	virtual void CreateCommandPool() override {};	// åˆ›å»ºå‘½ä»¤æ± 
 
-	virtual bool CreateCommandPool(const ST_RHICommandPoolCreateInfo* pCreateInfo, RHICommandPool*& pCommandPool) override { return false; };	// ´´½¨ÃüÁî³Ø
+	virtual bool CreateCommandPool(const ST_RHICommandPoolCreateInfo* pCreateInfo, RHICommandPool*& pCommandPool) override { return false; };	// åˆ›å»ºå‘½ä»¤æ± 
 
-	virtual bool CreateDescriptorPool(const ST_RHIDescriptorPoolCreateInfo* pCreateInfo, RHIDescriptorPool*& pDescriptorPool) override { return false; };	// ´´½¨ÃèÊö·û³Ø
+	virtual bool CreateDescriptorPool(const ST_RHIDescriptorPoolCreateInfo* pCreateInfo, RHIDescriptorPool*& pDescriptorPool) override { return false; };	// åˆ›å»ºæè¿°ç¬¦æ± 
 
-	virtual bool CreateDescriptorSetLayout(const ST_RHIDescriptorSetLayoutCreateInfo* pCreateInfo, RHIDescriptorSetLayout*& pSetLayout) override { return false; };	// ´´½¨ÃèÊö·û¼¯²¼¾Ö
+	virtual bool CreateDescriptorSetLayout(const ST_RHIDescriptorSetLayoutCreateInfo* pCreateInfo, RHIDescriptorSetLayout*& pSetLayout) override { return false; };	// åˆ›å»ºæè¿°ç¬¦é›†å¸ƒå±€
 
-	virtual bool CreateFence(const ST_RHIFenceCreateInfo* pCreateInfo, RHIFence*& pFence) override { return false; };	// ´´½¨Õ¤À¸
+	virtual bool CreateFence(const ST_RHIFenceCreateInfo* pCreateInfo, RHIFence*& pFence) override { return false; };	// åˆ›å»ºæ …æ 
 
-	virtual bool CreateFramebuffer(const ST_RHIFramebufferCreateInfo* pCreateInfo, RHIFramebuffer*& pFramebuffer) override { return false; };	// ´´½¨Ö¡»º³å
+	virtual bool CreateFramebuffer(const ST_RHIFramebufferCreateInfo* pCreateInfo, RHIFramebuffer*& pFramebuffer) override { return false; };	// åˆ›å»ºå¸§ç¼“å†²
 
-	virtual bool CreateGraphicsPipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIGraphicsPipelineCreateInfo* pCreateInfos, RHIPipeline*& pPipelines) override { return false; };	// ´´½¨Í¼ĞÎ¹ÜÏß
+	virtual bool CreateGraphicsPipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIGraphicsPipelineCreateInfo* pCreateInfos, RHIPipeline*& pPipelines) override { return false; };	// åˆ›å»ºå›¾å½¢ç®¡çº¿
 
-	virtual bool CreateComputePipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIComputePipelineCreateInfo* pCreateInfos, RHIPipeline*& pPipelines) override { return false; };	// ´´½¨¼ÆËã¹ÜÏß
+	virtual bool CreateComputePipelines(RHIPipelineCache* pipelineCache, uint32_t createInfoCount, const ST_RHIComputePipelineCreateInfo* pCreateInfos, RHIPipeline*& pPipelines) override { return false; };	// åˆ›å»ºè®¡ç®—ç®¡çº¿
 
-	virtual bool CreatePipelineLayout(const ST_RHIPipelineLayoutCreateInfo* pCreateInfo, RHIPipelineLayout*& pPipelineLayout) override { return false; };	// ´´½¨¹ÜÏß²¼¾Ö
+	virtual bool CreatePipelineLayout(const ST_RHIPipelineLayoutCreateInfo* pCreateInfo, RHIPipelineLayout*& pPipelineLayout) override { return false; };	// åˆ›å»ºç®¡çº¿å¸ƒå±€
 
-	virtual bool CreateRenderPass(const ST_RHIRenderPassCreateInfo* pCreateInfo, RHIRenderPass*& pRenderPass) override { return false; };	// ´´½¨äÖÈ¾Í¨µÀ
+	virtual bool CreateRenderPass(const ST_RHIRenderPassCreateInfo* pCreateInfo, RHIRenderPass*& pRenderPass) override { return false; };	// åˆ›å»ºæ¸²æŸ“é€šé“
 
-	virtual bool CreateSampler(const ST_RHISamplerCreateInfo* pCreateInfo, RHISampler*& pSampler) override { return false; };	// ´´½¨²ÉÑùÆ÷
+	virtual bool CreateSampler(const ST_RHISamplerCreateInfo* pCreateInfo, RHISampler*& pSampler) override { return false; };	// åˆ›å»ºé‡‡æ ·å™¨
 
-	virtual bool CreateRHISemaphore(const ST_RHISemaphoreCreateInfo* pCreateInfo, RHISemaphore*& pSemaphore) override { return false; };	// ´´½¨ĞÅºÅÁ¿
+	virtual bool CreateRHISemaphore(const ST_RHISemaphoreCreateInfo* pCreateInfo, RHISemaphore*& pSemaphore) override { return false; };	// åˆ›å»ºä¿¡å·é‡
 
 
 	// command and command write
-	virtual bool WaitForFencesPFN(uint32_t fenceCount, RHIFence* const* pFence, RHIBool32 waitAll, uint64_t timeout) override { return false; };	// µÈ´ıÕ¤À¸
+	virtual bool WaitForFencesPFN(uint32_t fenceCount, RHIFence* const* pFence, RHIBool32 waitAll, uint64_t timeout) override { return false; };	// ç­‰å¾…æ …æ 
 
-	virtual bool ResetFencesPFN(uint32_t fenceCount, RHIFence* const* pFences) override { return false; };	// ÖØÖÃÕ¤À¸
+	virtual bool ResetFencesPFN(uint32_t fenceCount, RHIFence* const* pFences) override { return false; };	// é‡ç½®æ …æ 
 
-	virtual bool ResetCommandPoolPFN(RHICommandPool* commandPool, RHICommandPoolResetFlags flags) override { return false; };	// ÖØÖÃÃüÁî³Ø
+	virtual bool ResetCommandPoolPFN(RHICommandPool* commandPool, RHICommandPoolResetFlags flags) override { return false; };	// é‡ç½®å‘½ä»¤æ± 
 
-	virtual bool BeginCommandBufferPFN(RHICommandBuffer* commandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo) override { return false; };	// ¿ªÊ¼ÃüÁî»º³åÇø
+	virtual bool BeginCommandBufferPFN(RHICommandBuffer* commandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo) override { return false; };	// å¼€å§‹å‘½ä»¤ç¼“å†²åŒº
 
-	virtual bool EndCommandBufferPFN(RHICommandBuffer* commandBuffer) override { return false; };	// ½áÊøÃüÁî»º³åÇø
+	virtual bool EndCommandBufferPFN(RHICommandBuffer* commandBuffer) override { return false; };	// ç»“æŸå‘½ä»¤ç¼“å†²åŒº
 
-	virtual void CmdBeginRenderPassPFN(RHICommandBuffer* commandBuffer, const ST_RHIRenderPassBeginInfo* pRenderPassBegin, ERHISubpassContents contents) override {};	// ¿ªÊ¼äÖÈ¾Í¨µÀ
+	virtual void CmdBeginRenderPassPFN(RHICommandBuffer* commandBuffer, const ST_RHIRenderPassBeginInfo* pRenderPassBegin, ERHISubpassContents contents) override {};	// å¼€å§‹æ¸²æŸ“é€šé“
 
-	virtual void CmdNextSubpassPFN(RHICommandBuffer* commandBuffer, ERHISubpassContents contents) override {};	// ÇĞ»»µ½ÏÂÒ»¸ö×ÓÍ¨µÀ
+	virtual void CmdNextSubpassPFN(RHICommandBuffer* commandBuffer, ERHISubpassContents contents) override {};	// åˆ‡æ¢åˆ°ä¸‹ä¸€ä¸ªå­é€šé“
 
-	virtual void CmdEndRenderPassPFN(RHICommandBuffer* commandBuffer) override {};	// ½áÊøäÖÈ¾Í¨µÀ
+	virtual void CmdEndRenderPassPFN(RHICommandBuffer* commandBuffer) override {};	// ç»“æŸæ¸²æŸ“é€šé“
 
-	virtual void CmdBindPipelinePFN(RHICommandBuffer* commandBuffer, ERHIPipelineBindPoint pipelineBindPoint, RHIPipeline* pipeline) override {};	// °ó¶¨¹ÜÏß
+	virtual void CmdBindPipelinePFN(RHICommandBuffer* commandBuffer, ERHIPipelineBindPoint pipelineBindPoint, RHIPipeline* pipeline) override {};	// ç»‘å®šç®¡çº¿
 
-	virtual void CmdSetViewportPFN(RHICommandBuffer* commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const ST_RHIViewport* pViewports) override {};	// ÉèÖÃÊÓ¿Ú
+	virtual void CmdSetViewportPFN(RHICommandBuffer* commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const ST_RHIViewport* pViewports) override {};	// è®¾ç½®è§†å£
 
-	virtual void CmdSetScissorPFN(RHICommandBuffer* commandBuffer, uint32_t firstScissor, uint32_t scissorCount, const ST_RHIRect2D* pScissors) override {};	// ÉèÖÃ²Ã¼ôÇøÓò
+	virtual void CmdSetScissorPFN(RHICommandBuffer* commandBuffer, uint32_t firstScissor, uint32_t scissorCount, const ST_RHIRect2D* pScissors) override {};	// è®¾ç½®è£å‰ªåŒºåŸŸ
 
 	virtual void CmdBindVertexBuffersPFN(
 		RHICommandBuffer* commandBuffer,
@@ -141,9 +141,9 @@ public:
 		uint32_t bindingCount,
 		RHIBuffer* const* pBuffers,
 		const RHIDeviceSize* pOffsets) override {
-	};	// °ó¶¨¶¥µã»º³åÇø
+	};	// ç»‘å®šé¡¶ç‚¹ç¼“å†²åŒº
 
-	virtual void CmdBindIndexBufferPFN(RHICommandBuffer* commandBuffer, RHIBuffer* buffer, RHIDeviceSize offset, ERHIIndexType indexType) override {};	// °ó¶¨Ë÷Òı»º³åÇø
+	virtual void CmdBindIndexBufferPFN(RHICommandBuffer* commandBuffer, RHIBuffer* buffer, RHIDeviceSize offset, ERHIIndexType indexType) override {};	// ç»‘å®šç´¢å¼•ç¼“å†²åŒº
 
 	virtual void CmdBindDescriptorSetsPFN(
 		RHICommandBuffer* commandBuffer,
@@ -154,132 +154,132 @@ public:
 		const RHIDescriptorSet* const* pDescriptorSets,
 		uint32_t dynamicOffsetCount,
 		const uint32_t* pDynamicOffsets) override {
-	};	// °ó¶¨ÃèÊö·û¼¯
+	};	// ç»‘å®šæè¿°ç¬¦é›†
 
-	virtual void CmdDrawIndexedPFN(RHICommandBuffer* commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) override {};	// »æÖÆË÷Òı
+	virtual void CmdDrawIndexedPFN(RHICommandBuffer* commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) override {};	// ç»˜åˆ¶ç´¢å¼•
 
-	virtual void CmdClearAttachmentsPFN(RHICommandBuffer* commandBuffer, uint32_t attachmentCount, const ST_RHIClearAttachment* pAttachments, uint32_t rectCount, const ST_RHIClearRect* pRects) override {};	// Çå³ı¸½¼ş
+	virtual void CmdClearAttachmentsPFN(RHICommandBuffer* commandBuffer, uint32_t attachmentCount, const ST_RHIClearAttachment* pAttachments, uint32_t rectCount, const ST_RHIClearRect* pRects) override {};	// æ¸…é™¤é™„ä»¶
 
-	virtual bool BeginCommandBuffer(RHICommandBuffer* commandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo) override { return false; };	// ¿ªÊ¼ÃüÁî»º³åÇø
+	virtual bool BeginCommandBuffer(RHICommandBuffer* commandBuffer, const ST_RHICommandBufferBeginInfo* pBeginInfo) override { return false; };	// å¼€å§‹å‘½ä»¤ç¼“å†²åŒº
 
-	virtual void CmdCopyImageToBuffer(RHICommandBuffer* commandBuffer, RHIImage* srcImage, ERHIImageLayout srcImageLayout, RHIBuffer* dstBuffer, uint32_t regionCount, const ST_RHIBufferImageCopy* pRegions) override {};	// ´ÓÍ¼Ïñ¸´ÖÆµ½»º³åÇø
+	virtual void CmdCopyImageToBuffer(RHICommandBuffer* commandBuffer, RHIImage* srcImage, ERHIImageLayout srcImageLayout, RHIBuffer* dstBuffer, uint32_t regionCount, const ST_RHIBufferImageCopy* pRegions) override {};	// ä»å›¾åƒå¤åˆ¶åˆ°ç¼“å†²åŒº
 
-	virtual void CmdCopyImageToImage(RHICommandBuffer* commandBuffer, RHIImage* srcImage, ERHIImageAspectFlagBits srcFlag, RHIImage* dstImage, ERHIImageAspectFlagBits dstFlag, uint32_t width, uint32_t height) override {};	// ´ÓÍ¼Ïñ¸´ÖÆµ½Í¼Ïñ
+	virtual void CmdCopyImageToImage(RHICommandBuffer* commandBuffer, RHIImage* srcImage, ERHIImageAspectFlagBits srcFlag, RHIImage* dstImage, ERHIImageAspectFlagBits dstFlag, uint32_t width, uint32_t height) override {};	// ä»å›¾åƒå¤åˆ¶åˆ°å›¾åƒ
 
-	virtual void CmdCopyBuffer(RHICommandBuffer* commandBuffer, RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, uint32_t regionCount, ST_RHIBufferCopy* pRegions) override {};	// ´Ó»º³åÇø¸´ÖÆµ½»º³åÇø
+	virtual void CmdCopyBuffer(RHICommandBuffer* commandBuffer, RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, uint32_t regionCount, ST_RHIBufferCopy* pRegions) override {};	// ä»ç¼“å†²åŒºå¤åˆ¶åˆ°ç¼“å†²åŒº
 
-	virtual void CmdDraw(RHICommandBuffer* commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) override {};	// »æÖÆ¶¥µã
+	virtual void CmdDraw(RHICommandBuffer* commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) override {};	// ç»˜åˆ¶é¡¶ç‚¹
 
-	virtual void CmdDispatch(RHICommandBuffer* commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) override {};	// µ÷¶È¼ÆËã
+	virtual void CmdDispatch(RHICommandBuffer* commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) override {};	// è°ƒåº¦è®¡ç®—
 
-	virtual void CmdDispatchIndirect(RHICommandBuffer* commandBuffer, RHIBuffer* buffer, RHIDeviceSize offset) override {};	// ¼ä½Óµ÷¶È¼ÆËã
+	virtual void CmdDispatchIndirect(RHICommandBuffer* commandBuffer, RHIBuffer* buffer, RHIDeviceSize offset) override {};	// é—´æ¥è°ƒåº¦è®¡ç®—
 
 	virtual void CmdPipelineBarrier(RHICommandBuffer* commandBuffer, RHIPipelineStageFlags srcStageMask, RHIPipelineStageFlags dstStageMask, RHIDependencyFlags dependencyFlags, uint32_t memoryBarrierCount,
 		const ST_RHIMemoryBarrier* pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const ST_RHIBufferMemoryBarrier* pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount,
 		const ST_RHIImageMemoryBarrier* pImageMemoryBarriers) override {
-	};	// ¹ÜÏßÆÁÕÏ
+	};	// ç®¡çº¿å±éšœ
 
-	virtual bool EndCommandBuffer(RHICommandBuffer* commandBuffer) override { return false; };	// ½áÊøÃüÁî»º³åÇø
+	virtual bool EndCommandBuffer(RHICommandBuffer* commandBuffer) override { return false; };	// ç»“æŸå‘½ä»¤ç¼“å†²åŒº
 
-	virtual void UpdateDescriptorSets(uint32_t descriptorWriteCount, const ST_RHIWriteDescriptorSet* pDescriptorWrites, uint32_t descriptorCopyCount, const ST_RHICopyDescriptorSet* pDescriptorCopies) override {};	// ¸üĞÂÃèÊö·û¼¯
+	virtual void UpdateDescriptorSets(uint32_t descriptorWriteCount, const ST_RHIWriteDescriptorSet* pDescriptorWrites, uint32_t descriptorCopyCount, const ST_RHICopyDescriptorSet* pDescriptorCopies) override {};	// æ›´æ–°æè¿°ç¬¦é›†
 
-	virtual bool QueueSubmit(RHIQueue* queue, uint32_t submitCount, const ST_RHISubmitInfo* pSubmits, RHIFence* fence) override { return false; };	// Ìá½»µ½¶ÓÁĞ
+	virtual bool QueueSubmit(RHIQueue* queue, uint32_t submitCount, const ST_RHISubmitInfo* pSubmits, RHIFence* fence) override { return false; };	// æäº¤åˆ°é˜Ÿåˆ—
 
-	virtual bool QueueWaitIdle(RHIQueue* queue) override { return false; };	// ¶ÓÁĞµÈ´ı¿ÕÏĞ
+	virtual bool QueueWaitIdle(RHIQueue* queue) override { return false; };	// é˜Ÿåˆ—ç­‰å¾…ç©ºé—²
 
-	virtual void WaitForFences() override;	// µÈ´ıÕ¤À¸
+	virtual void WaitForFences() override;	// ç­‰å¾…æ …æ 
 
-	virtual void ResetCommandPool() override;	// ÖØÖÃÃüÁî³Ø
+	virtual void ResetCommandPool() override;	// é‡ç½®å‘½ä»¤æ± 
 
 
-	// ²éÑ¯
-	virtual void GetPhysicalDeviceProperties(ST_RHIPhysicalDeviceProperties* pProperties) override {};	// »ñÈ¡ÎïÀíÉè±¸ÊôĞÔ
+	// æŸ¥è¯¢
+	virtual void GetPhysicalDeviceProperties(ST_RHIPhysicalDeviceProperties* pProperties) override {};	// è·å–ç‰©ç†è®¾å¤‡å±æ€§
 
-	virtual RHICommandBuffer* GetCurrentCommandBuffer() const override { return nullptr; };	// »ñÈ¡µ±Ç°ÃüÁî»º³åÇø
+	virtual RHICommandBuffer* GetCurrentCommandBuffer() const override { return nullptr; };	// è·å–å½“å‰å‘½ä»¤ç¼“å†²åŒº
 
-	virtual RHICommandBuffer* const* GetCommandBufferList() const override { return nullptr; }; // »ñÈ¡ÃüÁî»º³åÇøÁĞ±í
+	virtual RHICommandBuffer* const* GetCommandBufferList() const override { return nullptr; }; // è·å–å‘½ä»¤ç¼“å†²åŒºåˆ—è¡¨
 
-	virtual RHICommandPool* GetCommandPoor() const override { return nullptr; };	// »ñÈ¡ÃüÁî³Ø
+	virtual RHICommandPool* GetCommandPoor() const override { return nullptr; };	// è·å–å‘½ä»¤æ± 
 
-	virtual RHIDescriptorPool* GetDescriptorPoor() const override { return nullptr; };	// »ñÈ¡ÃèÊö·û³Ø
+	virtual RHIDescriptorPool* GetDescriptorPoor() const override { return nullptr; };	// è·å–æè¿°ç¬¦æ± 
 
-	virtual RHIFence* const* GetFenceList() const override { return nullptr; };	// »ñÈ¡Õ¤À¸ÁĞ±í
+	virtual RHIFence* const* GetFenceList() const override { return nullptr; };	// è·å–æ …æ åˆ—è¡¨
 
-	virtual ST_QueueFamilyIndices GetQueueFamilyIndices() const override { return ST_QueueFamilyIndices(); };	// »ñÈ¡¶ÓÁĞ×åË÷Òı
+	virtual ST_QueueFamilyIndices GetQueueFamilyIndices() const override { return ST_QueueFamilyIndices(); };	// è·å–é˜Ÿåˆ—æ—ç´¢å¼•
 
-	virtual RHIQueue* GetGraphicsQueue() const override { return nullptr; }; // »ñÈ¡Í¼ĞÎ¶ÓÁĞ
+	virtual RHIQueue* GetGraphicsQueue() const override { return nullptr; }; // è·å–å›¾å½¢é˜Ÿåˆ—
 
-	virtual RHIQueue* GetComputeQueue() const override { return nullptr; };	// »ñÈ¡¼ÆËã¶ÓÁĞ
+	virtual RHIQueue* GetComputeQueue() const override { return nullptr; };	// è·å–è®¡ç®—é˜Ÿåˆ—
 
-	virtual ST_RHISwapChainDesc GetSwapchainInfo() override;	// »ñÈ¡½»»»Á´ĞÅÏ¢
+	virtual ST_RHISwapChainDesc GetSwapchainInfo() override;	// è·å–äº¤æ¢é“¾ä¿¡æ¯
 
-	virtual ST_RHIDepthImageDesc GetDepthImageInfo() const override { return ST_RHIDepthImageDesc(); };	// »ñÈ¡Éî¶ÈÍ¼ÏñĞÅÏ¢
+	virtual ST_RHIDepthImageDesc GetDepthImageInfo() const override { return ST_RHIDepthImageDesc(); };	// è·å–æ·±åº¦å›¾åƒä¿¡æ¯
 
-	virtual uint8_t GetMaxFramesInFlight() const override { return 0u; };	// »ñÈ¡×î´óÖ¡Êı
+	virtual uint8_t GetMaxFramesInFlight() const override { return 0u; };	// è·å–æœ€å¤§å¸§æ•°
 
-	virtual uint8_t GetCurrentFrameIndex() const override;	// »ñÈ¡µ±Ç°Ö¡Ë÷Òı
+	virtual uint8_t GetCurrentFrameIndex() const override;	// è·å–å½“å‰å¸§ç´¢å¼•
 
-	virtual void SetCurrentFrameIndex(uint8_t index) override {};	// ÉèÖÃµ±Ç°Ö¡Ë÷Òı
+	virtual void SetCurrentFrameIndex(uint8_t index) override {};	// è®¾ç½®å½“å‰å¸§ç´¢å¼•
 
 
 	// command write
-	virtual RHICommandBuffer* BeginSingleTimeCommands() override { return nullptr; };	// ¿ªÊ¼µ¥´ÎÃüÁî»º³åÇø
+	virtual RHICommandBuffer* BeginSingleTimeCommands() override { return nullptr; };	// å¼€å§‹å•æ¬¡å‘½ä»¤ç¼“å†²åŒº
 
-	virtual void EndSingleTimeCommands(RHICommandBuffer* command_buffer) override {};	// ½áÊøµ¥´ÎÃüÁî»º³åÇø
+	virtual void EndSingleTimeCommands(RHICommandBuffer* command_buffer) override {};	// ç»“æŸå•æ¬¡å‘½ä»¤ç¼“å†²åŒº
 
-	virtual bool PrepareBeforePass(std::function<void()> passUpdateAfterRecreateSwapchain) override { return false; };	// ×¼±¸ÔÚäÖÈ¾Í¨µÀÖ®Ç°Ö´ĞĞµÄ²Ù×÷
+	virtual bool PrepareBeforePass(std::function<void()> passUpdateAfterRecreateSwapchain) override { return false; };	// å‡†å¤‡åœ¨æ¸²æŸ“é€šé“ä¹‹å‰æ‰§è¡Œçš„æ“ä½œ
 
-	virtual void SubmitRendering(std::function<void()> passUpdateAfterRecreateSwapchain) override;	// Ìá½»äÖÈ¾²Ù×÷
+	virtual void SubmitRendering(std::function<void()> passUpdateAfterRecreateSwapchain) override;	// æäº¤æ¸²æŸ“æ“ä½œ
 
-	virtual void PushEvent(RHICommandBuffer* commond_buffer, const char* name, const float* color) override {};	// ¿ªÆôµ÷ÊÔ±êÇ©
+	virtual void PushEvent(RHICommandBuffer* commond_buffer, const char* name, const float* color) override {};	// å¼€å¯è°ƒè¯•æ ‡ç­¾
 
-	virtual void PopEvent(RHICommandBuffer* commond_buffer) override {};	// ½áÊøµ÷ÊÔ±êÇ©
-
-
-	// Ïú»Ù
-	virtual void Clear() override {};	// ÇåÀíRHI×ÊÔ´
-
-	virtual void ClearSwapchain() override {};	// ÇåÀí½»»»Á´×ÊÔ´
-
-	virtual void DestroyDefaultSampler(ERHIDefaultSamplerType type) override {};	// Ïú»ÙÄ¬ÈÏ²ÉÑùÆ÷
-
-	virtual void DestroyMipmappedSampler() override {};	// Ïú»Ùmipmap²ÉÑùÆ÷
-
-	virtual void DestroyShaderModule(RHIShader* shader) override {};	// Ïú»Ù×ÅÉ«Æ÷Ä£¿é
-
-	virtual void DestroySemaphore(RHISemaphore* semaphore) override {};	// Ïú»ÙĞÅºÅÁ¿
-
-	virtual void DestroySampler(RHISampler* sampler) override {};	// Ïú»Ù²ÉÑùÆ÷
-
-	virtual void DestroyInstance(RHIInstance* instance) override {};	// Ïú»ÙÊµÀı
-
-	virtual void DestroyImageView(RHIImageView* imageView) override {};	// Ïú»ÙÍ¼ÏñÊÓÍ¼
-
-	virtual void DestroyImage(RHIImage* image) override {};	// Ïú»ÙÍ¼Ïñ
-
-	virtual void DestroyFramebuffer(RHIFramebuffer* framebuffer) override {};	// Ïú»ÙÖ¡»º³å
-
-	virtual void DestroyFence(RHIFence* fence) override {};	// Ïú»ÙÕ¤À¸
-
-	virtual void DestroyDevice() override {};	// Ïú»ÙÉè±¸
-
-	virtual void DestroyCommandPool(RHICommandPool* commandPool) override {};	// Ïú»ÙÃüÁî³Ø
-
-	virtual void DestroyBuffer(RHIBuffer*& buffer) override {};	// Ïú»Ù»º³åÇø
-
-	virtual void FreeCommandBuffers(RHICommandPool* commandPool, uint32_t commandBufferCount, RHICommandBuffer* pCommandBuffers) override {};	// ÊÍ·ÅÃüÁî»º³åÇø
+	virtual void PopEvent(RHICommandBuffer* commond_buffer) override {};	// ç»“æŸè°ƒè¯•æ ‡ç­¾
 
 
-	// ÄÚ´æ
-	virtual void FreeMemory(RHIDeviceMemory*& memory) override {};	// ÊÍ·ÅÉè±¸ÄÚ´æ
+	// é”€æ¯
+	virtual void Clear() override {};	// æ¸…ç†RHIèµ„æº
 
-	virtual bool MapMemory(RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size, RHIMemoryMapFlags flags, void** ppData) override { return false; };	// Ó³ÉäÉè±¸ÄÚ´æ
+	virtual void ClearSwapchain() override {};	// æ¸…ç†äº¤æ¢é“¾èµ„æº
 
-	virtual void UnmapMemory(RHIDeviceMemory* memory) override {};	// È¡ÏûÓ³ÉäÉè±¸ÄÚ´æ
+	virtual void DestroyDefaultSampler(ERHIDefaultSamplerType type) override {};	// é”€æ¯é»˜è®¤é‡‡æ ·å™¨
 
-	virtual void InvalidateMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size) override {};	// Ê¹Ó³ÉäµÄÄÚ´æ·¶Î§ÎŞĞ§
+	virtual void DestroyMipmappedSampler() override {};	// é”€æ¯mipmapé‡‡æ ·å™¨
 
-	virtual void FlushMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size) override {};	// Ë¢ĞÂÓ³ÉäµÄÄÚ´æ·¶Î§
+	virtual void DestroyShaderModule(RHIShader* shader) override {};	// é”€æ¯ç€è‰²å™¨æ¨¡å—
+
+	virtual void DestroySemaphore(RHISemaphore* semaphore) override {};	// é”€æ¯ä¿¡å·é‡
+
+	virtual void DestroySampler(RHISampler* sampler) override {};	// é”€æ¯é‡‡æ ·å™¨
+
+	virtual void DestroyInstance(RHIInstance* instance) override {};	// é”€æ¯å®ä¾‹
+
+	virtual void DestroyImageView(RHIImageView* imageView) override {};	// é”€æ¯å›¾åƒè§†å›¾
+
+	virtual void DestroyImage(RHIImage* image) override {};	// é”€æ¯å›¾åƒ
+
+	virtual void DestroyFramebuffer(RHIFramebuffer* framebuffer) override {};	// é”€æ¯å¸§ç¼“å†²
+
+	virtual void DestroyFence(RHIFence* fence) override {};	// é”€æ¯æ …æ 
+
+	virtual void DestroyDevice() override {};	// é”€æ¯è®¾å¤‡
+
+	virtual void DestroyCommandPool(RHICommandPool* commandPool) override {};	// é”€æ¯å‘½ä»¤æ± 
+
+	virtual void DestroyBuffer(RHIBuffer*& buffer) override {};	// é”€æ¯ç¼“å†²åŒº
+
+	virtual void FreeCommandBuffers(RHICommandPool* commandPool, uint32_t commandBufferCount, RHICommandBuffer* pCommandBuffers) override {};	// é‡Šæ”¾å‘½ä»¤ç¼“å†²åŒº
+
+
+	// å†…å­˜
+	virtual void FreeMemory(RHIDeviceMemory*& memory) override {};	// é‡Šæ”¾è®¾å¤‡å†…å­˜
+
+	virtual bool MapMemory(RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size, RHIMemoryMapFlags flags, void** ppData) override { return false; };	// æ˜ å°„è®¾å¤‡å†…å­˜
+
+	virtual void UnmapMemory(RHIDeviceMemory* memory) override {};	// å–æ¶ˆæ˜ å°„è®¾å¤‡å†…å­˜
+
+	virtual void InvalidateMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size) override {};	// ä½¿æ˜ å°„çš„å†…å­˜èŒƒå›´æ— æ•ˆ
+
+	virtual void FlushMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size) override {};	// åˆ·æ–°æ˜ å°„çš„å†…å­˜èŒƒå›´
 
 
 	//semaphores
@@ -294,9 +294,23 @@ public:
 	GLFWwindow* m_pGLFWwindow = nullptr;
 
 private:
-	// ÏÈ²»¹Ü
+	// å…ˆä¸ç®¡
 	RHISemaphore* m_pRHISemaphore = nullptr;
 };
+
+// RenderDocè°ƒè¯•
+struct ScopedEvent {
+	ScopedEvent(LPCSTR inName) {
+		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, inName);
+	}
+	~ScopedEvent() {
+		glPopDebugGroup();
+	}
+};
+#define EVENT_VAR_INNER(inName, line) _scopedEvent_##line(inName)
+#define EventVar(inName,n) EVENT_VAR_INNER(inName, n)
+#define SCOPED_EVENT(inName) \
+        ScopedEvent EventVar(inName,__LINE__)
 
 void CheckLastOpenGLError(const char* prefix, const char* file, long line, const char* operation);
 #define GLAssert(x) 	{ CheckLastOpenGLError (NULL,__FILE__, __LINE__,#x); }
