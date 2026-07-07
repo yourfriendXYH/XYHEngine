@@ -91,6 +91,9 @@
     <Filter Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL">
       <UniqueIdentifier>{0ce040d4-cfaf-4f4e-9790-b5d4f04b5692}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Source\Common\stbi">
+      <UniqueIdentifier>{3c0a9a42-e182-424d-be56-9535ca53e880}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Source\main.cpp">
@@ -236,6 +239,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\Util.cpp">
       <Filter>Engine\Source\Runtime\Function\Render\Interface\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\3rdparty\stbi\stb_image.cpp">
+      <Filter>Engine\Source\Common\stbi</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -475,6 +481,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\Util.h">
       <Filter>Engine\Source\Runtime\Function\Render\Interface\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\3rdparty\stbi\stb_image.h">
+      <Filter>Engine\Source\Common\stbi</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

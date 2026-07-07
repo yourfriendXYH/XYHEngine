@@ -303,7 +303,7 @@ ID3D12Resource* D3D12RHI::CreateTexture2D(UINT width, UINT height, void* pData)
 		1,
 		D3D12_TEXTURE_LAYOUT_UNKNOWN,
 		D3D12_RESOURCE_FLAG_NONE,
-		D3D12_RESOURCE_STATE_COPY_DEST,
+		D3D12_RESOURCE_STATE_COMMON,
 		nullptr
 	);
 
@@ -375,7 +375,7 @@ void D3D12RHI::CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunc
 
 ID3D12RootSignature* D3D12RHI::InitRootSignature()
 {
-	const unsigned int parameterSize = 3u;
+	const unsigned int parameterSize = 4u;
 	D3D12_ROOT_PARAMETER parameters[parameterSize] = {};
 	parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 	parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
@@ -392,12 +392,17 @@ ID3D12RootSignature* D3D12RHI::InitRootSignature()
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].RegisterSpace = 0;
 	descriptorRange[0].BaseShaderRegister = 0;	// t0
-	descriptorRange[0].NumDescriptors = 1;
+	descriptorRange[0].NumDescriptors = 2;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 	parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	parameters[2].DescriptorTable.NumDescriptorRanges = 1;
 	parameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
+
+	parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	parameters[3].Descriptor.RegisterSpace = 1;	// space1
+	parameters[3].Descriptor.ShaderRegister = 0;	// t0
 
 	D3D12_STATIC_SAMPLER_DESC samplerDesc[1];
 	memset(samplerDesc, 0, sizeof(D3D12_STATIC_SAMPLER_DESC) * 1);

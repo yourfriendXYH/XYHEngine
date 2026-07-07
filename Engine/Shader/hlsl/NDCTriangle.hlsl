@@ -29,7 +29,14 @@ cbuffer testMatrix1024 : register(b1)
     float4x4 append[1021];
 };
 
-Texture2D tex : register(t0);
+struct TestStructData
+{
+    float r;
+};
+
+StructuredBuffer<TestStructData> testStructData : register(t0, space1); // StructuredBuffer 属于 SRV（着色器资源视图），必须使用 t 寄存器，而不是 b 寄存器。
+
+Texture2D tex[2] : register(t0);
 
 SamplerState samplerState : register(s0);
 
@@ -61,6 +68,12 @@ void MainGS(triangle VSOut input[3], uint inPrimitiveID : SV_PrimitiveID, inout 
     point4.position = input[1].position + (input[0].position - input[1].position) + (input[2].position - input[1].position);
     point4.positionWS = input[1].positionWS + (input[0].positionWS - input[1].positionWS) + (input[2].positionWS - input[1].positionWS);
     point4.normal = input[0].normal;
+    
+    float tempAlpha = testStructData[inPrimitiveID].r;
+    input[0].positionWS.a = tempAlpha;
+    input[1].positionWS.a = tempAlpha;
+    input[2].positionWS.a = tempAlpha;
+    point4.positionWS.a = tempAlpha;
     
     input[0].texcoord = float4(0, 0, 0, 0);
     input[1].texcoord = float4(0, 1, 0, 0);
@@ -101,7 +114,8 @@ float4 MainPS(VSOut inPSInput) : SV_Target
         float3 specularIntensity = pow(max(0.0, dot(V, R)), 64.0);
         specularColor = float3(1.0, 1.0, 1.0) * specularIntensity;
     }
-    float4 colorFromTexture = tex.Sample(samplerState, inPSInput.texcoord.xy);
-    float3 surfaceColor = ambientColor + diffuseColor + specularColor + colorFromTexture.rgb;
-    return float4(surfaceColor, colorFromTexture.a);
+    float4 colorFromTexture = tex[0].Sample(samplerState, inPSInput.texcoord.xy);
+    float4 colorFromTexture1 = tex[1].Sample(samplerState, inPSInput.texcoord.xy);
+    float3 surfaceColor = /*ambientColor + diffuseColor + specularColor + */colorFromTexture.rgb;
+    return float4(surfaceColor, inPSInput.positionWS.a);
 }

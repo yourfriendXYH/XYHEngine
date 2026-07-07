@@ -77,7 +77,11 @@ private:
 
 	StaticMeshComponent m_testMesh;
 
-	ID3D12Resource* pTestTexture = nullptr;
+	ID3D12Resource* m_pTestTexture = nullptr;
+
+	ID3D12Resource* m_pTestTexture1 = nullptr;
+
+	ID3D12Resource* m_pStructBuffer = nullptr;
 
 	std::vector<ID3D12DescriptorHeap*> m_descriptorHeaps;
 
