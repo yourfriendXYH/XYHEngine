@@ -66,7 +66,7 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	m_pTestConstantBuffer = D3D12Util::CreateConstantBufferObject(pD3D12RHI->GetDevice(), 65536);	// 1024 * 64( 4*4的矩阵-> 16个4字节(float) )
 	//m_perframeStorageBufferObj.m_projViewMatrix = m_perframeStorageBufferObj.m_projViewMatrix.transpose();
 	//D3D12Util::UpdateConstantBuffer(m_pTestConstantBuffer, &m_perframeStorageBufferObj.m_projViewMatrix, sizeof(Matrix4x4));
-	
+
 	unsigned int textureWidth = 256;
 	unsigned int textureHeight = 256;
 	unsigned char* pixelData = new unsigned char[textureWidth * textureHeight * 4];
@@ -96,7 +96,7 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	delete[] pixelData;
 
 	int imageWidth, imageHeight, imageChannel;
-	stbi_uc* pixels = stbi_load("C://Users//Administrator//Desktop//huaban-6533916109.png", &imageWidth, &imageHeight, &imageChannel, 4);
+	stbi_uc* pixels = stbi_load("Engine/Resource/earth_d.jpg", &imageWidth, &imageHeight, &imageChannel, 4);
 	m_pTestTexture = pD3D12RHI->CreateTexture2D(imageWidth, imageHeight, pixels);
 	delete[] pixels;
 
@@ -125,7 +125,7 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	{
 		float r = 0.0f;
 	};
-	ST_TestStructData* pDatas = new ST_TestStructData[3000]; 
+	ST_TestStructData* pDatas = new ST_TestStructData[3000];
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<float> dist(-1.0f, 1.0f);

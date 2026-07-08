@@ -64,25 +64,25 @@ void MainGS(triangle VSOut input[3], uint inPrimitiveID : SV_PrimitiveID, inout 
     input[1].position = mul(viewProjMatrix, input[1].positionWS);
     input[2].position = mul(viewProjMatrix, input[2].positionWS);
     
-    VSOut point4;
-    point4.position = input[1].position + (input[0].position - input[1].position) + (input[2].position - input[1].position);
-    point4.positionWS = input[1].positionWS + (input[0].positionWS - input[1].positionWS) + (input[2].positionWS - input[1].positionWS);
-    point4.normal = input[0].normal;
+    //VSOut point4;
+    //point4.position = input[1].position + (input[0].position - input[1].position) + (input[2].position - input[1].position);
+    //point4.positionWS = input[1].positionWS + (input[0].positionWS - input[1].positionWS) + (input[2].positionWS - input[1].positionWS);
+    //point4.normal = input[0].normal;
     
-    float tempAlpha = testStructData[inPrimitiveID].r;
-    input[0].positionWS.a = tempAlpha;
-    input[1].positionWS.a = tempAlpha;
-    input[2].positionWS.a = tempAlpha;
-    point4.positionWS.a = tempAlpha;
+    //float tempAlpha = testStructData[inPrimitiveID].r;
+    //input[0].positionWS.a = tempAlpha;
+    //input[1].positionWS.a = tempAlpha;
+    //input[2].positionWS.a = tempAlpha;
+    //point4.positionWS.a = tempAlpha;
     
-    input[0].texcoord = float4(0, 0, 0, 0);
-    input[1].texcoord = float4(0, 1, 0, 0);
-    input[2].texcoord = float4(1, 1, 0, 0);
-    point4.texcoord = float4(1, 0, 0, 0);
+    //input[0].texcoord = float4(0, 0, 0, 0);
+    //input[1].texcoord = float4(0, 1, 0, 0);
+    //input[2].texcoord = float4(1, 1, 0, 0);
+    //point4.texcoord = float4(1, 0, 0, 0);
     
     outTriangleStream.Append(input[0]);
     outTriangleStream.Append(input[1]);
-    outTriangleStream.Append(point4);
+    //outTriangleStream.Append(point4);
     outTriangleStream.Append(input[2]);
     
 }
@@ -117,5 +117,5 @@ float4 MainPS(VSOut inPSInput) : SV_Target
     float4 colorFromTexture = tex[0].Sample(samplerState, inPSInput.texcoord.xy);
     float4 colorFromTexture1 = tex[1].Sample(samplerState, inPSInput.texcoord.xy);
     float3 surfaceColor = /*ambientColor + diffuseColor + specularColor + */colorFromTexture.rgb;
-    return float4(surfaceColor, inPSInput.positionWS.a);
+    return float4(surfaceColor, 1.0);
 }
