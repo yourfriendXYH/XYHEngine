@@ -105,7 +105,9 @@ private:
 
 	std::shared_ptr<RenderPass> m_pRasterClearPass = nullptr;
 
-	std::shared_ptr<RenderPass> m_pNodeAndClusterCullPass = nullptr;
+	// 多Pass遍历四叉树（目前已知只有4层）
+	static constexpr size_t m_hierarchySize = 3u;
+	std::array<std::shared_ptr<RenderPass>, m_hierarchySize> m_pNodeAndClusterCullPass;
 
 	std::shared_ptr<RenderPass> m_pClusterCullPass = nullptr;
 

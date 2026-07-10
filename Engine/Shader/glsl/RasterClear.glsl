@@ -26,4 +26,12 @@ void main()
 	}
 	int pixelIndex = texcoord.x + texcoord.y * 1280;
 	VisBuffer64.m_data[pixelIndex] = 0u;
+
+	if (texcoord.x == 0 && texcoord.y == 0)
+	{
+		CurrentIndirectWorkArgs.m_data[0] = 0;
+		CurrentIndirectWorkArgs.m_data[1] = 1;
+		NextIndirectWorkArgs.m_data[0] = 0;
+		NextIndirectWorkArgs.m_data[1] = 1;
+	}
 }

@@ -192,7 +192,7 @@ void main()
 	//MainAndPostNodeAndClusterBatches.m_data[0] = vec4(1.0, 2.0, 3.0, 1.0);
 
 	// 单线程遍历四叉树，分层遍历
-	uint currentNodeOffset = 0;	// 总偏移（index）
+	/*uint currentNodeOffset = 0;	// 总偏移（index）
 	uint currentNodeCount = 1;	// 当前层的节点数
 	uint nextHierarchyNodeIndexOffset = currentNodeOffset + currentNodeCount;	// 下一层的偏移（下一层遍历时从哪个索引开始）
 	uint nextHierarchyNodeCount = 0;	// 用于记录下一层的节点数
@@ -234,5 +234,36 @@ void main()
 		{
 			currentNodeOffset++;
 		}
+	}*/
+
+	// 多Pass分层遍历
+	uint currentNodeOffset = CurrentIndirectWorkArgs.m_data[0];	// 总偏移（index）
+	uint currentNodeCount = CurrentIndirectWorkArgs.m_data[1];	// 当前层的节点数
+
+	uint nextHierarchyNodeIndexOffset = currentNodeOffset + currentNodeCount;	// 下一层的偏移（下一层遍历时从哪个索引开始）
+	uint nextHierarchyNodeCount = 0;	// 用于记录下一层的节点数
+	for (uint idx = 0; idx < currentNodeCount; ++idx)
+	{
+		uint currentNodeIndex = MainAndPostNodeAndClusterBatches.m_data[currentNodeOffset + idx];
+		for (int i = 0; i < NANITE_MAX_BVH_NODE_FANOUT; ++i)
+		{
+			FHierarchyNodeSlice slice = GetHierarchyNodeSlice(currentNodeIndex, i);	// 获取 Child Node
+			if (slice.bEnabled)
+			{
+				if (slice.bLeaf)	// 叶子节点
+				{
+					//
+				}
+				else
+				{
+					// 输出分层遍历的顺序
+					MainAndPostNodeAndClusterBatches.m_data[nextHierarchyNodeIndexOffset + nextHierarchyNodeCount] = slice.ChildStartReference;
+					nextHierarchyNodeCount++;
+				}
+			}
+		}
 	}
+
+	NextIndirectWorkArgs.m_data[0] = nextHierarchyNodeIndexOffset;
+	NextIndirectWorkArgs.m_data[1] = nextHierarchyNodeCount;
 }

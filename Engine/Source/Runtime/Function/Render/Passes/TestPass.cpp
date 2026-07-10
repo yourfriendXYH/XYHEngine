@@ -230,21 +230,28 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 		m_pRasterClearPass->Build();
 	}
 
-	m_pNodeAndClusterCullPass = std::make_shared<RenderPass>(ERenderPassType::ERPT_COMPUTE, "NodeAndClusterCull");
-	if (nullptr != m_pNodeAndClusterCullPass)
+	for (size_t i = 0; i < m_hierarchySize; i++)
 	{
-		m_pNodeAndClusterCullPass->SetComputeShader("Engine/Shader/glsl/NodeAndClusterCull.glsl");
-		m_pNodeAndClusterCullPass->SetUniformBuffer(0, m_pGlobalConstants);
-		m_pNodeAndClusterCullPass->SetStorageBuffer(1, m_pBVH);
-		m_pNodeAndClusterCullPass->SetStorageBuffer(2, m_workArgs[0]);
-		m_pNodeAndClusterCullPass->SetStorageBuffer(3, m_workArgs[1]);
-		m_pNodeAndClusterCullPass->SetStorageBuffer(4, m_pMainAndPostNodeAndClusterBatches);
-		m_pNodeAndClusterCullPass->SetComputeDispatchArgs(1, 1, 1);
-		m_pNodeAndClusterCullPass->Build();
+		char szName[128] = { 0 };
+		sprintf_s(szName, "NodeAndClusterCull_%d", i);
+		int currentWorkArgsIndex = i % 2;
+		int outputWorkArgsIndex = (i + 1) % 2;
+		m_pNodeAndClusterCullPass[i] = std::make_shared<RenderPass>(ERenderPassType::ERPT_COMPUTE, szName);
+		if (nullptr != m_pNodeAndClusterCullPass[i])
+		{
+			m_pNodeAndClusterCullPass[i]->SetComputeShader("Engine/Shader/glsl/NodeAndClusterCull.glsl");
+			m_pNodeAndClusterCullPass[i]->SetUniformBuffer(0, m_pGlobalConstants);
+			m_pNodeAndClusterCullPass[i]->SetStorageBuffer(1, m_pBVH);
+			m_pNodeAndClusterCullPass[i]->SetStorageBuffer(2, m_workArgs[currentWorkArgsIndex]);
+			m_pNodeAndClusterCullPass[i]->SetStorageBuffer(3, m_workArgs[outputWorkArgsIndex]);
+			m_pNodeAndClusterCullPass[i]->SetStorageBuffer(4, m_pMainAndPostNodeAndClusterBatches);
+			m_pNodeAndClusterCullPass[i]->SetComputeDispatchArgs(1, 1, 1);
+			m_pNodeAndClusterCullPass[i]->Build();
+		}
 	}
 
 	m_pClusterCullPass = std::make_shared<RenderPass>(ERenderPassType::ERPT_COMPUTE, "ClusterCull");
-	if (nullptr != m_pNodeAndClusterCullPass)
+	if (nullptr != m_pClusterCullPass)
 	{
 		m_pClusterCullPass->SetComputeShader("Engine/Shader/glsl/ClusterCull.glsl");
 		m_pClusterCullPass->SetUniformBuffer(0, m_pGlobalConstants);
@@ -877,7 +884,10 @@ void TestPass::OpenGLDrawTest()
 {
 	m_pRasterClearPass->Execute();
 
-	m_pNodeAndClusterCullPass->Execute();
+	for (size_t i = 0; i < m_hierarchySize; i++)
+	{
+		m_pNodeAndClusterCullPass[i]->Execute();
+	}
 
 	m_pClusterCullPass->Execute();
 
