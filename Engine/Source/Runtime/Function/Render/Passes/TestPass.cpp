@@ -191,7 +191,8 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 	{
 		size_t fileSize = 0;
-		unsigned char* fileContent = LoadFileContent("Engine/Resource/HierarchyBuffer.data", fileSize);	// 加载 BVH
+		//unsigned char* fileContent = LoadFileContent("Engine/Resource/HierarchyBuffer.data", fileSize);	// 加载 BVH
+		unsigned char* fileContent = LoadFileContent("Engine/Resource/mitsuba.bvh", fileSize);	// 加载 BVH
 		pOpenGLRHI->CreateBufferObject(m_pBVH, GL_SHADER_STORAGE_BUFFER, fileSize, GL_STATIC_DRAW, fileContent);
 		OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pBVH)->GetResource(), "BVH");
 		delete[] fileContent;
@@ -285,6 +286,8 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 		m_pVisualizationPass->SetComputeDispatchArgs(workGroupCountX, workGroupCountY, 1);
 		m_pVisualizationPass->Build();
 	}
+
+	m_perframeStorageBufferObj.misc0[0] = 5u;
 
 #endif // USE_OPENGL
 
@@ -882,6 +885,10 @@ void TestPass::D3D12DrawTest()
 
 void TestPass::OpenGLDrawTest()
 {
+	OpenGLRHI* pOpenGLRHI = static_cast<OpenGLRHI*>(m_pRHI.get());
+
+	pOpenGLRHI->UpdateBufferObject(m_pGlobalConstants, GL_UNIFORM_BUFFER, &m_perframeStorageBufferObj, sizeof(ST_TestPerframeStorageBufferObject), 0);
+
 	m_pRasterClearPass->Execute();
 
 	for (size_t i = 0; i < m_hierarchySize; i++)

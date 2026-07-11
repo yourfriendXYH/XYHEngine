@@ -29,9 +29,15 @@ void main()
 
 	if (texcoord.x == 0 && texcoord.y == 0)
 	{
-		CurrentIndirectWorkArgs.m_data[0] = 0;
-		CurrentIndirectWorkArgs.m_data[1] = 1;
-		NextIndirectWorkArgs.m_data[0] = 0;
-		NextIndirectWorkArgs.m_data[1] = 1;
+		// 前5个是间接绘制命令参数
+		CurrentIndirectWorkArgs.m_data[0] = 384;	// 每个cluster最多128个三角形，384个索引
+		CurrentIndirectWorkArgs.m_data[1] = 0;		// cluster的总数量
+		CurrentIndirectWorkArgs.m_data[5] = 0;
+		CurrentIndirectWorkArgs.m_data[6] = 1;
+
+		NextIndirectWorkArgs.m_data[0] = 384;	// 每个cluster最多128个三角形，384个索引
+		NextIndirectWorkArgs.m_data[1] = 0;		// cluster的总数量
+		NextIndirectWorkArgs.m_data[5] = 0;
+		NextIndirectWorkArgs.m_data[6] = 1;
 	}
 }

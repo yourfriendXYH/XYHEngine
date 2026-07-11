@@ -288,6 +288,8 @@ public:
 public:
 	void CreateBufferObject(RHIBuffer*& pOutBuffer, GLenum bufferType, GLsizeiptr size, GLenum usage, void* data = nullptr);
 
+	void UpdateBufferObject(RHIBuffer* pBuffer, GLenum bufferType, void* data, int size, int offset);
+
 private:
 
 public:

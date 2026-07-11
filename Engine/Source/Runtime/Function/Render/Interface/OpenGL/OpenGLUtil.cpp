@@ -67,6 +67,13 @@ GLuint OpenGLUtil::CreateBufferObject(GLenum bufferType, GLsizeiptr size, GLenum
 	return object;
 }
 
+void OpenGLUtil::UpdataBufferObject(GLuint object, GLenum type, void* data, int size, int offset)
+{
+	OGL_CALL(glBindBuffer(type, object));
+	OGL_CALL(glBufferSubData(type, offset, size, data));//cpu -> gpu
+	OGL_CALL(glBindBuffer(type, 0));
+}
+
 GLuint OpenGLUtil::BuildVAO(GLuint inVBO, int inAttributeCount, const char** inAttributeNames, int inVertexSizeInBytes)
 {
 	int attributeComponentCount = 4;
@@ -148,13 +155,13 @@ GLuint OpenGLUtil::CreateProgram(GLuint csShader)
 }
 
 OpenGLImage* OpenGLUtil::CreateTexture2D(
-	unsigned char* pixelData, 
-	int width, 
-	int height, 
-	GLenum gpu_format, 
-	GLenum cpu_format, 
-	GLenum wrapMode, 
-	GLenum minFilter, 
+	unsigned char* pixelData,
+	int width,
+	int height,
+	GLenum gpu_format,
+	GLenum cpu_format,
+	GLenum wrapMode,
+	GLenum minFilter,
 	GLenum magFilter)
 {
 	OpenGLImage* texture = new OpenGLImage;

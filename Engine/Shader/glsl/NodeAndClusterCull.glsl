@@ -71,7 +71,7 @@ struct FHierarchyNodeSlice
 	uint	ChildStartReference;	// Can be node (index) or cluster (page:cluster)
 	uint	NumChildren;
 	uint	StartPageIndex;
-	uint	NumPages;
+	uint	NumPages;	// 存的MipLevel（视频教学这么存的）
 	bool	bEnabled;
 	bool	bLoaded;
 	bool	bLeaf;
@@ -80,8 +80,8 @@ struct FHierarchyNodeSlice
 layout(binding = 0)uniform GlobalConstants
 {
 	mat4 ProjectionMatrix;
-	mat4 ViewMatrix;
-	mat4 ModelMatrix;
+//	mat4 ViewMatrix;
+//	mat4 ModelMatrix;
 	uvec4 Misc0;
 	vec4 CameraPositionWS;
 	vec4 ViewDirectionWS;
@@ -237,8 +237,9 @@ void main()
 	}*/
 
 	// 多Pass分层遍历
-	uint currentNodeOffset = CurrentIndirectWorkArgs.m_data[0];	// 总偏移（index）
-	uint currentNodeCount = CurrentIndirectWorkArgs.m_data[1];	// 当前层的节点数
+	uint currentClusterCount = CurrentIndirectWorkArgs.m_data[1];	// Cluster的总数量
+	uint currentNodeOffset = CurrentIndirectWorkArgs.m_data[5];	// 总偏移（index）
+	uint currentNodeCount = CurrentIndirectWorkArgs.m_data[6];	// 当前层的节点数
 
 	uint nextHierarchyNodeIndexOffset = currentNodeOffset + currentNodeCount;	// 下一层的偏移（下一层遍历时从哪个索引开始）
 	uint nextHierarchyNodeCount = 0;	// 用于记录下一层的节点数
@@ -252,7 +253,19 @@ void main()
 			{
 				if (slice.bLeaf)	// 叶子节点
 				{
-					//
+					// NumPages存的MipLevel（视频教学这么存的）
+					if (slice.NumPages == Misc0[0])	// MipLevel控制显示
+					{
+						uint clusterCountInThisLeaf = slice.NumChildren;
+						uint pageIndex = slice.ChildStartReference >> 8;	// 内存分页位置
+						uint clusterOffsetInThisPage = slice.ChildStartReference & 0xFFu;	// 内存分页的哪个Cluster开始（cluster内存分页偏移）
+						for (int index = 0; index < clusterCountInThisLeaf; ++index)
+						{
+							MainAndPostNodeAndClusterBatches.m_data[1024 + currentClusterCount * 2] = pageIndex;
+							MainAndPostNodeAndClusterBatches.m_data[1024 + currentClusterCount * 2 + 1] = clusterOffsetInThisPage + index;	// 实际偏移
+							currentClusterCount++;
+						}
+					}
 				}
 				else
 				{
@@ -264,6 +277,7 @@ void main()
 		}
 	}
 
-	NextIndirectWorkArgs.m_data[0] = nextHierarchyNodeIndexOffset;
-	NextIndirectWorkArgs.m_data[1] = nextHierarchyNodeCount;
+	NextIndirectWorkArgs.m_data[1] = currentClusterCount;	// Cluster的总数量
+	NextIndirectWorkArgs.m_data[5] = nextHierarchyNodeIndexOffset;
+	NextIndirectWorkArgs.m_data[6] = nextHierarchyNodeCount;
 }

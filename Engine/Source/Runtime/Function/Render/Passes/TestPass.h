@@ -106,7 +106,7 @@ private:
 	std::shared_ptr<RenderPass> m_pRasterClearPass = nullptr;
 
 	// 多Pass遍历四叉树（目前已知只有4层）
-	static constexpr size_t m_hierarchySize = 3u;
+	static constexpr size_t m_hierarchySize = 4u;
 	std::array<std::shared_ptr<RenderPass>, m_hierarchySize> m_pNodeAndClusterCullPass;
 
 	std::shared_ptr<RenderPass> m_pClusterCullPass = nullptr;
@@ -121,7 +121,7 @@ private:
 	std::shared_ptr<RenderPass> m_pVisualizationPass = nullptr;
 
 	// 每帧用到的通用数据（全局数据）
-	ST_TestPerframeStorageBufferObject m_perframeStorageBufferObj;
+	ST_TestPerframeStorageBufferObject m_perframeStorageBufferObj{};
 
 	ST_TestPerDrawcallStorageBufferObject m_perDrawcallStorageBufferObj;
 

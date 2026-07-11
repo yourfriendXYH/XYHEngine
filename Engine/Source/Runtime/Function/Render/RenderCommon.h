@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <Common.h>
 #include <Runtime/Core/Math/Matrix4.h>
+#include <Runtime/Core/Math/Vector4.h>
 #include "RenderType.h"
 #include "Interface/RHI.h"
 
@@ -120,7 +121,11 @@ struct ST_MeshPerframeStorageBufferObject
 struct ST_TestPerframeStorageBufferObject
 {
 	Matrix4x4 m_projViewMatrix = Matrix4x4::IDENTITY;
+	unsigned int misc0[4] = { 0, 0, 0, 0 };
+	Vector4 m_cameraPositionWS;
+	Vector4 ViewDirectionWS;
 };
+
 struct ST_TestPerDrawcallStorageBufferObject
 {
 	Matrix4x4 m_modelMatrix = Matrix4x4::IDENTITY;

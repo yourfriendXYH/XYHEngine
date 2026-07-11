@@ -24,7 +24,7 @@ layout(binding = 2, std430)buffer FIndirectWorkArgs
 
 layout(binding = 3, std430)buffer FVisibleClusterSoftwareHardware
 {
-	uint m_data[];
+	uvec2 m_data[];
 }VisibleClusterSwHw;
 
 layout(binding = 4, std430)buffer FMainAndPostNodeAndClusterBatches
@@ -35,4 +35,11 @@ layout(binding = 4, std430)buffer FMainAndPostNodeAndClusterBatches
 
 void main()
 {
+	uint clusterCount = IndirectWorkArgs.m_data[1];	// 获取cluster数量
+	// 传递cluster内存分页所在位置
+	for (uint index = 0; index < clusterCount; ++index)
+	{
+		VisibleClusterSwHw.m_data[index].x = MainAndPostNodeAndClusterBatches.m_data[1024 + index * 2];
+		VisibleClusterSwHw.m_data[index].y = MainAndPostNodeAndClusterBatches.m_data[1024 + index * 2 + 1];
+	}
 }

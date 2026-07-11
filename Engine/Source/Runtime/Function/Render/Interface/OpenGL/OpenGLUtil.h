@@ -58,6 +58,8 @@ public:
 
 	static GLuint CreateBufferObject(GLenum bufferType, GLsizeiptr size, GLenum usage, void* data = nullptr);
 
+	static void UpdataBufferObject(GLuint object, GLenum type, void* data, int size, int offset);
+
 	static GLuint BuildVAO(GLuint inVBO, int inAttributeCount, const char** inAttributeNames, int inVertexSizeInBytes);
 
 	static GLuint CompileShader(GLenum shaderType, const char* shaderCode);
@@ -67,13 +69,13 @@ public:
 	static GLuint CreateProgram(GLuint csShader);
 
 	static OpenGLImage* CreateTexture2D(
-		unsigned char* pixelData, 
-		int width, 
-		int height, 
-		GLenum gpu_format = GL_RGB, 
+		unsigned char* pixelData,
+		int width,
+		int height,
+		GLenum gpu_format = GL_RGB,
 		GLenum cpu_format = GL_RGB,
-		GLenum wrapMode = GL_CLAMP_TO_EDGE, 
-		GLenum minFilter = GL_LINEAR, 
+		GLenum wrapMode = GL_CLAMP_TO_EDGE,
+		GLenum minFilter = GL_LINEAR,
 		GLenum magFilter = GL_LINEAR
 	);
 

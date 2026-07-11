@@ -68,6 +68,13 @@ void OpenGLRHI::CreateBufferObject(RHIBuffer*& pOutBuffer, GLenum bufferType, GL
 	((OpenGLBuffer*)pOutBuffer)->SetResource(buffer);
 }
 
+void OpenGLRHI::UpdateBufferObject(RHIBuffer* pBuffer, GLenum bufferType, void* data, int size, int offset)
+{
+	//assert(pBuffer);
+	GLuint buffer = ((OpenGLBuffer*)pBuffer)->GetResource();
+	OpenGLUtil::UpdataBufferObject(buffer, bufferType, data, size, offset);
+}
+
 void CheckLastOpenGLError(const char* prefix, const char* file, long line, const char* operation)
 {
 	GLenum glerr;
