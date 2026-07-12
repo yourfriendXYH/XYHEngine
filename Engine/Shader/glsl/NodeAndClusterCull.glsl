@@ -323,7 +323,7 @@ bool ShouldVisitChild(FHierarchyNodeSlice hierarchyNodeSlice)
 	vec2 projectionScales = GetProjectedEdgeScales(vec4(boundingSphereWS.xyz, hierarchyNodeSlice.LODBounds.w));
 
 	float LODScale = CameraPositionWS.w;
-	float threshold = LODScale * hierarchyNodeSlice.MaxParentLODError;
+	float threshold = LODScale * hierarchyNodeSlice.MaxParentLODError;	// 剔除关键： MaxParentLODError
 	if (projectionScales.x <= threshold)
 	{
 		return true;

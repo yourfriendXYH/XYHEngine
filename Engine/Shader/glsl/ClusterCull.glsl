@@ -177,7 +177,7 @@ void main()
 		float LODScale = CameraPositionWS.w;
 		float LODScaleHW = ViewDirectionWS.w;
 
-		if (projectionScales.x > clusterInfo.m_LODError * LODScale)
+		if (projectionScales.x > clusterInfo.m_LODError * LODScale)	// 剔除关键： m_LODError
 		{
 			if (projectionScales.x < abs(clusterInfo.m_edgeLength) * LODScaleHW)	// 区分软硬件光栅化
 			{
