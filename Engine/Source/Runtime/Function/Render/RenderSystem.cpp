@@ -10,6 +10,7 @@
 #include <Runtime/Function/Render/Interface/Vulkan/VulkanRHI.h>
 #include <Runtime/Function/Render/Interface/DX12/D3D12RHI.h>
 #include <Runtime/Function/Render/Passes/ParticlePass.h>
+#include <Runtime/Function/Render/WindowSystem.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -61,10 +62,18 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 	// 渲染相机
 	// 初始化相机参数
 	m_pRenderCamera = std::make_shared<RenderCamera>();	// 创建渲染相机
-	m_pRenderCamera->LookAt(Vector3(0.0f, 0.0f, 2.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));	// 设置相机初始位置和方向
-	m_pRenderCamera->m_zFar = 100.0f;	// 设置远裁剪面
+	m_pRenderCamera->LookAt(Vector3(330.0f, 330.0f, 500.0f), Vector3(0.0f, 80.0f, 80.0f), Vector3(0.0f, 1.0f, 0.0f));	// 设置相机初始位置和方向
+	m_pRenderCamera->m_zFar = 10000.0f;	// 设置远裁剪面
 	m_pRenderCamera->m_zNear = 0.1f;		// 设置近裁剪面
 	m_pRenderCamera->SetAspectRatio(1280.0f / 720.0f);	// 设置宽高比
+	initInfo.m_pWindowSystem->RegisterOnKeyFunc(std::bind(
+		&RenderCamera::OnKey,
+		m_pRenderCamera.get(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3,
+		std::placeholders::_4));
+
 
 	// 渲染场景
 	m_pRenderScene = std::make_shared<RenderScene>();	// 创建渲染场景
@@ -72,6 +81,7 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 	m_pRenderScene->m_directionalLight.m_direction = Vector3(-1.0f, -1.0f, -1.0f).normalisedCopy();	// 设置直射光方向
 	m_pRenderScene->m_directionalLight.m_color = Vector3(1.0f, 1.0f, 1.0f);	// 设置直射光颜色
 	m_pRenderScene->SetVisibleNodesReference();
+
 
 	// 渲染管线
 	m_pRenderPipeline = std::make_shared<RenderPipeline>();
@@ -100,9 +110,9 @@ void RenderSystem::Tick(float deltaTime)
 	// 准备渲染用到的资源和数据
 //#ifdef USE_VULKAN	// 使用Vulkan
 	m_pRenderPipeline->PreparePassData(m_pRenderResource);
-//#endif // USE_VK
+	//#endif // USE_VK
 
-	// 执行渲染流程
+		// 执行渲染流程
 	if (m_renderPipelineType == ERENDER_PIPELINE_TYPE::FORWARD_PIPELINE)	// 前向渲染
 	{
 		// 暂不处理

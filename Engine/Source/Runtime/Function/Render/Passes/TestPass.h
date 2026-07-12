@@ -95,6 +95,8 @@ private:
 
 	RHIBuffer* m_pGlobalConstants = nullptr;	// 全局使用的UniformBuffer
 
+	RHIBuffer* m_pPerDrawcallBuffer = nullptr;	// 存储NaniteMesh的modelMatrix
+
 	RHIBuffer* m_pNaniteMesh = nullptr;	// 
 
 	RHIBuffer* m_pVisibleClusterSoftwareHardware = nullptr;	// 

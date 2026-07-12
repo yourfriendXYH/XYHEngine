@@ -178,6 +178,7 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 	m_shaderProgramFSQ = OpenGLUtil::CreateProgram(vsShader, fsShader);
 
+	// 间接命令绘制 和 存储四叉树遍历的数据
 	pOpenGLRHI->CreateBufferObject(m_workArgs[0], GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
 	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_workArgs[0])->GetResource(), "workArgs[0]");
 	pOpenGLRHI->CreateBufferObject(m_workArgs[1], GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
@@ -186,10 +187,15 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	pOpenGLRHI->CreateBufferObject(m_pGlobalConstants, GL_UNIFORM_BUFFER, 4096, GL_STATIC_DRAW, nullptr);
 	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pGlobalConstants)->GetResource(), "GlobalConstants");
 
+	pOpenGLRHI->CreateBufferObject(m_pPerDrawcallBuffer, GL_SHADER_STORAGE_BUFFER, 4096, GL_STATIC_DRAW, nullptr);
+	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pPerDrawcallBuffer)->GetResource(), "PerDrawcallBuffer");
+
+	// 存储四叉树Node Index，从1024字节开始存储 Cluster内存分页的位置
 	pOpenGLRHI->CreateBufferObject(m_pMainAndPostNodeAndClusterBatches, GL_SHADER_STORAGE_BUFFER, _4MB, GL_STATIC_DRAW, nullptr);
 	OpenGLUtil::SetObjectName(GL_BUFFER, ((OpenGLBuffer*)m_pMainAndPostNodeAndClusterBatches)->GetResource(), "MainAndPostNodeAndClusterBatches");
 
 	{
+		// BVH数据
 		size_t fileSize = 0;
 		//unsigned char* fileContent = LoadFileContent("Engine/Resource/HierarchyBuffer.data", fileSize);	// 加载 BVH
 		unsigned char* fileContent = LoadFileContent("Engine/Resource/mitsuba.bvh", fileSize);	// 加载 BVH
@@ -199,6 +205,7 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	}
 
 	{
+		// nanite mesh数据
 		size_t fileSize = 0;
 		unsigned char* fileContent = LoadFileContent("Engine/Resource/mitsuba.nanitemesh", fileSize);	// 加载 Nanite Mesh
 		pOpenGLRHI->CreateBufferObject(m_pNaniteMesh, GL_SHADER_STORAGE_BUFFER, fileSize, GL_STATIC_DRAW, fileContent);
@@ -212,7 +219,8 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 	m_pVisualizationTexture = OpenGLUtil::CreateTexture2D(nullptr, 1280, 720, GL_RGBA32F, GL_RGBA);
 	OpenGLUtil::SetObjectName(GL_TEXTURE, m_pVisualizationTexture->m_image, "VisualizationTexture");
 
-	m_visBuffer64 = OpenGLUtil::CreateBufferObject(GL_SHADER_STORAGE_BUFFER, 1280 * 720 * sizeof(unsigned int), GL_STATIC_DRAW, nullptr);
+	// 用于 着色 和 深度测试
+	m_visBuffer64 = OpenGLUtil::CreateBufferObject(GL_SHADER_STORAGE_BUFFER, 1280 * 720 * sizeof(uint64_t), GL_STATIC_DRAW, nullptr);
 	OpenGLUtil::SetObjectName(GL_BUFFER, m_visBuffer64, "VisBuffer64");
 	OpenGLBuffer* pVisBuffer64 = new OpenGLBuffer;
 	pVisBuffer64->SetResource(m_visBuffer64);
@@ -246,6 +254,7 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 			m_pNodeAndClusterCullPass[i]->SetStorageBuffer(2, m_workArgs[currentWorkArgsIndex]);
 			m_pNodeAndClusterCullPass[i]->SetStorageBuffer(3, m_workArgs[outputWorkArgsIndex]);
 			m_pNodeAndClusterCullPass[i]->SetStorageBuffer(4, m_pMainAndPostNodeAndClusterBatches);
+			m_pNodeAndClusterCullPass[i]->SetStorageBuffer(5, m_pPerDrawcallBuffer);
 			m_pNodeAndClusterCullPass[i]->SetComputeDispatchArgs(1, 1, 1);
 			m_pNodeAndClusterCullPass[i]->Build();
 		}
@@ -260,6 +269,7 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 		m_pClusterCullPass->SetStorageBuffer(2, m_workArgs[0]);
 		m_pClusterCullPass->SetStorageBuffer(3, m_pVisibleClusterSoftwareHardware);
 		m_pClusterCullPass->SetStorageBuffer(4, m_pMainAndPostNodeAndClusterBatches);
+		m_pClusterCullPass->SetStorageBuffer(5, m_pPerDrawcallBuffer);
 		m_pClusterCullPass->SetComputeDispatchArgs(1, 1, 1);
 		m_pClusterCullPass->Build();
 	}
@@ -273,6 +283,7 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 		m_pHardwareRasterizePass->SetStorageBuffer(1, m_pNaniteMesh);
 		m_pHardwareRasterizePass->SetStorageBuffer(2, m_pVisibleClusterSoftwareHardware);
 		m_pHardwareRasterizePass->SetStorageBuffer(3, pVisBuffer64);
+		m_pHardwareRasterizePass->SetStorageBuffer(4, m_pPerDrawcallBuffer);
 		m_pHardwareRasterizePass->Build(1280, 720);
 	}
 
@@ -287,7 +298,8 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 		m_pVisualizationPass->Build();
 	}
 
-	m_perframeStorageBufferObj.misc0[0] = 5u;
+	m_perframeStorageBufferObj.m_misc0[0] = 10u;
+
 
 #endif // USE_OPENGL
 
@@ -323,7 +335,12 @@ void TestPass::PreparePassData(std::shared_ptr<RenderResourceBase> renderResourc
 	const RenderResource* vulkanResource = static_cast<const RenderResource*>(renderResource.get());
 	if (nullptr != vulkanResource)
 	{
-		m_perframeStorageBufferObj.m_projViewMatrix = vulkanResource->m_meshPerframeStorageBufferObject.m_projViewMatrix;
+		m_perframeStorageBufferObj.m_projViewMatrix = vulkanResource->m_meshPerframeStorageBufferObject.m_projViewMatrix.transpose();
+		m_perframeStorageBufferObj.m_projMatrix = vulkanResource->m_meshPerframeStorageBufferObject.m_projMatrix.transpose();
+		m_perframeStorageBufferObj.m_viewMatrix = vulkanResource->m_meshPerframeStorageBufferObject.m_viewMatrix.transpose();
+		m_perframeStorageBufferObj.m_viewMatrixWithoutTranslate = vulkanResource->m_meshPerframeStorageBufferObject.m_viewMatrixWithoutTranslate.transpose();
+		m_perframeStorageBufferObj.m_cameraPositionWS = Vector4(vulkanResource->m_meshPerframeStorageBufferObject.m_cameraPosition, 1.0f);
+		m_perframeStorageBufferObj.m_viewDirectionWS = Vector4(vulkanResource->m_meshPerframeStorageBufferObject.m_viewDirection, 0.0f);
 	}
 }
 
@@ -887,7 +904,21 @@ void TestPass::OpenGLDrawTest()
 {
 	OpenGLRHI* pOpenGLRHI = static_cast<OpenGLRHI*>(m_pRHI.get());
 
+	m_perframeStorageBufferObj.m_misc0[0] = unsigned int(m_tempDegree / 100) % 11u;
+
+	m_tempDegree++;
+
+	const float ViewToPIxels = 0.5f * m_perframeStorageBufferObj.m_projMatrix[1][1] * pOpenGLRHI->GetSwapchainInfo().m_pViewport->m_height;
+	float LODScale = abs(ViewToPIxels / 1.0f);	// 用于判断四叉树剔除的参数
+	float LODScaleHW = abs(ViewToPIxels / 32.0f);	// 用于判断使用硬光栅化
+
+	m_perframeStorageBufferObj.m_cameraPositionWS.w = LODScale;
+	m_perframeStorageBufferObj.m_viewDirectionWS.w = LODScaleHW;
+
 	pOpenGLRHI->UpdateBufferObject(m_pGlobalConstants, GL_UNIFORM_BUFFER, &m_perframeStorageBufferObj, sizeof(ST_TestPerframeStorageBufferObject), 0);
+
+	m_perDrawcallStorageBufferObj.m_modelMatrix = Matrix4x4(Vector3(200.0f, 400.f, -200.f), Vector3(1.f, 1.f, 1.f), Quaternion(Radian(Degree(static_cast<float>(0.0f))), Vector3(0.0, 0.0, 1.0))).transpose();
+	pOpenGLRHI->UpdateBufferObject(m_pPerDrawcallBuffer, GL_SHADER_STORAGE_BUFFER, &m_perDrawcallStorageBufferObj, sizeof(ST_TestPerDrawcallStorageBufferObject), 0);
 
 	m_pRasterClearPass->Execute();
 

@@ -3,6 +3,7 @@
 #include "Runtime/Core/Math/MathHeaders.h"
 #include <mutex>
 
+
 NAMESPACE_XYH_BEGIN
 
 //相机类型
@@ -42,6 +43,8 @@ public:
 
 	Matrix4x4 GetViewMatrix();	// 获取视图矩阵
 
+	Matrix4x4 GetViewMatrixWithoutTranslate();	// 获取视图矩阵
+
 	Matrix4x4 GetPersProjMatrix() const;	// 获取透视投影矩阵
 
 	Matrix4x4 GetLookAtMatrix() const;	// 获取观察矩阵
@@ -64,11 +67,14 @@ public:
 
 	std::vector<Matrix4x4> m_viewMatrices = { Matrix4x4::IDENTITY };	// 视图矩阵
 
+	// test key
+	void OnKey(int key, int scancode, int action, int mods);
+
 protected:
 	float m_aspectRatio = 0.0f;	// 宽高比
 
 	// 指相机能看到的视野范围
-	float m_fovX = Degree(120.f).valueDegrees();	// 水平视场角
+	float m_fovX = Degree(90.f).valueDegrees();	// 水平视场角
 	float m_fovY = 0.0f;	// 垂直视场角
 
 	std::mutex m_viewMatrixMutex;	// 视图矩阵互斥锁

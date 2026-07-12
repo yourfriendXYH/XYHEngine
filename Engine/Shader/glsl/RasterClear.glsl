@@ -1,4 +1,5 @@
 #version 450
+#extension GL_ARB_gpu_shader_int64 : enable
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1)in;
 
@@ -14,7 +15,7 @@ layout(binding = 1, std430)buffer FNextIndirectWorkArgs
 
 layout(binding = 2, std430)buffer FVisBuffer64
 {
-	uint m_data[];
+	uint64_t m_data[];
 }VisBuffer64;
 
 void main()
@@ -25,7 +26,10 @@ void main()
 		return;
 	}
 	int pixelIndex = texcoord.x + texcoord.y * 1280;
-	VisBuffer64.m_data[pixelIndex] = 0u;
+
+	VisBuffer64.m_data[pixelIndex] = 0xFFFFFFFF00000000ul;	// 高位为深度值，低位为ClusterIndex
+
+	//VisBuffer64.m_data[pixelIndex] = 0x0000000000000000ul;	// 高位为深度值，低位为ClusterIndex
 
 	if (texcoord.x == 0 && texcoord.y == 0)
 	{

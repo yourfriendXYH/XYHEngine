@@ -3,8 +3,9 @@
 layout(binding = 0)uniform GlobalConstants
 {
 	mat4 ViewProjectionMatrix;
-	//mat4 ViewMatrix;  // 此ViewMatrix不允许带相机偏移
-	//mat4 ModelMatrix;
+    mat4 ProjMatrix;
+	mat4 ViewMatrix;
+    mat4 ViewMatrixWithoutTranslate;  // 此ViewMatrix不允许带相机偏移
 	uvec4 Misc0;
 	vec4 CameraPositionWS;
 	vec4 ViewDirectionWS;
@@ -19,6 +20,13 @@ layout(binding = 2, std430)readonly buffer VisibleClusterSoftwareHardware
 {
 	uint m_data[];
 }VisibleClusterSwHw;
+
+layout(binding = 4, std430)readonly buffer FPerDrawcallBuffer
+{
+    mat4 m_modelMatrix;
+}PerDrawcallBuffer;
+
+layout(location = 0)flat out uvec4 v_cluasterIndex;
 
 struct ClusterInfo
 {
@@ -69,8 +77,8 @@ void main()
     uint pageIndex = VisibleClusterSwHw.m_data[clusterIndexWithInvoke * 2];
     uint clusterIndex = VisibleClusterSwHw.m_data[clusterIndexWithInvoke * 2 + 1];
 
-    ClusterInfo clusterInfo=GetClusterInfo(pageIndex,clusterIndex);
-    vec4 positionCS=vec4(0.0f,0.0f,0.0f,0.0f);
+    ClusterInfo clusterInfo = GetClusterInfo(pageIndex,clusterIndex);
+    vec4 positionCS = vec4(0.0f,0.0f,0.0f,0.0f);
     if(vertexIndex < clusterInfo.m_indexCount)  // 索引数量不一定有384个
     {
         uint currentVertexIndexOffsetBase = clusterInfo.m_baseOffset + clusterInfo.m_indexOffset;
@@ -85,10 +93,12 @@ void main()
                 NaniteMesh.m_data[currentVertexPositionDataOffset + 2]
             )
         );
-        vec4 positionWS = /*ModelMatrix * */vec4(positionMS, 1.0f);
+        vec4 positionWS = PerDrawcallBuffer.m_modelMatrix * vec4(positionMS, 1.0f);
         positionWS.xyz = positionWS.xyz - CameraPositionWS.xyz; // 此算法中，ViewMatrix不能带偏移
-        //
-        positionCS = ViewProjectionMatrix * positionWS;
+        vec4 positionVS = ViewMatrixWithoutTranslate * positionWS;  // 乘上没有Translate的ViewMatrix
+        positionCS = ProjMatrix * positionWS;
+
+        v_cluasterIndex.x = (pageIndex << 8) | (clusterIndex + 1);  // ???
     }
     else
     {

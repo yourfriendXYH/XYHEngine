@@ -80,8 +80,9 @@ struct FHierarchyNodeSlice
 layout(binding = 0)uniform GlobalConstants
 {
 	mat4 ProjectionMatrix;
-//	mat4 ViewMatrix;
-//	mat4 ModelMatrix;
+	mat4 ProjMatrix;
+	mat4 ViewMatrix;
+	mat4 ViewMatrixWithoutTranslate;  // 此ViewMatrix不允许带相机偏移
 	uvec4 Misc0;
 	vec4 CameraPositionWS;
 	vec4 ViewDirectionWS;
@@ -108,6 +109,10 @@ layout(binding = 4, std430)buffer FMainAndPostNodeAndClusterBatches
 	//vec4 m_data[];
 }MainAndPostNodeAndClusterBatches;
 
+layout(binding = 5, std430)readonly buffer FPerDrawcallBuffer
+{
+    mat4 m_modelMatrix;
+}PerDrawcallBuffer;
 
 // UE5源码位置：Platform.ush
 uint BitFieldExtractU32(uint Data, uint Size, uint Offset)
@@ -180,6 +185,152 @@ FHierarchyNodeSlice GetHierarchyNodeSlice(uint NodeIndex, uint ChildIndex)
 	return UnpackHierarchyNodeSlice(RawData0, RawData1, RawData2, RawData3);
 }
 
+//vec2 GetProjectionScales(vec4 sphere)
+//{
+//	vec3 center = sphere.xyz;
+//	float radius = sphere.w;
+//
+//	float disToSphereCenterSqrt = dot(center, center);
+//	float disToSphereCenter = sqrt(disToSphereCenterSqrt);
+//
+//	float zVS = dot(ViewDirectionWS.xyz, center);
+//	float xVS = sqrt(disToSphereCenterSqrt - zVS * zVS);
+//
+//	float disToTangentPoint = sqrt(disToSphereCenterSqrt - radius * radius);
+//
+//	float sinTheta = radius / disToSphereCenter;
+//	float cosTheta = disToTangentPoint / disToSphereCenter;
+//
+//	float a = (-sinTheta * xVS + cosTheta * zVS) / disToSphereCenter;
+//	float b = (sinTheta * xVS + cosTheta * zVS) / disToSphereCenter;
+//
+//	float minZ = max(10.0f, zVS - radius);	// 近裁剪面为 10
+//	float maxZ = max(10.0f, zVS + radius);
+//
+//	if (zVS + radius > 10.0f)
+//	{
+//		return vec2(minZ * a, maxZ * b);
+//	}
+//
+//	return vec2(0.0, 0.0);
+//}
+
+// 对应的虚幻源码 NaniteClusterCulling.usf
+//float2 GetProjectedEdgeScales(FNaniteView NaniteView, FInstanceSceneData InstanceData, FInstanceDynamicData DynamicData, float4 Bounds)	// float2(min, max)
+//{
+//	if( NaniteView.ViewToClip[ 3 ][ 3 ] >= 1.0f )
+//	{
+//		// Ortho
+//		return float2( 1, 1 );
+//	}
+//	float3 Center = mul( float4( Bounds.xyz, 1.0f ), DynamicData.LocalToTranslatedWorld ).xyz;
+//	float Radius = Bounds.w * InstanceData.NonUniformScale.w;
+//
+//	float ZNear = NaniteView.NearPlane;
+//	float DistToClusterSq = length2( Center );	// camera origin in (0,0,0)
+//	
+//	float Z = dot(NaniteView.ViewForward.xyz, Center);
+//	float XSq = DistToClusterSq - Z * Z;
+//	float X = sqrt( max(0.0f, XSq) );
+//	float DistToTSq = DistToClusterSq - Radius * Radius;
+//	float DistToT = sqrt( max(0.0f, DistToTSq) );
+//	float ScaledCosTheta = DistToT;
+//	float ScaledSinTheta = Radius;
+//	float ScaleToUnit = rcp( DistToClusterSq );	// 求导
+//	float By = (  ScaledSinTheta * X + ScaledCosTheta * Z ) * ScaleToUnit;
+//	float Ty = ( -ScaledSinTheta * X + ScaledCosTheta * Z ) * ScaleToUnit;
+//	
+//	float H = ZNear - Z;
+//	if( DistToTSq < 0.0f || By * DistToT < ZNear )
+//	{
+//		float Bx = max( X - sqrt( Radius * Radius - H * H ), 0.0f );
+//		By = ZNear * rsqrt( Bx * Bx + ZNear * ZNear );
+//	}
+//
+//	if( DistToTSq < 0.0f || Ty * DistToT < ZNear )
+//	{	
+//		float Tx = X + sqrt( Radius * Radius - H * H );
+//		Ty = ZNear * rsqrt( Tx * Tx + ZNear * ZNear );
+//	}
+//
+//	float MinZ = max( Z - Radius, ZNear );
+//	float MaxZ = max( Z + Radius, ZNear );
+//	float MinCosAngle = Ty;
+//	float MaxCosAngle = By;
+//
+//	if(Z + Radius > ZNear)
+//		return float2( MinZ * MinCosAngle, MaxZ * MaxCosAngle );
+//	else
+//		return float2( 0.0f, 0.0f );
+//}
+
+// 基于虚幻源码算法直接修改
+vec2 GetProjectedEdgeScales(vec4 Bounds)	// float2(min, max)
+{
+	if( ProjMatrix[ 3 ][ 3 ] >= 1.0f )
+	{
+		// Ortho
+		return vec2( 1, 1 );
+	}
+	vec3 Center = Bounds.xyz;
+	float Radius = Bounds.w;
+
+	float ZNear = 10.0f;
+	float DistToClusterSq = dot( Center, Center );	// camera origin in (0,0,0)
+	
+	float Z = dot(ViewDirectionWS.xyz, Center);
+	float XSq = DistToClusterSq - Z * Z;
+	float X = sqrt( max(0.0f, XSq) );
+	float DistToTSq = DistToClusterSq - Radius * Radius;
+	float DistToT = sqrt( max(0.0f, DistToTSq) );
+	float ScaledCosTheta = DistToT;
+	float ScaledSinTheta = Radius;
+	float ScaleToUnit = 1.0 / DistToClusterSq;
+	float By = (  ScaledSinTheta * X + ScaledCosTheta * Z ) * ScaleToUnit;
+	float Ty = ( -ScaledSinTheta * X + ScaledCosTheta * Z ) * ScaleToUnit;
+	
+	float H = ZNear - Z;
+	/*if( DistToTSq < 0.0f || By * DistToT < ZNear )
+	{
+		float Bx = max( X - sqrt( Radius * Radius - H * H ), 0.0f );
+		By = ZNear * rsqrt( Bx * Bx + ZNear * ZNear );
+	}
+
+	if( DistToTSq < 0.0f || Ty * DistToT < ZNear )
+	{	
+		float Tx = X + sqrt( Radius * Radius - H * H );
+		Ty = ZNear * rsqrt( Tx * Tx + ZNear * ZNear );
+	}*/
+
+	float MinZ = max( Z - Radius, ZNear );
+	float MaxZ = max( Z + Radius, ZNear );
+	float MinCosAngle = Ty;
+	float MaxCosAngle = By;
+
+	if(Z + Radius > ZNear)
+		return vec2( MinZ * MinCosAngle, MaxZ * MaxCosAngle );
+	else
+		return vec2( 0.0f, 0.0f );
+}
+
+bool ShouldVisitChild(FHierarchyNodeSlice hierarchyNodeSlice)
+{
+	vec3 boundingSphere = hierarchyNodeSlice.LODBounds.xyz;
+	vec4 boundingSphereWS = PerDrawcallBuffer.m_modelMatrix * vec4(boundingSphere, 1.0);
+	boundingSphereWS.xyz = boundingSphereWS.xyz - CameraPositionWS.xyz;	// 转为TranslatedSpace
+
+	// 根据 四叉树节点 的 球形包围盒 计算缩放值
+	vec2 projectionScales = GetProjectedEdgeScales(vec4(boundingSphereWS.xyz, hierarchyNodeSlice.LODBounds.w));
+
+	float LODScale = CameraPositionWS.w;
+	float threshold = LODScale * hierarchyNodeSlice.MaxParentLODError;
+	if (projectionScales.x <= threshold)
+	{
+		return true;
+	}
+	return false;
+}
+
 void main()
 {
 	uint bvhNodeCount = 21u;
@@ -249,13 +400,14 @@ void main()
 		for (int i = 0; i < NANITE_MAX_BVH_NODE_FANOUT; ++i)
 		{
 			FHierarchyNodeSlice slice = GetHierarchyNodeSlice(currentNodeIndex, i);	// 获取 Child Node
-			if (slice.bEnabled)
+			bool shouldVisitChild = ShouldVisitChild(slice);	// 四叉树剔除
+			if (slice.bEnabled && shouldVisitChild)
 			{
 				if (slice.bLeaf)	// 叶子节点
 				{
 					// NumPages存的MipLevel（视频教学这么存的）
-					if (slice.NumPages == Misc0[0])	// MipLevel控制显示
-					{
+//					if (slice.NumPages == Misc0[0])	// MipLevel控制显示
+//					{
 						uint clusterCountInThisLeaf = slice.NumChildren;
 						uint pageIndex = slice.ChildStartReference >> 8;	// 内存分页位置
 						uint clusterOffsetInThisPage = slice.ChildStartReference & 0xFFu;	// 内存分页的哪个Cluster开始（cluster内存分页偏移）
@@ -265,7 +417,7 @@ void main()
 							MainAndPostNodeAndClusterBatches.m_data[1024 + currentClusterCount * 2 + 1] = clusterOffsetInThisPage + index;	// 实际偏移
 							currentClusterCount++;
 						}
-					}
+//					}
 				}
 				else
 				{

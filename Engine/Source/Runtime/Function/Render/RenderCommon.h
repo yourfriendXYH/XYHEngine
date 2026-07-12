@@ -104,8 +104,13 @@ struct ST_VulkanScenePointLight
 struct ST_MeshPerframeStorageBufferObject
 {
 	Matrix4x4 m_projViewMatrix;
+	Matrix4x4 m_projMatrix;
+	Matrix4x4 m_viewMatrix;
+	Matrix4x4 m_viewMatrixWithoutTranslate;
 	Vector3 m_cameraPosition;
 	float paddingCameraPosition;
+	Vector3 m_viewDirection;
+	float paddingViewDirection;
 	Vector3 m_ambientLight;
 	float paddingAmbientLight;
 	uint32_t m_pointLightNum;
@@ -121,9 +126,12 @@ struct ST_MeshPerframeStorageBufferObject
 struct ST_TestPerframeStorageBufferObject
 {
 	Matrix4x4 m_projViewMatrix = Matrix4x4::IDENTITY;
-	unsigned int misc0[4] = { 0, 0, 0, 0 };
+	Matrix4x4 m_projMatrix = Matrix4x4::IDENTITY;
+	Matrix4x4 m_viewMatrix = Matrix4x4::IDENTITY;
+	Matrix4x4 m_viewMatrixWithoutTranslate = Matrix4x4::IDENTITY;	// 此ViewMatrix不允许带相机偏移 123
+	unsigned int m_misc0[4] = { 0, 0, 0, 0 };
 	Vector4 m_cameraPositionWS;
-	Vector4 ViewDirectionWS;
+	Vector4 m_viewDirectionWS;
 };
 
 struct ST_TestPerDrawcallStorageBufferObject

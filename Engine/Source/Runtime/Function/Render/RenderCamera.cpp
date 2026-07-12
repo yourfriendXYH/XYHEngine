@@ -120,6 +120,15 @@ Matrix4x4 RenderCamera::GetViewMatrix()
 	return viewMatrix;
 }
 
+Matrix4x4 RenderCamera::GetViewMatrixWithoutTranslate()
+{
+	Matrix4x4 viewMatrix = GetViewMatrix();
+	viewMatrix[0][3] = 0.0f;
+	viewMatrix[1][3] = 0.0f;
+	viewMatrix[2][3] = 0.0f;
+	return viewMatrix;
+}
+
 Matrix4x4 RenderCamera::GetPersProjMatrix() const
 {
 	// 计算透视投影矩阵
@@ -132,6 +141,33 @@ Matrix4x4 RenderCamera::GetPersProjMatrix() const
 Matrix4x4 RenderCamera::GetLookAtMatrix() const
 {
 	return Math::makeLookAtMatrix(Position(), Position() + Forward(), Up());
+}
+
+void RenderCamera::OnKey(int key, int scancode, int action, int mods)
+{
+	switch (key)
+	{
+	case 65:	// A
+		Move(Vector3(-10.0f, 0.0f, 0.0f));
+		break;
+	case 83:	// S
+		Move(Vector3(0.0f, 0.0f, -10.0f));
+		break;
+	case 87:	// W
+		Move(Vector3(0.0f, 0.0f, 10.0f));
+		break;
+	case 68:	// D
+		Move(Vector3(10.0f, 0.0f, 0.0f));
+		break;
+	case 69:	// E
+		Move(Vector3(0.0f, 10.0f, 0.0f));
+		break;
+	case 81:	// Q
+		Move(Vector3(0.0f, -10.0f, 0.0f));
+		break;
+	default:
+		break;
+	}
 }
 
 NAMESPACE_XYH_END

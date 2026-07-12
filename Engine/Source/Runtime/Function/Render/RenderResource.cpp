@@ -112,8 +112,10 @@ void RenderResource::UpdatePerFrameBuffer(std::shared_ptr<RenderScene> pRenderSc
 {
 	// 相机属性
 	Matrix4x4 viewMatrix = pCamera->GetViewMatrix();
+	Matrix4x4 viewMatrixWithoutTranslate = pCamera->GetViewMatrixWithoutTranslate();
 	Matrix4x4 projMatrix = pCamera->GetPersProjMatrix();
 	Vector3 cameraPosition = pCamera->Position();
+	Vector3 viewDirection = pCamera->Forward();
 	Matrix4x4 projViewMatrix = projMatrix * viewMatrix;
 
 	// 环境光
@@ -126,7 +128,11 @@ void RenderResource::UpdatePerFrameBuffer(std::shared_ptr<RenderScene> pRenderSc
 	m_particleCollisionPerframeStorageBufferObject.m_projInvMatrix = projMatrix.inverse();
 
 	m_meshPerframeStorageBufferObject.m_projViewMatrix = projViewMatrix;
+	m_meshPerframeStorageBufferObject.m_projMatrix = projMatrix;
+	m_meshPerframeStorageBufferObject.m_viewMatrix = viewMatrix;
+	m_meshPerframeStorageBufferObject.m_viewMatrixWithoutTranslate = viewMatrixWithoutTranslate;
 	m_meshPerframeStorageBufferObject.m_cameraPosition = cameraPosition;
+	m_meshPerframeStorageBufferObject.m_viewDirection = viewDirection;
 	m_meshPerframeStorageBufferObject.m_ambientLight = ambientLight;
 	m_meshPerframeStorageBufferObject.m_pointLightNum = pointLightNum;
 
@@ -510,7 +516,7 @@ void RenderResource::UpdateVertexBuffer(
 		);
 
 		// 指向Position数据块的指针
-		ST_MeshVertex::ST_VulkanMeshVertexPostition* pMeshVertexPositions = 
+		ST_MeshVertex::ST_VulkanMeshVertexPostition* pMeshVertexPositions =
 			reinterpret_cast<ST_MeshVertex::ST_VulkanMeshVertexPostition*>(reinterpret_cast<uintptr_t>(pInefficientStagingBufferData) + vertexPositionBufferOffset);
 		// normal,tangent ptr
 		ST_MeshVertex::ST_VulkanMeshVertexVaryingEnableBlending* pMeshVertexBlendingVaryings =
@@ -545,7 +551,7 @@ void RenderResource::UpdateVertexBuffer(
 			pMeshVertexJointBinding[i].m_indices[3] = pJointBindingBufferData[vertexBufferIndex].m_index3;
 
 			float invTotalWeight = pJointBindingBufferData[vertexBufferIndex].m_weight0 + pJointBindingBufferData[vertexBufferIndex].m_weight1 +
-								   pJointBindingBufferData[vertexBufferIndex].m_weight2 + pJointBindingBufferData[vertexBufferIndex].m_weight3;
+				pJointBindingBufferData[vertexBufferIndex].m_weight2 + pJointBindingBufferData[vertexBufferIndex].m_weight3;
 			// 加权平均
 			invTotalWeight = (invTotalWeight != 0.0) ? 1 / invTotalWeight : 1.0;
 			pMeshVertexJointBinding[i].m_weights = Vector4(
@@ -567,10 +573,10 @@ void RenderResource::UpdateVertexBuffer(
 		bufferInfo.m_size = vertexPositionBufferSize;
 		pRHI->CreateBufferVMA(
 			static_cast<VulkanRHI*>(pRHI.get())->m_assetsAllocator,
-			&bufferInfo, 
-			&allocInfo, 
-			outNowMesh.m_meshVertexPositionBuffer, 
-			&outNowMesh.m_meshVertexPositionBufferAllocation, 
+			&bufferInfo,
+			&allocInfo,
+			outNowMesh.m_meshVertexPositionBuffer,
+			&outNowMesh.m_meshVertexPositionBufferAllocation,
 			nullptr
 		);
 		bufferInfo.m_size = vertexVaryingEnableBlendingBufferSize;
