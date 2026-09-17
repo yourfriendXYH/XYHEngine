@@ -94,6 +94,9 @@
     <Filter Include="Engine\Source\Common\stbi">
       <UniqueIdentifier>{3c0a9a42-e182-424d-be56-9535ca53e880}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Source\Runtime\Core\Misc">
+      <UniqueIdentifier>{b690fd9a-19cf-4b63-aa3f-177c37a666fd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Source\main.cpp">
@@ -242,6 +245,15 @@
     </ClCompile>
     <ClCompile Include="Engine\3rdparty\stbi\stb_image.cpp">
       <Filter>Engine\Source\Common\stbi</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Resources.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\RHIBufferInitializer.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\RHIResources.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -484,6 +496,21 @@
     </ClInclude>
     <ClInclude Include="Engine\3rdparty\stbi\stb_image.h">
       <Filter>Engine\Source\Common\stbi</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Resources.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHIResources.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHIDefinitions.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHIBufferInitializer.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Core\Misc\EnumClassFlags.h">
+      <Filter>Engine\Source\Runtime\Core\Misc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

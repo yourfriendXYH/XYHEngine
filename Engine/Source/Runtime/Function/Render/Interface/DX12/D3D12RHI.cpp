@@ -144,6 +144,11 @@ void D3D12RHI::SubmitRendering(std::function<void()> passUpdateAfterRecreateSwap
 	m_pSwapChain->Present(0, 0);
 }
 
+D3D12RHI::ST_CreateBufferInternalResult D3D12RHI::CreateBufferInternal(const RHIBufferCreateDesc& CreateDesc, bool bHasInitialData)
+{
+	return ST_CreateBufferInternalResult();
+}
+
 void D3D12RHI::CreateDXGIFactory()
 {
 	// 创建DXGI
@@ -358,6 +363,11 @@ ID3D12Resource* D3D12RHI::CreateTexture2D(UINT width, UINT height, void* pData)
 	m_pGraphicsCommandList->ResourceBarrier(1, &barrier);
 
 	return pTexture2DResource;
+}
+
+RHIBufferInitializer D3D12RHI::RHICreateBufferInitializer(const RHIBufferCreateDesc& CreateDesc)
+{
+	return RHIBufferInitializer();
 }
 
 void D3D12RHI::CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunctionName, const char* target, D3D12_SHADER_BYTECODE* pShader)

@@ -290,6 +290,8 @@ public:
 
 	void UpdateBufferObject(RHIBuffer* pBuffer, GLenum bufferType, void* data, int size, int offset);
 
+	[[nodiscard]] virtual RHIBufferInitializer RHICreateBufferInitializer(const RHIBufferCreateDesc& CreateDesc) override;
+
 private:
 
 public:

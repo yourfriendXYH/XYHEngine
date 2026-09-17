@@ -35,11 +35,14 @@
     <ClCompile Include="Engine\Source\Runtime\Function\GlobalContext.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Particle\EmitterIdAllocator.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Particle\ParticleManager.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Resources.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHI.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Util.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLRHI.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLUtil.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\Util.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\RHIBufferInitializer.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\RHIResources.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanUtil.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanVMA.cpp" />
@@ -97,6 +100,7 @@
     <ClInclude Include="Engine\Source\Runtime\Core\Math\Vector2.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Math\Vector3.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Math\Vector4.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Misc\EnumClassFlags.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Framework\Object\ObjectIdAllocator.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\GlobalContext.h" />
@@ -104,6 +108,7 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Particle\ParticleCommon.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Particle\ParticleDesc.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Particle\ParticleManager.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Resources.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHI.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Util.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLRHI.h" />
@@ -111,6 +116,9 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLUtil.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\Util.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHI.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHIBufferInitializer.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHIDefinitions.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHIResources.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\RHIStruct.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHI.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\Vulkan\VulkanRHIResource.h" />

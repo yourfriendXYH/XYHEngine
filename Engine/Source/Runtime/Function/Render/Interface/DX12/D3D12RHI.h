@@ -10,8 +10,11 @@
 #pragma comment(lib, "D3DCompiler.lib")
 
 #include <Runtime/Function/Render/Interface/RHI.h>
+#include "D3D12Resources.h"
 
 NAMESPACE_XYH_BEGIN
+
+class D3D12Buffer;
 
 class D3D12RHI final : public RHI
 {
@@ -301,6 +304,16 @@ public:
 
 	// test create texture2D
 	ID3D12Resource* CreateTexture2D(UINT width, UINT height, void* pData);
+
+	[[nodiscard]] virtual RHIBufferInitializer RHICreateBufferInitializer(const RHIBufferCreateDesc& CreateDesc) override;
+
+	struct ST_CreateBufferInternalResult
+	{
+		D3D12Buffer* buffer{};
+		//ED3D12Access DesiredD3D12Access{};
+	};
+
+	ST_CreateBufferInternalResult CreateBufferInternal(const RHIBufferCreateDesc& CreateDesc, bool bHasInitialData/*, ID3D12ResourceAllocator* ResourceAllocator*/);
 
 private:
 

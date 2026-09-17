@@ -2,13 +2,14 @@
 #include <Common.h>
 #include <optional>
 #include "../RenderType.h"
+#include "RHIResources.h"
 
 NAMESPACE_XYH_BEGIN
 
 #define RHI_DELETE_PTR(ptr) delete ptr; ptr = nullptr;
 
 ////////////////////类////////////////////////
-class RHIBuffer {};	// 资源缓冲区
+//class RHIBuffer {};	// 资源缓冲区
 class RHIBufferView {};
 class RHICommandBuffer {};
 class RHICommandPool {};
