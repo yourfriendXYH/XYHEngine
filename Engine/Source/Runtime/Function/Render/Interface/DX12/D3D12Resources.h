@@ -12,6 +12,13 @@ constexpr T Align(T Val, uint64_t Alignment)
 	return (T)(((uint64_t)Val + Alignment - 1) & ~(Alignment - 1));
 }
 
+enum class D3D12ResourceStateMode
+{
+	Default,	// 根据标志决定是否需要跟踪
+	SingleState,
+	MultiState,
+};
+
 class D3D12Buffer : public RHIBuffer
 {
 public:

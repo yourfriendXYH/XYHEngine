@@ -313,7 +313,7 @@ public:
 		//ED3D12Access DesiredD3D12Access{};
 	};
 
-	ST_CreateBufferInternalResult CreateBufferInternal(const RHIBufferCreateDesc& CreateDesc, bool bHasInitialData/*, ID3D12ResourceAllocator* ResourceAllocator*/);
+	ST_CreateBufferInternalResult CreateBufferInternal(const RHIBufferCreateDesc& createDesc, bool bHasInitialData/*, ID3D12ResourceAllocator* ResourceAllocator*/);
 
 private:
 

@@ -45,6 +45,20 @@ void D3D12Util::CreateResource(
 	return;
 }
 
+void D3D12Util::CreateCommittedResource(ID3D12Device* pDevice, const D3D12_RESOURCE_DESC& inDesc)
+{	D3D12_HEAP_PROPERTIES heapProperties{};
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;	// 内存放的位置
+
+	//pDevice->CreateCommittedResource(
+	//	&heapProperties,
+	//	D3D12_HEAP_FLAG_NONE,
+	//	&inDesc,
+	//	resStates,
+	//	pClearValue,
+	//	IID_PPV_ARGS(&outResource)
+	//);
+}
+
 ID3D12Resource* D3D12Util::CreateBufferObject(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pDevice, void* pData, int dataLength, D3D12_RESOURCE_STATES dstStates)
 {
 	ID3D12Resource* pBufferObject = nullptr;

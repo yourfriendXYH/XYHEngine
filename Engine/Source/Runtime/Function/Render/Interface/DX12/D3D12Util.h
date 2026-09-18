@@ -25,6 +25,8 @@ public:
 		D3D12_CLEAR_VALUE* pClearValue
 	);
 
+	static void CreateCommittedResource(ID3D12Device* pDevice, const D3D12_RESOURCE_DESC& inDesc);
+
 	//
 	static ID3D12Resource* CreateBufferObject(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pDevice, void* pData, int dataLength, D3D12_RESOURCE_STATES dstStates);
 

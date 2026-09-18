@@ -46,6 +46,9 @@ enum class EBufferUsageFlags : uint32_t
 	* 不能与动态缓冲区及其他防止资源在本地GPU内存中分配的缓冲标志同时使用。
 	*/
 	ReservedResource = 1 << 22,
+
+	// Helper bit-masks
+	AnyDynamic = (Dynamic | Volatile),
 };
 ENUM_CLASS_FLAGS(EBufferUsageFlags);
 

@@ -144,8 +144,20 @@ void D3D12RHI::SubmitRendering(std::function<void()> passUpdateAfterRecreateSwap
 	m_pSwapChain->Present(0, 0);
 }
 
-D3D12RHI::ST_CreateBufferInternalResult D3D12RHI::CreateBufferInternal(const RHIBufferCreateDesc& CreateDesc, bool bHasInitialData)
+D3D12RHI::ST_CreateBufferInternalResult D3D12RHI::CreateBufferInternal(const RHIBufferCreateDesc& createDesc, bool bHasInitialData)
 {
+	D3D12_RESOURCE_DESC desc{};
+	uint32_t aligment{};
+	D3D12Buffer::GetResourceDescAndAlignment(createDesc, desc, aligment);
+
+	D3D12ResourceStateMode stateMode = EnumHasAllFlags(createDesc.m_usage, EBufferUsageFlags::AccelerationStructure)
+		? D3D12ResourceStateMode::SingleState
+		: D3D12ResourceStateMode::Default;
+
+	const bool bIsDynamic = EnumHasAnyFlags(createDesc.m_usage, EBufferUsageFlags::AnyDynamic);
+
+	const D3D12_HEAP_TYPE heapType = bIsDynamic ? D3D12_HEAP_TYPE_UPLOAD : D3D12_HEAP_TYPE_DEFAULT;
+
 	return ST_CreateBufferInternalResult();
 }
 
