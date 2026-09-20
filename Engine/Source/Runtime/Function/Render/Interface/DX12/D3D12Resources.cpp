@@ -23,10 +23,6 @@ NAMESPACE_XYH_BEGIN
     return CurrentGcd == 0 ? 0 : (a / CurrentGcd) * b;
 }
 
-D3D12Buffer::D3D12Buffer()
-{
-}
-
 D3D12Buffer::~D3D12Buffer()
 {
 }

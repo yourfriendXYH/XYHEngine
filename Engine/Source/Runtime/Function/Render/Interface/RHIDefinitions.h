@@ -41,6 +41,10 @@ enum class EBufferUsageFlags : uint32_t
 	IndexBuffer = 1 << 15,
 	StructuredBuffer = 1 << 16,
 
+	NullResource = 1 << 20,	// 缓冲区是用于流传输的占位符，不包含底层的GPU资源。
+
+	UniformBuffer = 1 << 21,
+
 	/**
 	* 实验性：允许缓冲区在内部以预留资源（即平铺/稀疏/虚拟）形式创建，无需物理内存支持。
 	* 不能与动态缓冲区及其他防止资源在本地GPU内存中分配的缓冲标志同时使用。

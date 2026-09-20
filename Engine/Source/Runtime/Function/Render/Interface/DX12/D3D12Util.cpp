@@ -45,18 +45,22 @@ void D3D12Util::CreateResource(
 	return;
 }
 
-void D3D12Util::CreateCommittedResource(ID3D12Device* pDevice, const D3D12_RESOURCE_DESC& inDesc)
-{	D3D12_HEAP_PROPERTIES heapProperties{};
-	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;	// 内存放的位置
-
-	//pDevice->CreateCommittedResource(
-	//	&heapProperties,
-	//	D3D12_HEAP_FLAG_NONE,
-	//	&inDesc,
-	//	resStates,
-	//	pClearValue,
-	//	IID_PPV_ARGS(&outResource)
-	//);
+void D3D12Util::CreateCommittedResource(
+	ID3D12Device* pDevice, 
+	ID3D12Resource*& outResource,
+	const D3D12_HEAP_PROPERTIES& inHeap,
+	const D3D12_RESOURCE_DESC& inDesc, 
+	D3D12_RESOURCE_STATES resStates,
+	D3D12_CLEAR_VALUE* pClearValue)
+{
+	pDevice->CreateCommittedResource(
+		&inHeap,
+		D3D12_HEAP_FLAG_NONE,
+		&inDesc,
+		resStates,
+		pClearValue,
+		IID_PPV_ARGS(&outResource)
+	);
 }
 
 ID3D12Resource* D3D12Util::CreateBufferObject(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pDevice, void* pData, int dataLength, D3D12_RESOURCE_STATES dstStates)
@@ -167,6 +171,125 @@ D3D12_RESOURCE_BARRIER D3D12Util::InitResourceBarrier(ID3D12Resource* pResource,
 	resourceBarrier.Transition.StateAfter = dstState;
 	resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	return resourceBarrier;
+}
+
+D3D12_RESOURCE_STATES D3D12Util::GetD3D12ResourceState(ED3D12Access InD3D12Access)
+{
+	const ED3D12Access D3D12AccessWithoutDiscard = InD3D12Access & ~ED3D12Access::Discard;
+
+	// Add switch for common states (should cover all writeable states)
+	switch (D3D12AccessWithoutDiscard)
+	{
+		// Common is a state all its own
+	case ED3D12Access::Common:				return D3D12_RESOURCE_STATE_COMMON;
+
+		// All single write states
+	case ED3D12Access::RTV:					return D3D12_RESOURCE_STATE_RENDER_TARGET;
+#if D3D12_RHI_RAYTRACING
+	case ED3D12Access::BVHRead:
+	case ED3D12Access::BVHWrite:				return D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
+#endif
+	case ED3D12Access::UAVMask:
+	case ED3D12Access::UAVCompute:
+	case ED3D12Access::UAVGraphics:			return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	case ED3D12Access::DSVWrite:				return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	case ED3D12Access::CopyDest:				return D3D12_RESOURCE_STATE_COPY_DEST;
+	case ED3D12Access::ResolveDst:			return D3D12_RESOURCE_STATE_RESOLVE_DEST;
+	case ED3D12Access::Present:				return D3D12_RESOURCE_STATE_PRESENT;
+
+		// Generic read for mask read states
+	case ED3D12Access::GenericRead:
+	case ED3D12Access::ReadOnlyMask:
+	case ED3D12Access::ReadOnlyExclusiveMask:	return D3D12_RESOURCE_STATE_GENERIC_READ;
+	default:
+	{
+		D3D12_RESOURCE_STATES ExtraReadState = {};
+
+		//if (InRHID3D12Texture)
+		//{
+		//	// 			if (InRHID3D12Texture->GetResource()->IsDepthStencilResource())
+		//	// 			{
+		//	// 				ExtraReadState |= D3D12_RESOURCE_STATE_DEPTH_READ;
+		//	// 			}
+
+		//	if (InRHID3D12Texture->SkipsFastClearFinalize())
+		//	{
+		//		ExtraReadState |= GetSkipFastClearEliminateStateFlags();
+		//	}
+		//}
+
+		// Special case for DSV read & write (Depth write allows depth read as well in D3D)
+		if (D3D12AccessWithoutDiscard == ED3D12Access(ED3D12Access::DSVRead | ED3D12Access::DSVWrite))
+		{
+			return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+		}
+#if D3D12_RHI_RAYTRACING
+		else if (EnumHasAnyFlags(D3D12AccessWithoutDiscard, ED3D12Access::BVHRead | ED3D12Access::BVHWrite))
+		{
+			return D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
+		}
+#endif
+		else
+		{
+			// Should be combination from read only flags (write flags covered above)
+
+			D3D12_RESOURCE_STATES State = D3D12_RESOURCE_STATE_COMMON;
+
+			// Translate the requested after state to a D3D state
+			if (EnumHasAnyFlags(D3D12AccessWithoutDiscard, ED3D12Access::SRVGraphics)/* && InQueueType == ED3D12QueueType::Direct*/)
+			{
+				State |= D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | ExtraReadState;
+			}
+			if (EnumHasAnyFlags(D3D12AccessWithoutDiscard, ED3D12Access::SRVCompute))
+			{
+				State |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | ExtraReadState;
+			}
+			if (EnumHasAnyFlags(D3D12AccessWithoutDiscard, ED3D12Access::VertexOrIndexBuffer)/* && InQueueType == ED3D12QueueType::Direct*/)
+			{
+				State |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_INDEX_BUFFER;
+			}
+			if (EnumHasAnyFlags(D3D12AccessWithoutDiscard, ED3D12Access::CopySrc))
+			{
+				State |= D3D12_RESOURCE_STATE_COPY_SOURCE;
+			}
+			if (EnumHasAnyFlags(D3D12AccessWithoutDiscard, ED3D12Access::IndirectArgs))
+			{
+				State |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+			}
+			if (EnumHasAnyFlags(D3D12AccessWithoutDiscard, ED3D12Access::ResolveSrc)/* && InQueueType == ED3D12QueueType::Direct*/)
+			{
+				State |= D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
+			}
+			if (EnumHasAnyFlags(D3D12AccessWithoutDiscard, ED3D12Access::DSVRead)/* && InQueueType == ED3D12QueueType::Direct*/)
+			{
+				State |= D3D12_RESOURCE_STATE_DEPTH_READ;
+			}
+			if (EnumHasAnyFlags(D3D12AccessWithoutDiscard, ED3D12Access::ShadingRateSource)/* && InQueueType == ED3D12QueueType::Direct*/)
+			{
+//#if !UE_BUILD_SHIPPING
+//				//if (GRHISupportsAttachmentVariableRateShading == false)
+//				//{
+//				//	static bool bLogOnce = true;
+//				//	if (bLogOnce)
+//				//	{
+//				//		UE_LOGF(LogD3D12RHI, Warning, "(%ls) Resource state is D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE but RHI does not support VRS.", InRHID3D12Texture == nullptr ? TEXT("Unknown") : *InRHID3D12Texture->GetName().GetPlainNameString());
+//				//	}
+//				//	bLogOnce = false;
+//				//}
+//#endif
+//
+//#if PLATFORM_SUPPORTS_VARIABLE_RATE_SHADING
+//				State |= D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE;
+//#endif
+			}
+
+			// Should have at least one valid state
+			//check(State != D3D12_RESOURCE_STATE_COMMON);
+
+			return State;
+		}
+	}
+	}
 }
 
 void StaticMeshComponent::InitFromFile(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pDevice, const char* filePath)

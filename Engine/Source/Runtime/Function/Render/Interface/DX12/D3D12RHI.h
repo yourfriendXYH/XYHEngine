@@ -11,6 +11,7 @@
 
 #include <Runtime/Function/Render/Interface/RHI.h>
 #include "D3D12Resources.h"
+#include "D3D12Access.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -310,10 +311,20 @@ public:
 	struct ST_CreateBufferInternalResult
 	{
 		D3D12Buffer* buffer{};
-		//ED3D12Access DesiredD3D12Access{};
+		ED3D12Access desiredD3D12Access{};
 	};
 
 	ST_CreateBufferInternalResult CreateBufferInternal(const RHIBufferCreateDesc& createDesc, bool bHasInitialData/*, ID3D12ResourceAllocator* ResourceAllocator*/);
+
+	D3D12Buffer* CreateRHIBuffer(
+		const D3D12_RESOURCE_DESC& Desc,
+		uint32_t Alignment,
+		const RHIBufferCreateDesc& CreateDesc,
+		ED3D12ResourceStateMode InResourceStateMode,
+		ED3D12Access InCreateD3D12Access,
+		bool bKeepUnlocked = false/*,
+		ID3D12ResourceAllocator* ResourceAllocator = nullptr*/
+	);
 
 private:
 

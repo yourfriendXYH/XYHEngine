@@ -1,6 +1,7 @@
 ﻿#include "D3D12RHI.h"
 #include <Runtime/Function/Render/WindowSystem.h>
 #include <Runtime/Core/Macro.h>
+#include "D3D12Allocation.h"
 
 #include "D3D12Util.h"
 
@@ -150,15 +151,63 @@ D3D12RHI::ST_CreateBufferInternalResult D3D12RHI::CreateBufferInternal(const RHI
 	uint32_t aligment{};
 	D3D12Buffer::GetResourceDescAndAlignment(createDesc, desc, aligment);
 
-	D3D12ResourceStateMode stateMode = EnumHasAllFlags(createDesc.m_usage, EBufferUsageFlags::AccelerationStructure)
-		? D3D12ResourceStateMode::SingleState
-		: D3D12ResourceStateMode::Default;
+	ED3D12ResourceStateMode stateMode = EnumHasAllFlags(createDesc.m_usage, EBufferUsageFlags::AccelerationStructure)
+		? ED3D12ResourceStateMode::SingleState
+		: ED3D12ResourceStateMode::Default;
 
 	const bool bIsDynamic = EnumHasAnyFlags(createDesc.m_usage, EBufferUsageFlags::AnyDynamic);
 
 	const D3D12_HEAP_TYPE heapType = bIsDynamic ? D3D12_HEAP_TYPE_UPLOAD : D3D12_HEAP_TYPE_DEFAULT;
+	const D3D12Resource::FD3D12ResourceTypeHelper Type(desc, heapType);
 
-	return ST_CreateBufferInternalResult();
+	// Does this resource support tracking?
+	const bool bSupportResourceStateTracking = false/*!bIsDynamic && FD3D12DefaultBufferAllocator::IsPlacedResource(Desc.Flags, StateMode, Alignment) && Type.bWritable*/;
+
+	const ED3D12Access DesiredD3D12Access = bSupportResourceStateTracking 
+		? Type.GetOptimalInitialD3D12Access(ConvertToD3D12Access(createDesc.m_initialState), false)
+		: D3D12DefaultBufferAllocator::GetDefaultInitialD3D12Access(heapType, createDesc.m_usage, stateMode);
+
+	// Setup the state at which the resource needs to be created - copy dest only supported for placed resources
+	const ED3D12Access CreatED3D12Access = (bHasInitialData && bSupportResourceStateTracking) ? ED3D12Access::CopyDest : DesiredD3D12Access;
+
+	D3D12Buffer* buffer = CreateRHIBuffer(
+		desc,
+		aligment,
+		createDesc,
+		stateMode,
+		CreatED3D12Access
+	);
+
+	return ST_CreateBufferInternalResult{ buffer, DesiredD3D12Access };
+}
+
+D3D12Buffer* D3D12RHI::CreateRHIBuffer(
+	const D3D12_RESOURCE_DESC& Desc, 
+	uint32_t Alignment, 
+	const RHIBufferCreateDesc& CreateDesc, 
+	ED3D12ResourceStateMode InResourceStateMode, 
+	ED3D12Access InCreateD3D12Access, 
+	bool bKeepUnlocked)
+{
+	D3D12Buffer* BufferOut = new D3D12Buffer(CreateDesc);
+	BufferOut->m_bufferAlignment = Alignment;
+
+	D3D12_HEAP_PROPERTIES heapProperties{};
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;	// 内存放的位置
+
+	const D3D12_RESOURCE_STATES InitialState = D3D12Util::GetD3D12ResourceState(InCreateD3D12Access);
+
+	ID3D12Resource* resource = nullptr;
+	D3D12Util::CreateCommittedResource(
+		m_pDevice,
+		resource,
+		heapProperties,
+		Desc,
+		InitialState,
+		nullptr
+	);
+	BufferOut->m_resource = resource;
+	return BufferOut;
 }
 
 void D3D12RHI::CreateDXGIFactory()

@@ -25,7 +25,14 @@ public:
 		D3D12_CLEAR_VALUE* pClearValue
 	);
 
-	static void CreateCommittedResource(ID3D12Device* pDevice, const D3D12_RESOURCE_DESC& inDesc);
+	static void CreateCommittedResource(
+		ID3D12Device* pDevice,
+		ID3D12Resource*& outResource,
+		const D3D12_HEAP_PROPERTIES& inHeap,
+		const D3D12_RESOURCE_DESC& inDesc,
+		D3D12_RESOURCE_STATES resStates,
+		D3D12_CLEAR_VALUE* pClearValue
+	);
 
 	//
 	static ID3D12Resource* CreateBufferObject(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pDevice, void* pData, int dataLength, D3D12_RESOURCE_STATES dstStates);
@@ -37,6 +44,12 @@ public:
 	static void UpdateConstantBuffer(ID3D12Resource* pConstantBuffer, const void* pData, int dataLength);
 
 	static D3D12_RESOURCE_BARRIER InitResourceBarrier(ID3D12Resource* pResource, D3D12_RESOURCE_STATES srcState, D3D12_RESOURCE_STATES dstState);
+
+	static D3D12_RESOURCE_STATES GetD3D12ResourceState(
+		ED3D12Access InD3D12Access/*,
+		ED3D12QueueType InQueueType,
+		const FD3D12ResourceDesc& InResourceDesc,
+		const FD3D12Texture* InRHID3D12Texture*/);
 
 private:
 
