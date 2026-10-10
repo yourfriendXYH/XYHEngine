@@ -75,9 +75,9 @@ void OpenGLRHI::UpdateBufferObject(RHIBuffer* pBuffer, GLenum bufferType, void* 
 	OpenGLUtil::UpdataBufferObject(buffer, bufferType, data, size, offset);
 }
 
-RHIBufferInitializer OpenGLRHI::RHICreateBufferInitializer(const RHIBufferCreateDesc& CreateDesc)
+ST_RHIBufferInitializer OpenGLRHI::RHICreateBufferInitializer(const RHIBufferCreateDesc& CreateDesc)
 {
-	return RHIBufferInitializer();
+	return ST_RHIBufferInitializer();
 }
 
 void CheckLastOpenGLError(const char* prefix, const char* file, long line, const char* operation)

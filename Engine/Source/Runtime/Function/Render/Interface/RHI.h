@@ -6,6 +6,7 @@
 #include <memory>
 #include "RHIStruct.h"
 #include "RHIBufferInitializer.h"
+#include "RHITextureInitializer.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -274,7 +275,9 @@ public:
 	//semaphores
 	virtual RHISemaphore*& GetTextureCopySemaphore(uint32_t index) = 0;	// 
 
-	[[nodiscard]] virtual RHIBufferInitializer RHICreateBufferInitializer(/*FRHICommandListBase& RHICmdList, */const RHIBufferCreateDesc& CreateDesc) = 0;
+	[[nodiscard]] virtual ST_RHIBufferInitializer RHICreateBufferInitializer(/*FRHICommandListBase& RHICmdList, */const RHIBufferCreateDesc& CreateDesc) = 0;
+
+	[[nodiscard]] virtual ST_RHITextureInitializer RHICreateTextureInitializer(/*FRHICommandListBase& RHICmdList, */const ST_RHITextureCreateDesc& CreateDesc) = 0;
 
 public:
 	static uint8_t const s_maxFramesInFlight = 3u;	// 帧缓冲数量

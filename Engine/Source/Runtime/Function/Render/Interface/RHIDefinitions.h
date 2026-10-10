@@ -56,4 +56,20 @@ enum class EBufferUsageFlags : uint32_t
 };
 ENUM_CLASS_FLAGS(EBufferUsageFlags);
 
+enum class ETextureDimension : uint8_t
+{
+	Texture2D,
+	Texture2DArray,
+	Texture3D,
+	TextureCube,
+	TextureCubeArray
+};
+
+enum class ETextureCreateFlags : uint64_t
+{
+	None = 0,
+
+	RenderTargetable = 1ull << 0,
+};
+
 NAMESPACE_XYH_END

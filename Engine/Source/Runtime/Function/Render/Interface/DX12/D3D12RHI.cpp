@@ -426,9 +426,13 @@ ID3D12Resource* D3D12RHI::CreateTexture2D(UINT width, UINT height, void* pData)
 	return pTexture2DResource;
 }
 
-RHIBufferInitializer D3D12RHI::RHICreateBufferInitializer(const RHIBufferCreateDesc& CreateDesc)
+ST_RHIBufferInitializer D3D12RHI::RHICreateBufferInitializer(const RHIBufferCreateDesc& CreateDesc)
 {
-	return RHIBufferInitializer();
+	const bool bCreateAsCopyDest = (CreateDesc.m_initAction != ERHIBufferInitAction::Default);
+	ST_CreateBufferInternalResult CreateResult = CreateBufferInternal(CreateDesc, bCreateAsCopyDest);
+	ST_RHIBufferInitializer Initializer;
+	Initializer.buffer = CreateResult.buffer;
+	return Initializer;
 }
 
 void D3D12RHI::CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunctionName, const char* target, D3D12_SHADER_BYTECODE* pShader)

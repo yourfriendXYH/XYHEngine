@@ -4,16 +4,16 @@
 
 NAMESPACE_XYH_BEGIN
 
-struct RHIBufferInitializer
+struct ST_RHIBufferInitializer
 {
-	RHIBufferInitializer() = default;
-	~RHIBufferInitializer()
+	ST_RHIBufferInitializer() = default;
+	~ST_RHIBufferInitializer()
 	{
-
+		buffer = nullptr;
 	}
 
-protected:
-	RHIBuffer* m_buffer = nullptr;
+//protected:
+	RHIBuffer* buffer = nullptr;
 };
 
 NAMESPACE_XYH_END

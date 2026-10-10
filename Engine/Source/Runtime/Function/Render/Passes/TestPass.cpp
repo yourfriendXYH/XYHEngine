@@ -49,6 +49,11 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 #ifdef USE_D3D12
 
+	// RHI实现
+	m_cubePositionBuffer = InitBufferFromFile(L"CubePosition", "Engine/Resource/PositionOnly.data");
+	m_cubeIndexBuffer = InitBufferFromFile(L"CubeIndex", "Engine/Resource/IndexBuffer.data");
+	m_cubeAttributeBuffer = InitBufferFromFile(L"CubeAttribute", "Engine/Resource/TangentAndNormal.data");
+
 	D3D12RHI* pD3D12RHI = static_cast<D3D12RHI*>(m_pRHI.get());
 
 
@@ -342,6 +347,21 @@ void TestPass::PreparePassData(std::shared_ptr<RenderResourceBase> renderResourc
 		m_perframeStorageBufferObj.m_cameraPositionWS = Vector4(vulkanResource->m_meshPerframeStorageBufferObject.m_cameraPosition, 1.0f);
 		m_perframeStorageBufferObj.m_viewDirectionWS = Vector4(vulkanResource->m_meshPerframeStorageBufferObject.m_viewDirection, 0.0f);
 	}
+}
+
+RHIBuffer* TestPass::InitBufferFromFile(LPCTSTR inResourceName, LPCSTR inFilePath)
+{
+	size_t fileSize = 0;
+	unsigned char* fileContent = LoadFileContent(inFilePath, fileSize);
+	const RHIBufferCreateDesc desc = RHIBufferCreateDesc::CreateNull("").AddUsage(EBufferUsageFlags::UnorderedAccess).SetSize(fileSize).DetermineInitialState();
+
+	ST_RHIBufferInitializer bufferInit = m_pRHI->RHICreateBufferInitializer(desc);
+	//D3DResource* resourceWrapper = inContext.InitBufferResource(fileSize, inAlignment, inInitialState, inFlags);
+	//resourceWrapper->mUnderlyingResource->SetName(inResourceName);
+	////upload data to gpu
+	//inContext.UploadDataToGPUBuffer(resourceWrapper, fileContent, fileSize);
+	//delete[] fileContent;
+	return bufferInit.buffer;
 }
 
 void TestPass::SetupAttachments()

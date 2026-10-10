@@ -4,6 +4,7 @@
 #include "RHIDefinitions.h"
 #include "RHIAccess.h"
 #include "RHIUtilities.h"
+#include "PixelFormat.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -260,6 +261,55 @@ private:
 
 	RHIBufferDesc m_desc;
 	std::string m_name;
+};
+
+struct ST_RHITextureDesc
+{
+
+	ST_RHITextureDesc() = default;
+
+	ST_RHITextureDesc(const ST_RHITextureDesc& other)
+	{
+		*this = other;
+	}
+
+	ST_RHITextureDesc(ETextureDimension inDimension)
+		:
+		m_dimension(inDimension)
+	{
+	}
+
+	ST_RHITextureDesc(
+		ETextureDimension inDimension,
+		ETextureCreateFlags inFlags,
+
+		)
+		:
+		m_flags(inFlags)
+	{
+	}
+
+	// 传递给RHI纹理的纹理标志。
+	ETextureCreateFlags m_flags = ETextureCreateFlags::None;
+
+	ETextureDimension m_dimension = ETextureDimension::Texture2D;
+
+	EPixelFormat m_format = EPixelFormat::PF_Unknown;
+};
+
+struct ST_RHITextureCreateDesc : public ST_RHITextureDesc
+{
+
+};
+
+class RHITexture
+{
+public:
+	RHITexture();
+	~RHITexture();
+
+private:
+
 };
 
 NAMESPACE_XYH_END

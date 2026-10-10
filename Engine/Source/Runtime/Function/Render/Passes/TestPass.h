@@ -21,6 +21,8 @@ public:
 	// 准备部分数据
 	void PreparePassData(std::shared_ptr<RenderResourceBase> renderResource) override final;
 
+	RHIBuffer* InitBufferFromFile(LPCTSTR inResourceName, LPCSTR inFilePath);
+
 private:
 
 	void SetupAttachments();	// 设置附件
@@ -128,6 +130,11 @@ private:
 	ST_TestPerDrawcallStorageBufferObject m_perDrawcallStorageBufferObj;
 
 	int m_tempDegree = 0;
+
+	// lumen 延迟渲染管线
+	RHIBuffer* m_cubePositionBuffer = nullptr;
+	RHIBuffer* m_cubeIndexBuffer = nullptr;
+	RHIBuffer* m_cubeAttributeBuffer = nullptr;
 };
 
 NAMESPACE_XYH_END

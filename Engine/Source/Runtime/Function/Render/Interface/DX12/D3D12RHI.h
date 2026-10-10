@@ -306,7 +306,11 @@ public:
 	// test create texture2D
 	ID3D12Resource* CreateTexture2D(UINT width, UINT height, void* pData);
 
-	[[nodiscard]] virtual RHIBufferInitializer RHICreateBufferInitializer(const RHIBufferCreateDesc& CreateDesc) override;
+	[[nodiscard]] virtual ST_RHIBufferInitializer RHICreateBufferInitializer(const RHIBufferCreateDesc& CreateDesc) override;
+
+	[[nodiscard]] virtual ST_RHITextureInitializer RHICreateTextureInitializer(/*FRHICommandListBase& RHICmdList, */const RHITextureCreateDesc& CreateDesc) override;
+
+public:
 
 	struct ST_CreateBufferInternalResult
 	{
