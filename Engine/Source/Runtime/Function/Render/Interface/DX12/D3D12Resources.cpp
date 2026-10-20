@@ -85,5 +85,23 @@ void D3D12Buffer::GetResourceDescAndAlignment(const RHIBufferCreateDesc& createD
 	}
 }
 
+void D3D12Texture::SetSRV2DDesc(DXGI_FORMAT inFormat, int inMipLevels, int inMostDetailMip)
+{
+	mSRVDesc = {};
+	mSRVDesc.Format = inFormat;
+	mSRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	mSRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	mSRVDesc.Texture2D.MostDetailedMip = inMostDetailMip;
+	mSRVDesc.Texture2D.MipLevels = inMipLevels;
+}
+
+void D3D12Texture::SetRW2DDesc(DXGI_FORMAT inFormat, int inMipSlice)
+{
+	mUAVDesc = {};
+	mUAVDesc.Format = inFormat;
+	mUAVDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+	mUAVDesc.Texture2D.MipSlice = inMipSlice;
+}
+
 NAMESPACE_XYH_END
 

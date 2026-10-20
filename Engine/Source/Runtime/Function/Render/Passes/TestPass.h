@@ -135,6 +135,8 @@ private:
 	RHIBuffer* m_cubePositionBuffer = nullptr;
 	RHIBuffer* m_cubeIndexBuffer = nullptr;
 	RHIBuffer* m_cubeAttributeBuffer = nullptr;
+
+	D3D12Texture* m_sceneDepthZ = nullptr;
 };
 
 NAMESPACE_XYH_END

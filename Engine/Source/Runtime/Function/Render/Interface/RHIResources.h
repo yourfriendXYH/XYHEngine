@@ -282,6 +282,7 @@ struct ST_RHITextureDesc
 	ST_RHITextureDesc(
 		ETextureDimension inDimension,
 		ETextureCreateFlags inFlags,
+		EPixelFormat inFormat//,
 
 		)
 		:
@@ -305,8 +306,8 @@ struct ST_RHITextureCreateDesc : public ST_RHITextureDesc
 class RHITexture
 {
 public:
-	RHITexture();
-	~RHITexture();
+	RHITexture() = default;
+	~RHITexture() {};
 
 private:
 

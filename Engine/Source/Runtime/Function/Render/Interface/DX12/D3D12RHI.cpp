@@ -435,6 +435,60 @@ ST_RHIBufferInitializer D3D12RHI::RHICreateBufferInitializer(const RHIBufferCrea
 	return Initializer;
 }
 
+ST_RHITextureInitializer D3D12RHI::RHICreateTextureInitializer(const ST_RHITextureCreateDesc& CreateDesc)
+{
+	return ST_RHITextureInitializer();
+}
+
+D3D12Texture* D3D12RHI::Init2DRTImage(
+	UINT64 inWidth, 
+	UINT64 inHeight, 
+	UINT64 inAlignment, 
+	DXGI_FORMAT inFormat, 
+	DXGI_FORMAT inSRVFormat, 
+	DXGI_FORMAT inRTVFormat, 
+	D3D12_RESOURCE_FLAGS inFlags, 
+	D3D12_CLEAR_VALUE inClearValue, 
+	int inMipLevelCount)
+{
+	D3D12_HEAP_PROPERTIES heapProperties = {};
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;//gpu
+
+	D3D12_RESOURCE_DESC Desc = {};
+	Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	Desc.Alignment = inAlignment;
+	Desc.Width = inWidth;
+	Desc.Height = inHeight;
+	Desc.DepthOrArraySize = 1;
+	Desc.MipLevels = inMipLevelCount;
+	Desc.Format = inFormat;
+	Desc.SampleDesc.Count = 1;
+	Desc.SampleDesc.Quality = 0;
+	Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	Desc.Flags = inFlags;
+
+	ID3D12Resource* resource = nullptr;
+	D3D12Util::CreateCommittedResource(
+		m_pDevice,
+		resource,
+		heapProperties,
+		Desc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		((inFlags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) || (inFlags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) ? &inClearValue : nullptr
+	);
+
+	D3D12Texture* texture = new D3D12Texture();
+	texture->m_bIsRT = true;
+	texture->m_format = inFormat;
+	texture->m_SRVFormat = inSRVFormat;
+	texture->m_RTVFormat = inRTVFormat;
+	texture->m_clearValue = inClearValue;
+	texture->m_resourceDimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	texture->SetSRV2DDesc(inSRVFormat);
+	texture->SetRW2DDesc(inRTVFormat);
+	return nullptr;
+}
+
 void D3D12RHI::CreateShaderFromFile(LPCTSTR shaderFilePath, const char* mainFunctionName, const char* target, D3D12_SHADER_BYTECODE* pShader)
 {
 	ID3DBlob* pShaderBuffer = nullptr;

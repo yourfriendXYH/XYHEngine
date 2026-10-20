@@ -49,6 +49,9 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 #ifdef USE_D3D12
 
+	int bufferWidth = (((UINT)m_pRHI->m_viewport.m_width + 8 - 1) / 8) * 8;	//960
+	int bufferHeight = (((UINT)m_pRHI->m_viewport.m_height + 7) / 8) * 8;	//544
+
 	// RHI实现
 	m_cubePositionBuffer = InitBufferFromFile(L"CubePosition", "Engine/Resource/PositionOnly.data");
 	m_cubeIndexBuffer = InitBufferFromFile(L"CubeIndex", "Engine/Resource/IndexBuffer.data");
@@ -56,6 +59,16 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 	D3D12RHI* pD3D12RHI = static_cast<D3D12RHI*>(m_pRHI.get());
 
+	m_sceneDepthZ = pD3D12RHI->Init2DRTImage(
+		bufferWidth,
+		bufferHeight,
+		0,
+		DXGI_FORMAT_R32G8X24_TYPELESS,
+		DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS,
+		DXGI_FORMAT_D32_FLOAT_S8X24_UINT,
+		D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL,
+		{ DXGI_FORMAT_D32_FLOAT_S8X24_UINT, {0.0f, 0} }
+	);
 
 	m_pRootSignature = pD3D12RHI->InitRootSignature();
 	D3D12_SHADER_BYTECODE vs, gs, ps;

@@ -308,7 +308,20 @@ public:
 
 	[[nodiscard]] virtual ST_RHIBufferInitializer RHICreateBufferInitializer(const RHIBufferCreateDesc& CreateDesc) override;
 
-	[[nodiscard]] virtual ST_RHITextureInitializer RHICreateTextureInitializer(/*FRHICommandListBase& RHICmdList, */const RHITextureCreateDesc& CreateDesc) override;
+
+	// Texture 创建
+	[[nodiscard]] virtual ST_RHITextureInitializer RHICreateTextureInitializer(/*FRHICommandListBase& RHICmdList, */const ST_RHITextureCreateDesc& CreateDesc) override;
+
+	D3D12Texture* Init2DRTImage(
+		UINT64 inWidth, 
+		UINT64 inHeight, 
+		UINT64 inAlignment, 
+		DXGI_FORMAT inFormat, 
+		DXGI_FORMAT inSRVFormat, 
+		DXGI_FORMAT inRTVFormat, 
+		D3D12_RESOURCE_FLAGS inFlags, 
+		D3D12_CLEAR_VALUE inClearValue, 
+		int inMipLevelCount = 1);
 
 public:
 

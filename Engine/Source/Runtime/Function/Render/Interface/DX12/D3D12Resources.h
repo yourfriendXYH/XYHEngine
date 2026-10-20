@@ -108,4 +108,38 @@ public:
 	uint32_t m_bufferAlignment = 0;
 };
 
+class D3D12Texture : public RHITexture
+{
+public:
+	D3D12Texture() = default;
+	~D3D12Texture() {};
+
+private:
+
+// test
+public:
+
+	bool m_bIsRT;
+
+	D3D12_CLEAR_VALUE m_clearValue;
+	DXGI_FORMAT m_format;
+	DXGI_FORMAT m_SRVFormat;
+	D3D12_RESOURCE_DIMENSION m_resourceDimension;
+
+	union
+	{
+		DXGI_FORMAT m_RTVFormat;
+		DXGI_FORMAT m_DSVFormat;
+	};
+
+	ID3D12Resource* m_underlyingResource;
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC mSRVDesc;
+	D3D12_UNORDERED_ACCESS_VIEW_DESC mUAVDesc;
+
+	void SetSRV2DDesc(DXGI_FORMAT inFormat, int inMipLevels = 1, int inMostDetailMip = 0);
+
+	void SetRW2DDesc(DXGI_FORMAT inFormat, int inMipSlice = 0);
+};
+
 NAMESPACE_XYH_END
