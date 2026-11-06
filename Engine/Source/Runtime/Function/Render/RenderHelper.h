@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <Common.h>
+#include <cfloat>
 #include "runtime/core/math/vector3.h"
 #include "runtime/core/math/vector4.h"
 
@@ -49,12 +50,8 @@ public:
 	}
 
 public:
-	Vector3 m_minBound{ std::numeric_limits<float>::max(),
-					   std::numeric_limits<float>::max(),
-					   std::numeric_limits<float>::max() };
-	Vector3 m_maxBound{ std::numeric_limits<float>::min(),
-					   std::numeric_limits<float>::min(),
-					   std::numeric_limits<float>::min() };
+  Vector3 m_minBound{ FLT_MAX, FLT_MAX, FLT_MAX };
+	Vector3 m_maxBound{ FLT_MIN, FLT_MIN, FLT_MIN };
 };
 
 // 球体包围盒

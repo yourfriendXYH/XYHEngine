@@ -38,6 +38,7 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Allocation.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Resources.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHI.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Shader.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Util.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLRHI.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLUtil.cpp" />
@@ -72,6 +73,7 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderSwapContext.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\RenderSystem.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\WindowSystem.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\LumenTest\PreZ.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Resource\AssetManager.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Resource\ConfigManager.cpp" />
   </ItemGroup>
@@ -115,6 +117,7 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Allocation.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Resources.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHI.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Shader.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Util.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLRHI.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLRHIResource.h" />
@@ -162,6 +165,7 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderSystem.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\RenderType.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\WindowSystem.h" />
+    <ClInclude Include="Engine\Source\Runtime\LumenTest\PreZ.h" />
     <ClInclude Include="Engine\Source\Runtime\Resource\AssetManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Resource\ConfigManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Resource\ResourceType\Data\CameraConfig.h" />
@@ -237,7 +241,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(ProjectDir)Engine/3rdparty/glfw-3.4.bin.WIN64/lib-vc2022;$(ProjectDir)Engine/3rdparty/VulkanSDK/lib/Win32;$(ProjectDir)Engine/3rdparty/GL/lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)Engine/3rdparty/glfw-3.4.bin.WIN64/lib-vc2022;$(ProjectDir)Engine/3rdparty/VulkanSDK/lib/Win32;$(ProjectDir)Engine/3rdparty/GL/lib;$(ProjectDir)Engine/3rdparty/dxc_2026_05_27/lib/x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -274,12 +278,12 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS;USE_D3D12;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)Engine/3rdparty/glfw-3.4.bin.WIN64/include;$(ProjectDir)Engine/3rdparty/spdlog/include;$(ProjectDir)Engine/Source/Common;$(ProjectDir)Engine/3rdparty/VulkanSDK/include;$(ProjectDir)Engine/3rdparty/vulkanmemoryallocator/include;$(ProjectDir)Engine/Source;$(ProjectDir)Engine/Shader/Generated/Cpp;$(ProjectDir)Engine/3rdparty/GL/include;$(ProjectDir)Engine/3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Engine/3rdparty/glfw-3.4.bin.WIN64/include;$(ProjectDir)Engine/3rdparty/spdlog/include;$(ProjectDir)Engine/Source/Common;$(ProjectDir)Engine/3rdparty/VulkanSDK/include;$(ProjectDir)Engine/3rdparty/vulkanmemoryallocator/include;$(ProjectDir)Engine/Source;$(ProjectDir)Engine/Shader/Generated/Cpp;$(ProjectDir)Engine/3rdparty/GL/include;$(ProjectDir)Engine/3rdparty;$(ProjectDir)Engine/3rdparty/dxc_2026_05_27/inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;glew32.lib;dxcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(ProjectDir)Engine\Shader\*" "$(TargetDir)Engine\Shader\" /E /I /Y

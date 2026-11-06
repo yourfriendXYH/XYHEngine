@@ -12,6 +12,7 @@
 #include <Runtime/Function/Render/Interface/RHI.h>
 #include "D3D12Resources.h"
 #include "D3D12Access.h"
+#include "D3D12Shader.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -342,6 +343,10 @@ public:
 		bool bKeepUnlocked = false/*,
 		ID3D12ResourceAllocator* ResourceAllocator = nullptr*/
 	);
+
+	ID3D12RootSignature* CreateRootSignature(D3D12_ROOT_SIGNATURE_DESC inRootSignatureDesc);
+
+	D3D12ShaderData CreateShaderFromFileSM6(LPCTSTR inShaderFilePath, LPCTSTR inMainFunctionName, LPCTSTR inTarget);
 
 private:
 

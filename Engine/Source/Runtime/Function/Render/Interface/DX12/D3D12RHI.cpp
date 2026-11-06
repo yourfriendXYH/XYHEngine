@@ -8,7 +8,55 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
+#include <wrl.h>
+#include <dxcapi.h>
+
 NAMESPACE_XYH_BEGIN
+
+using Microsoft::WRL::ComPtr;
+
+static ComPtr<IDxcUtils> s_dxcUtils;
+static ComPtr<IDxcCompiler3> s_dxcCompiler;
+static ComPtr<IDxcIncludeHandler> s_includeHandler;
+static FILETIME GetShaderLastModifiedTime(const char* inFilePath)
+{
+	FILE* pFile = nullptr;
+	errno_t err = fopen_s(&pFile, inFilePath, "rb");
+	FILETIME fileTime = { 0 };
+	if (err != 0)
+	{
+		return fileTime;
+	}
+	fseek(pFile, 0, SEEK_END);
+	long fileSize = ftell(pFile);
+	if (fileSize < 8)
+	{
+		return fileTime;
+	}
+	fseek(pFile, 0, SEEK_SET);
+	fread(&fileTime, sizeof(fileTime), 1, pFile);
+	fclose(pFile);
+	return fileTime;
+}
+
+bool InitDXC()
+{
+	if (s_dxcUtils && s_dxcCompiler)
+	{
+		return true; // 已初始化
+	}
+
+	HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&s_dxcUtils));
+	if (FAILED(hr)) return false;
+
+	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&s_dxcCompiler));
+	if (FAILED(hr)) return false;
+
+	hr = s_dxcUtils->CreateDefaultIncludeHandler(&s_includeHandler);
+	if (FAILED(hr)) return false;
+
+	return true;
+}
 
 void D3D12RHI::Initialize(ST_RHIInitInfo initInfo)
 {
@@ -195,6 +243,11 @@ D3D12Buffer* D3D12RHI::CreateRHIBuffer(
 	D3D12_HEAP_PROPERTIES heapProperties{};
 	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;	// 内存放的位置
 
+	if (EnumHasAnyFlags(CreateDesc.m_usage, EBufferUsageFlags::AnyDynamic))
+	{
+		heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;	// cpu gpu
+	}
+
 	const D3D12_RESOURCE_STATES InitialState = D3D12Util::GetD3D12ResourceState(InCreateD3D12Access);
 
 	ID3D12Resource* resource = nullptr;
@@ -208,6 +261,163 @@ D3D12Buffer* D3D12RHI::CreateRHIBuffer(
 	);
 	BufferOut->m_resource = resource;
 	return BufferOut;
+}
+
+ID3D12RootSignature* D3D12RHI::CreateRootSignature(D3D12_ROOT_SIGNATURE_DESC inRootSignatureDesc)
+{
+	ID3DBlob* signature;
+	HRESULT hResult = D3D12SerializeRootSignature(&inRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, nullptr);
+	if (FAILED(hResult))
+	{
+		HRESULT errorReason = m_pDevice->GetDeviceRemovedReason();
+		//std::wstring errorMsg = GetErrorDescription(errorReason);
+		//throw std::runtime_error((char*)errorMsg.c_str());
+	}
+
+	ID3D12RootSignature* rootSignature = nullptr;
+	hResult = m_pDevice->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
+	if (FAILED(hResult))
+	{
+		signature->Release();
+	}
+	signature->Release();
+	return rootSignature;
+}
+
+D3D12ShaderData D3D12RHI::CreateShaderFromFileSM6(LPCTSTR inShaderFilePath, LPCTSTR inMainFunctionName, LPCTSTR inTarget)
+{
+	if (!s_dxcUtils || !s_dxcCompiler || !s_includeHandler) {
+		if (!InitDXC()) {
+			throw std::runtime_error("Failed to initialize DXC compiler");
+		}
+	}
+	WIN32_FILE_ATTRIBUTE_DATA fileAttrData = { 0 };
+	if (!GetFileAttributesEx(inShaderFilePath, GetFileExInfoStandard, &fileAttrData))
+	{
+		throw std::runtime_error("CreateShaderFromFileSM6 failed cannot find shader");
+	}
+	FILETIME lastModifiedTime = fileAttrData.ftLastWriteTime;
+	char shaderFilePath[256] = { 0 };
+	WideCharToMultiByte(CP_ACP, 0, inShaderFilePath, -1, shaderFilePath, 256, NULL, NULL);
+	char shaderModel[256] = { 0 };
+	WideCharToMultiByte(CP_ACP, 0, inTarget, -1, shaderModel, 256, NULL, NULL);
+	strcat_s(shaderFilePath, 256, ".");
+	strcat_s(shaderFilePath, 256, shaderModel);
+	strcat_s(shaderFilePath, 256, ".bytecode");
+	FILETIME fileTime = GetShaderLastModifiedTime(shaderFilePath);
+	if (lastModifiedTime.dwHighDateTime == fileTime.dwHighDateTime && lastModifiedTime.dwLowDateTime == fileTime.dwLowDateTime) {
+		//use cached shader code
+		D3D12_SHADER_BYTECODE shaderByteCode = {};
+		FILE* pCacheShaderFile = nullptr;
+		errno_t err = fopen_s(&pCacheShaderFile, shaderFilePath, "rb");
+		FILETIME fileTime = { 0 };
+		if (err == 0) {
+			if (pCacheShaderFile != nullptr) {
+				fread(&fileTime, sizeof(fileTime), 1, pCacheShaderFile);
+				int shaderCodeBufferSize = 0;
+				fread(&shaderCodeBufferSize, sizeof(shaderCodeBufferSize), 1, pCacheShaderFile);
+				unsigned char* shaderByteCodeContent = new unsigned char[shaderCodeBufferSize];
+				fread(shaderByteCodeContent, 1, shaderCodeBufferSize, pCacheShaderFile);
+				fclose(pCacheShaderFile);
+				shaderByteCode.pShaderBytecode = shaderByteCodeContent;
+				shaderByteCode.BytecodeLength = shaderCodeBufferSize;
+
+				D3D12ShaderData shaderData;
+				shaderData.m_code.resize(shaderCodeBufferSize);
+				std::memcpy(shaderData.m_code.data(), shaderByteCodeContent, shaderCodeBufferSize);
+				return shaderData;
+			}
+		}
+	}
+	ComPtr<IDxcBlobEncoding> sourceBlob;
+	HRESULT hr = s_dxcUtils->LoadFile(inShaderFilePath, nullptr, &sourceBlob);
+	if (FAILED(hr)) {
+		throw std::runtime_error("Failed to load shader file: ");
+	}
+	std::wstring fileName;
+	{
+		int filePathLen = lstrlen(inShaderFilePath);
+		int lastSlashPos = filePathLen;
+		for (int i = int(filePathLen - 1); i >= 0; i--) {
+			if (inShaderFilePath[i] == L'/') {
+				lastSlashPos = i;
+				break;
+			}
+		}
+		if (lastSlashPos == 0) {
+			fileName = inShaderFilePath;
+		}
+		else {
+			TCHAR szTemp[256] = { 0 };
+			lstrcpy(szTemp, inShaderFilePath + lastSlashPos + 1);
+			fileName = szTemp;
+		}
+	}
+	std::vector<LPCWSTR> args;
+	args.push_back(L"-T");
+	args.push_back(inTarget);
+	args.push_back(L"-E");
+	args.push_back(inMainFunctionName);
+	args.push_back(L"-Zi");
+	args.push_back(L"/Zpr");
+	args.push_back(L"-Qembed_debug");
+	args.push_back(L"-O3");
+	args.push_back(L"-WX");
+	args.push_back(fileName.c_str());
+	DxcBuffer sourceBuffer{};
+	sourceBuffer.Ptr = sourceBlob->GetBufferPointer();
+	sourceBuffer.Size = sourceBlob->GetBufferSize();
+	sourceBuffer.Encoding = DXC_CP_UTF8;
+	ComPtr<IDxcResult> compileResult;
+	printf("compile shader [%s]\n", shaderFilePath);
+	hr = s_dxcCompiler->Compile(
+		&sourceBuffer,
+		args.data(),
+		(UINT)args.size(),
+		s_includeHandler.Get(),
+		IID_PPV_ARGS(&compileResult)
+	);
+	ComPtr<IDxcBlobUtf8> errorBlob;
+	ComPtr<IDxcBlobWide> outputBlob;
+	compileResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errorBlob), &outputBlob);
+	if (errorBlob && errorBlob->GetStringLength() > 0) {
+		std::string errorMsg = "Shader compilation failed: ";
+		errorMsg += errorBlob->GetStringPointer();
+		throw std::runtime_error(errorMsg);
+	}
+	if (FAILED(hr)) {
+		throw std::runtime_error("DXC compilation failed with HRESULT: " + std::to_string(hr));
+	}
+	ComPtr<IDxcBlob> shaderBlob;
+	hr = compileResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), &outputBlob);
+	if (FAILED(hr)) {
+		throw std::runtime_error("Failed to get shader bytecode");
+	}
+	D3D12_SHADER_BYTECODE shaderByteCode = {
+		shaderBlob->GetBufferPointer(),
+		shaderBlob->GetBufferSize()
+	};
+	shaderBlob.Detach();
+	{
+		//write to cache files
+		FILE* pCacheShaderFile = nullptr;
+		errno_t err = fopen_s(&pCacheShaderFile, shaderFilePath, "wb");
+		FILETIME fileTime = { 0 };
+		if (err == 0) {
+			if (pCacheShaderFile != nullptr) {
+				fwrite(&lastModifiedTime, sizeof(lastModifiedTime), 1, pCacheShaderFile);
+				int shaderCodeBufferSize = shaderByteCode.BytecodeLength;
+				fwrite(&shaderCodeBufferSize, sizeof(shaderCodeBufferSize), 1, pCacheShaderFile);
+				fwrite(shaderByteCode.pShaderBytecode, 1, shaderCodeBufferSize, pCacheShaderFile);
+				fclose(pCacheShaderFile);
+			}
+		}
+	}
+
+	D3D12ShaderData shaderData;
+	shaderData.m_code.resize(shaderBlob->GetBufferSize());
+	std::memcpy(shaderData.m_code.data(), shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize());
+	return shaderData;
 }
 
 void D3D12RHI::CreateDXGIFactory()

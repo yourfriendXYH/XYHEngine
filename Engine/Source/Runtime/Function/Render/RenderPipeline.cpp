@@ -120,6 +120,9 @@ void RenderPipeline::Initialize(ST_RenderPipelineInitInfo initInfo)
 
 	ST_RenderPassInitInfo testPassInitInfo;
 	m_pTestPass->Initialize(&testPassInitInfo);
+
+
+
 }
 
 void RenderPipeline::ForwardRender(std::shared_ptr<RHI> pRHI, std::shared_ptr<RenderResourceBase> pRenderResource)

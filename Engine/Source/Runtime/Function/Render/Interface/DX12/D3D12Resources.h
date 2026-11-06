@@ -1,6 +1,5 @@
 #pragma once
 #include <Common.h>
-//#include <Runtime/Core/Math/Vector3.h>
 #include <Runtime/Function/Render/Interface/RHIResources.h>
 #include "D3D12Access.h"
 #include <d3d12.h>

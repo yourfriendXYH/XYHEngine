@@ -6,6 +6,7 @@
 #include "RenderPassBase.h"
 #include "RenderCommon.h"
 #include "RenderResource.h"
+#include <d3d12.h>
 
 NAMESPACE_XYH_BEGIN
 
@@ -53,6 +54,12 @@ enum class ERenderPassType
 	ERPT_COMPUTE,	// 计算
 };
 
+struct BindingCB
+{
+	int m_bindingPoint;
+	RHIBuffer* m_resource;
+};
+
 class RenderPass : public RenderPassBase
 {
 public:
@@ -88,12 +95,13 @@ public:
 public:
 	RenderPass() = default;
 
-	RenderPass(ERenderPassType renderPassType, const char* name);
+	RenderPass(std::shared_ptr<RHI> inRHI, ERenderPassType renderPassType, const char* name);
 
 public:
 	void Initialize(const ST_RenderPassInitInfo* initInfo) override;
 	void PostInitialize() override;
 
+	// OpenGL
 	// 
 	void Build(uint32_t width = 0, uint32_t height = 0);
 
@@ -118,6 +126,13 @@ public:
 	void SetUniformBuffer(int binding, RHIBuffer* pBuffer);
 	// 
 	void SetComputeDispatchArgs(int x, int y, int z);
+
+	// D3D12
+	void AddConstantBuffer(int inBinding, RHIBuffer* inBuffer, D3D12_SHADER_VISIBILITY inShaderVisibility = D3D12_SHADER_VISIBILITY_ALL, bool inUseRootParameter = false);
+
+	void SetDSRT(RHITexture* inDSRT, D3D12_DSV_FLAGS inFlags = D3D12_DSV_FLAG_NONE);
+
+	void InitRootSignature();
 
 public:
 	ST_GlobalRenderResource* m_pGlobalRenderResource{ nullptr };
@@ -159,6 +174,32 @@ private:
 	int m_dispatchX = 0;
 	int m_dispatchY = 0;
 	int m_dispatchZ = 0;
+public:
+	std::weak_ptr<RHI> m_rhi;
+
+	std::vector<D3D12_ROOT_PARAMETER> m_rootParameterConfig;
+
+	std::vector<BindingCB> m_rootConstantBuffers;
+	
+	RHITexture* m_DSRT;
+	ID3D12DescriptorHeap* m_RTVDescriptorHeap;
+	ID3D12DescriptorHeap* m_DSVDescriptorHeap;
+
+	std::vector<D3D12_DESCRIPTOR_RANGE> m_descriptorTableConfigVS; 
+	std::vector<D3D12_DESCRIPTOR_RANGE> m_descriptorTableConfigPS;
+	std::vector<D3D12_DESCRIPTOR_RANGE> m_descriptorTableConfigAll;
+
+	std::vector<D3D12_STATIC_SAMPLER_DESC> m_staticSamplerDescs;
+
+	ID3D12RootSignature* m_rootSignature;
+	ID3D12PipelineState* m_PSO;
+
+	std::vector<RHITexture*> m_RTs;
+	std::vector<D3D12_RENDER_TARGET_BLEND_DESC> m_RTBlendDescs;
+	D3D12_RENDER_TARGET_BLEND_DESC m_RT0BlendDesc;
+
+	D3D12_VIEWPORT m_viewport;
+	D3D12_RECT m_scissor;
 };
 
 NAMESPACE_XYH_END

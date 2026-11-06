@@ -2,6 +2,7 @@
 #include "Interface/RHI.h"
 #include <Runtime/Function/Render/Interface/OpenGL/OpenGLUtil.h>
 #include "Interface/Vulkan/VulkanRHI.h"
+#include "Interface/DX12/D3D12RHI.h"
 #include "RenderResource.h"
 #include <Runtime/Function/Render/Interface/OpenGL/Util.h>
 #include <Runtime/Function/Render/Interface/OpenGL/OpenGLRHIResource.h>
@@ -10,8 +11,9 @@ XYH::ST_VisibleNodes XYH::RenderPass::s_visibleNodes;
 
 NAMESPACE_XYH_BEGIN
 
-RenderPass::RenderPass(ERenderPassType renderPassType, const char* name)
+RenderPass::RenderPass(std::shared_ptr<RHI> inRHI, ERenderPassType renderPassType, const char* name)
 	:
+	m_rhi(inRHI),
 	m_renderPassType(renderPassType),
 	m_name(name)
 {
@@ -239,6 +241,81 @@ void RenderPass::SetComputeDispatchArgs(int x, int y, int z)
 	m_dispatchX = x;
 	m_dispatchY = y;
 	m_dispatchZ = z;
+}
+
+void RenderPass::AddConstantBuffer(int inBinding, RHIBuffer* inBuffer, D3D12_SHADER_VISIBILITY inShaderVisibility, bool inUseRootParameter)
+{
+	if (inUseRootParameter)
+	{
+		D3D12_ROOT_PARAMETER rootParameter{};
+		rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		rootParameter.ShaderVisibility = inShaderVisibility;
+		rootParameter.Descriptor.RegisterSpace = 0;
+		rootParameter.Descriptor.ShaderRegister = inBinding;
+		m_rootParameterConfig.push_back(rootParameter);
+		m_rootConstantBuffers.push_back({inBinding, inBuffer});
+	}
+}
+
+void RenderPass::SetDSRT(RHITexture* inDSRT, D3D12_DSV_FLAGS inFlags)
+{
+	D3D12RHI* d3d12RHI = dynamic_cast<D3D12RHI*>(m_rhi.lock().get());
+	if (d3d12RHI)
+	{
+		D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
+		descriptorHeapDesc.NumDescriptors = 1;
+		descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+		d3d12RHI->GetDevice()->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&m_DSVDescriptorHeap));
+
+		D3D12_DEPTH_STENCIL_VIEW_DESC DSViewDesc{};
+		DSViewDesc.Format = ((D3D12Texture*)inDSRT)->m_format;
+		DSViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		DSViewDesc.Flags = inFlags;
+		D3D12_CPU_DESCRIPTOR_HANDLE descriptorHeapHandle = m_DSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+		d3d12RHI->GetDevice()->CreateDepthStencilView(((D3D12Texture*)inDSRT)->m_underlyingResource, &DSViewDesc, descriptorHeapHandle);
+	}
+}
+
+void RenderPass::InitRootSignature()
+{
+	D3D12RHI* d3d12RHI = dynamic_cast<D3D12RHI*>(m_rhi.lock().get());
+	if (!d3d12RHI)
+		return;
+
+	if (m_descriptorTableConfigVS.size() > 0)
+	{
+		D3D12_ROOT_PARAMETER rootParameter{};
+		rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+		rootParameter.DescriptorTable.pDescriptorRanges = m_descriptorTableConfigVS.data();
+		m_rootParameterConfig.push_back(rootParameter);
+	}
+
+	if (m_descriptorTableConfigPS.size() > 0) {
+		D3D12_ROOT_PARAMETER rootParameter = {};
+		rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		rootParameter.DescriptorTable.pDescriptorRanges = m_descriptorTableConfigPS.data();
+		rootParameter.DescriptorTable.NumDescriptorRanges = m_descriptorTableConfigPS.size();
+		m_rootParameterConfig.push_back(rootParameter);
+	}
+	if (m_descriptorTableConfigAll.size() > 0) {
+		D3D12_ROOT_PARAMETER rootParameter = {};
+		rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		rootParameter.DescriptorTable.pDescriptorRanges = m_descriptorTableConfigAll.data();
+		rootParameter.DescriptorTable.NumDescriptorRanges = m_descriptorTableConfigAll.size();
+		m_rootParameterConfig.push_back(rootParameter);
+	}
+
+	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
+	rootSignatureDesc.NumParameters = m_rootParameterConfig.size();
+	rootSignatureDesc.pParameters = m_rootParameterConfig.data();
+	rootSignatureDesc.NumStaticSamplers = m_staticSamplerDescs.size();
+	rootSignatureDesc.pStaticSamplers = m_staticSamplerDescs.data();
+	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	m_rootSignature = d3d12RHI->CreateRootSignature(rootSignatureDesc);
 }
 
 NAMESPACE_XYH_END
