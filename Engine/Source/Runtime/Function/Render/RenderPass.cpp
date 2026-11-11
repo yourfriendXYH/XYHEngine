@@ -6,6 +6,7 @@
 #include "RenderResource.h"
 #include <Runtime/Function/Render/Interface/OpenGL/Util.h>
 #include <Runtime/Function/Render/Interface/OpenGL/OpenGLRHIResource.h>
+#include "Interface/DX12/D3D12Util.h"
 
 XYH::ST_VisibleNodes XYH::RenderPass::s_visibleNodes;
 
@@ -316,6 +317,70 @@ void RenderPass::InitRootSignature()
 	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	m_rootSignature = d3d12RHI->CreateRootSignature(rootSignatureDesc);
+}
+
+void RenderPass::PreExecute()
+{
+	D3D12RHI* d3d12RHI = dynamic_cast<D3D12RHI*>(m_rhi.lock().get());
+	if (!d3d12RHI)
+		return;
+
+	if (m_outputResources.size() > 0)
+	{
+		std::vector<D3D12_RESOURCE_BARRIER> barriers;
+		for (size_t i = 0; i < m_outputResources.size(); i++)
+		{
+			D3D12Buffer* resource = m_outputResources[i];
+			barriers.push_back(D3D12Util::InitResourceBarrier(resource->m_resource, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+		}
+		d3d12RHI->GetGraphicsCommandList()->ResourceBarrier(barriers.size(), barriers.data());
+	}
+	// VS
+	{
+		for (size_t i = 0; i < m_SRVsVS.size(); i++)
+		{
+			BindingSRV& srv = m_SRVsVS[i];
+			D3D12_CPU_DESCRIPTOR_HANDLE descriptorHeapHandle = d3d12RHI->GetCPUDescriptorHandle(m_descriptorBlockIndex, srv.m_slotIndex);
+			d3d12RHI->GetDevice()->CreateShaderResourceView(srv.m_resource->m_resource, &srv.m_SRVDesc, descriptorHeapHandle);
+		}
+		for (size_t i = 0; i < m_UAVsVS.size(); i++)
+		{
+			BindingUAV& uav = m_UAVsVS[i];
+			D3D12_CPU_DESCRIPTOR_HANDLE descriptorHeapHandle = d3d12RHI->GetCPUDescriptorHandle(m_descriptorBlockIndex, uav.m_slotIndex);
+			d3d12RHI->GetDevice()->CreateUnorderedAccessView(uav.m_resource->m_resource, nullptr, &uav.m_UAVDesc, descriptorHeapHandle);
+		}
+	}
+	// PS
+	{
+		for (size_t i = 0; i < m_SRVsPS.size(); i++)
+		{
+			BindingSRV& srv = m_SRVsPS[i];
+			D3D12_CPU_DESCRIPTOR_HANDLE descriptorHeapHandle = d3d12RHI->GetCPUDescriptorHandle(m_descriptorBlockIndex, srv.m_slotIndex);
+			d3d12RHI->GetDevice()->CreateShaderResourceView(srv.m_resource->m_resource, &srv.m_SRVDesc, descriptorHeapHandle);
+		}
+		for (size_t i = 0; i < m_UAVsPS.size(); i++)
+		{
+			BindingUAV& uav = m_UAVsPS[i];
+			D3D12_CPU_DESCRIPTOR_HANDLE descriptorHeapHandle = d3d12RHI->GetCPUDescriptorHandle(m_descriptorBlockIndex, uav.m_slotIndex);
+			d3d12RHI->GetDevice()->CreateUnorderedAccessView(uav.m_resource->m_resource, nullptr, &uav.m_UAVDesc, descriptorHeapHandle);
+		}
+	}
+	// All
+	{
+		for (size_t i = 0; i < m_SRVsAll.size(); i++)
+		{
+			BindingSRV& srv = m_SRVsAll[i];
+			D3D12_CPU_DESCRIPTOR_HANDLE descriptorHeapHandle = d3d12RHI->GetCPUDescriptorHandle(m_descriptorBlockIndex, srv.m_slotIndex);
+			d3d12RHI->GetDevice()->CreateShaderResourceView(srv.m_resource->m_resource, &srv.m_SRVDesc, descriptorHeapHandle);
+		}
+		for (size_t i = 0; i < m_UAVsAll.size(); i++)
+		{
+			BindingUAV& uav = m_UAVsAll[i];
+			D3D12_CPU_DESCRIPTOR_HANDLE descriptorHeapHandle = d3d12RHI->GetCPUDescriptorHandle(m_descriptorBlockIndex, uav.m_slotIndex);
+			d3d12RHI->GetDevice()->CreateUnorderedAccessView(uav.m_resource->m_resource, nullptr, &uav.m_UAVDesc, descriptorHeapHandle);
+		}
+	}
+
 }
 
 NAMESPACE_XYH_END

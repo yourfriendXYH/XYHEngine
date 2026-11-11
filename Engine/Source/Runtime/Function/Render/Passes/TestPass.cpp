@@ -59,6 +59,12 @@ void TestPass::Initialize(const ST_RenderPassInitInfo* initInfo)
 
 	D3D12RHI* pD3D12RHI = static_cast<D3D12RHI*>(m_pRHI.get());
 
+	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
+	descriptorHeapDesc.NumDescriptors = 10000;
+	descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	pD3D12RHI->GetDevice()->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&pD3D12RHI->m_globalResourceHeap));
+
 	m_sceneDepthZ = pD3D12RHI->Init2DRTImage(
 		bufferWidth,
 		bufferHeight,

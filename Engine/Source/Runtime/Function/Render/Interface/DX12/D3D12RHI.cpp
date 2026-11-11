@@ -420,6 +420,13 @@ D3D12ShaderData D3D12RHI::CreateShaderFromFileSM6(LPCTSTR inShaderFilePath, LPCT
 	return shaderData;
 }
 
+D3D12_CPU_DESCRIPTOR_HANDLE D3D12RHI::GetCPUDescriptorHandle(int inBlockIndex, int inParameterIndex) const
+{
+	D3D12_CPU_DESCRIPTOR_HANDLE cpuDescriptorHandle = m_globalResourceHeap->GetCPUDescriptorHandleForHeapStart();
+	cpuDescriptorHandle.ptr = m_pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * (32 * inBlockIndex + inParameterIndex);
+	return cpuDescriptorHandle;
+}
+
 void D3D12RHI::CreateDXGIFactory()
 {
 	// 创建DXGI

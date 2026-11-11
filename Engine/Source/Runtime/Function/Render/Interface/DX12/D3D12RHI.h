@@ -348,6 +348,8 @@ public:
 
 	D3D12ShaderData CreateShaderFromFileSM6(LPCTSTR inShaderFilePath, LPCTSTR inMainFunctionName, LPCTSTR inTarget);
 
+	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(int inBlockIndex, int inParameterIndex) const;
+
 private:
 
 	// 创建DXGI
@@ -366,6 +368,8 @@ private:
 
 public:
 	GLFWwindow* m_pGLFWwindow = nullptr;
+
+	ID3D12DescriptorHeap* m_globalResourceHeap = nullptr;
 
 private:
 	UINT m_dxgiFactoryFlag = 0u;

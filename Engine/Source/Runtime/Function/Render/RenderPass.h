@@ -60,6 +60,22 @@ struct BindingCB
 	RHIBuffer* m_resource;
 };
 
+struct BindingSRV
+{
+	int m_slotIndex;
+	int m_bindingPoint;
+	D3D12_SHADER_RESOURCE_VIEW_DESC m_SRVDesc;
+	D3D12Buffer* m_resource = nullptr;
+};
+
+struct BindingUAV
+{
+	int m_slotIndex;
+	int m_bindingPoint;
+	D3D12_UNORDERED_ACCESS_VIEW_DESC m_UAVDesc;
+	D3D12Buffer* m_resource = nullptr;
+};
+
 class RenderPass : public RenderPassBase
 {
 public:
@@ -134,6 +150,9 @@ public:
 
 	void InitRootSignature();
 
+	void PreExecute();
+
+
 public:
 	ST_GlobalRenderResource* m_pGlobalRenderResource{ nullptr };
 
@@ -180,6 +199,12 @@ public:
 	std::vector<D3D12_ROOT_PARAMETER> m_rootParameterConfig;
 
 	std::vector<BindingCB> m_rootConstantBuffers;
+
+	std::vector<BindingSRV> m_SRVsVS, m_SRVsPS, m_SRVsAll;
+
+	std::vector<BindingUAV> m_UAVsVS, m_UAVsPS, m_UAVsAll;
+
+	std::vector<D3D12Buffer*> m_outputResources;
 	
 	RHITexture* m_DSRT;
 	ID3D12DescriptorHeap* m_RTVDescriptorHeap;
@@ -190,6 +215,8 @@ public:
 	std::vector<D3D12_DESCRIPTOR_RANGE> m_descriptorTableConfigAll;
 
 	std::vector<D3D12_STATIC_SAMPLER_DESC> m_staticSamplerDescs;
+
+	int m_descriptorBlockIndex = 0;
 
 	ID3D12RootSignature* m_rootSignature;
 	ID3D12PipelineState* m_PSO;

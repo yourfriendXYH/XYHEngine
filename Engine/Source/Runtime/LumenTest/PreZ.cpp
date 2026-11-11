@@ -1,13 +1,27 @@
 #include "PreZ.h"
 #include <Runtime/Function/Render/RenderPass.h>
 #include <Runtime/Function/Render/Interface/DX12/D3D12RHI.h>
+#include <Runtime/Function/Render/Interface/DX12/D3D12Util.h>
 
 NAMESPACE_XYH_BEGIN
 
 static RenderPass* sPreZPass = nullptr;
 
+static D3D12_VERTEX_BUFFER_VIEW sVBO;
+static D3D12_INDEX_BUFFER_VIEW sIBO;
+
 void InitPreZPass(std::shared_ptr<RHI> inRHI, RHIBuffer* inPositionBuffer, RHIBuffer* inAttributeBuffer, RHIBuffer* inIndexBuffer, RHITexture* inDSRT)
 {
+    sVBO = {};
+    sVBO.BufferLocation = ((D3D12Buffer*)inPositionBuffer)->m_resource->GetGPUVirtualAddress();
+    sVBO.StrideInBytes = sizeof(float) * 3;
+    sVBO.SizeInBytes = sizeof(float) * 3;
+
+    sIBO = {};
+    sIBO.BufferLocation = ((D3D12Buffer*)inIndexBuffer)->m_resource->GetGPUVirtualAddress();
+    sIBO.Format = DXGI_FORMAT_R16_UINT;
+    sIBO.SizeInBytes = ((D3D12Buffer*)inIndexBuffer)->m_resource->GetDesc().Width;
+
 	RenderPass* renderPass = new RenderPass(inRHI, ERenderPassType::ERPT_GRAPHICS, "PreZ");
 	RHIBuffer* globalConstantBuffer = nullptr;
 	renderPass->AddConstantBuffer(0, globalConstantBuffer, D3D12_SHADER_VISIBILITY_PIXEL, true);
@@ -71,6 +85,43 @@ void InitPreZPass(std::shared_ptr<RHI> inRHI, RHIBuffer* inPositionBuffer, RHIBu
 
 void ExecutePreZPass(std::shared_ptr<RHI> inRHI)
 {
+    D3D12RHI* d3d12RHI = dynamic_cast<D3D12RHI*>(inRHI.get());
+
+    sPreZPass->PreExecute();
+
+    std::vector<D3D12_RESOURCE_BARRIER> barriers;
+    barriers.push_back(D3D12Util::InitResourceBarrier(((D3D12Texture*)sPreZPass->m_DSRT)->m_underlyingResource, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+    d3d12RHI->GetGraphicsCommandList()->ResourceBarrier(barriers.size(), barriers.data());
+    barriers.clear();
+
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuDescriptorHandleDSRT = sPreZPass->m_DSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    d3d12RHI->GetGraphicsCommandList()->OMSetRenderTargets(0, nullptr, FALSE, &cpuDescriptorHandleDSRT);
+    d3d12RHI->GetGraphicsCommandList()->ClearDepthStencilView(cpuDescriptorHandleDSRT, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 0.0f, 0, 0, nullptr); // reverse-Z用0清除深度
+
+    d3d12RHI->GetGraphicsCommandList()->SetGraphicsRootSignature(sPreZPass->m_rootSignature);
+    d3d12RHI->GetGraphicsCommandList()->SetPipelineState(sPreZPass->m_PSO);
+    d3d12RHI->GetGraphicsCommandList()->RSSetViewports(1, &sPreZPass->m_viewport);
+    d3d12RHI->GetGraphicsCommandList()->RSSetScissorRects(1, &sPreZPass->m_scissor);
+
+    for (size_t i = 0; i < sPreZPass->m_rootConstantBuffers.size(); i++)
+    {
+        BindingCB& cb = sPreZPass->m_rootConstantBuffers[i];
+        d3d12RHI->GetGraphicsCommandList()->SetGraphicsRootConstantBufferView(i, ((D3D12Buffer*)cb.m_resource)->m_resource->GetGPUVirtualAddress());
+    }
+
+    const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    d3d12RHI->GetGraphicsCommandList()->OMSetBlendFactor(blendFactor);
+
+    d3d12RHI->GetGraphicsCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    d3d12RHI->GetGraphicsCommandList()->IASetVertexBuffers(0, 1, &sVBO);
+    d3d12RHI->GetGraphicsCommandList()->IASetIndexBuffer(&sIBO);
+
+    //6 x 4 x 2 x 3 => 48 x 3 = 144
+    d3d12RHI->GetGraphicsCommandList()->DrawIndexedInstanced(144, 2, 0, 0, 0);
+
+    barriers.push_back(D3D12Util::InitResourceBarrier(((D3D12Texture*)sPreZPass->m_DSRT)->m_underlyingResource, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_GENERIC_READ));
+    d3d12RHI->GetGraphicsCommandList()->ResourceBarrier(barriers.size(), barriers.data());
+    d3d12RHI->SubmitRendering(nullptr);
 }
 
 
