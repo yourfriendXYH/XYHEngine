@@ -60,6 +60,8 @@ struct BindingCB
 	RHIBuffer* m_resource;
 };
 
+class D3D12Buffer;
+
 struct BindingSRV
 {
 	int m_slotIndex;

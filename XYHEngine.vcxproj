@@ -35,7 +35,9 @@
     <ClCompile Include="Engine\Source\Runtime\Function\GlobalContext.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Particle\EmitterIdAllocator.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Particle\ParticleManager.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Adapter.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Allocation.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Device.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Resources.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHI.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Shader.cpp" />
@@ -114,9 +116,12 @@
     <ClInclude Include="Engine\Source\Runtime\Function\Particle\ParticleDesc.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Particle\ParticleManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Access.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Adapter.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Allocation.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Device.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Resources.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHI.h" />
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHICommon.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Shader.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Util.h" />
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\OpenGL\OpenGLRHI.h" />

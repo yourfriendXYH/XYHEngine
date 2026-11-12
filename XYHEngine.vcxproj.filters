@@ -273,6 +273,12 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Shader.cpp">
       <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Adapter.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Device.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Runtime\Engine.h">
@@ -552,6 +558,15 @@
       <Filter>Engine\Source\Runtime\LumenTest</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Shader.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Adapter.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Device.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHICommon.h">
       <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
     </ClInclude>
   </ItemGroup>

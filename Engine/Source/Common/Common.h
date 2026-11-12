@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <cstdint>
+#include <cassert>
 
 // 命名空间宏
 #define NAMESPACE_XYH_BEGIN \

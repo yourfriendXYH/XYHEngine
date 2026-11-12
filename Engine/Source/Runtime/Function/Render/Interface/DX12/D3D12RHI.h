@@ -13,6 +13,7 @@
 #include "D3D12Resources.h"
 #include "D3D12Access.h"
 #include "D3D12Shader.h"
+#include "D3D12Adapter.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -307,11 +308,14 @@ public:
 	// test create texture2D
 	ID3D12Resource* CreateTexture2D(UINT width, UINT height, void* pData);
 
+
+	// 抄UE5.8的代码
+
+	D3D12Adapter& GetAdapter() { return *m_chosenAdapter; }
+	const D3D12Adapter& GetAdapter() const { return *m_chosenAdapter; }
+
 	[[nodiscard]] virtual ST_RHIBufferInitializer RHICreateBufferInitializer(const RHIBufferCreateDesc& CreateDesc) override;
-
-
-	// Texture 创建
-	[[nodiscard]] virtual ST_RHITextureInitializer RHICreateTextureInitializer(/*FRHICommandListBase& RHICmdList, */const ST_RHITextureCreateDesc& CreateDesc) override;
+	[[nodiscard]] virtual ST_RHITextureInitializer RHICreateTextureInitializer(/*FRHICommandListBase& RHICmdList, */const ST_RHITextureCreateDesc& CreateDesc) override;	// Texture 创建
 
 	D3D12Texture* Init2DRTImage(
 		UINT64 inWidth, 
@@ -376,6 +380,8 @@ private:
 	IDXGIFactory4* m_dxgiFactory = nullptr;	// DXGI
 
 	IDXGIAdapter1* m_pAdapter = nullptr;	// 显卡接口
+
+	std::shared_ptr<D3D12Adapter> m_chosenAdapter;	// 所选适配器
 
 	ID3D12Device* m_pDevice = nullptr;	// 设备
 
