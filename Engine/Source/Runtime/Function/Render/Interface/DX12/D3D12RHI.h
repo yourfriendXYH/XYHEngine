@@ -14,6 +14,7 @@
 #include "D3D12Access.h"
 #include "D3D12Shader.h"
 #include "D3D12Adapter.h"
+#include "D3D12CommandContext.h"
 
 NAMESPACE_XYH_BEGIN
 
@@ -308,8 +309,20 @@ public:
 	// test create texture2D
 	ID3D12Resource* CreateTexture2D(UINT width, UINT height, void* pData);
 
+	D3D12Texture* Init2DRTImage(
+		UINT64 inWidth,
+		UINT64 inHeight,
+		UINT64 inAlignment,
+		DXGI_FORMAT inFormat,
+		DXGI_FORMAT inSRVFormat,
+		DXGI_FORMAT inRTVFormat,
+		D3D12_RESOURCE_FLAGS inFlags,
+		D3D12_CLEAR_VALUE inClearValue,
+		int inMipLevelCount = 1);
 
 	// 抄UE5.8的代码
+
+	static D3D12RHI* GetD3DRHI() { return s_singleD3DRHI; }
 
 	D3D12Adapter& GetAdapter() { return *m_chosenAdapter; }
 	const D3D12Adapter& GetAdapter() const { return *m_chosenAdapter; }
@@ -317,16 +330,13 @@ public:
 	[[nodiscard]] virtual ST_RHIBufferInitializer RHICreateBufferInitializer(const RHIBufferCreateDesc& CreateDesc) override;
 	[[nodiscard]] virtual ST_RHITextureInitializer RHICreateTextureInitializer(/*FRHICommandListBase& RHICmdList, */const ST_RHITextureCreateDesc& CreateDesc) override;	// Texture 创建
 
-	D3D12Texture* Init2DRTImage(
-		UINT64 inWidth, 
-		UINT64 inHeight, 
-		UINT64 inAlignment, 
-		DXGI_FORMAT inFormat, 
-		DXGI_FORMAT inSRVFormat, 
-		DXGI_FORMAT inRTVFormat, 
-		D3D12_RESOURCE_FLAGS inFlags, 
-		D3D12_CLEAR_VALUE inClearValue, 
-		int inMipLevelCount = 1);
+	virtual D3D12CommandContext* CreateCommandContext(D3D12Device* inParentDevice, ED3D12QueueType inQueueType, bool inIsDefaultContext);
+
+private:
+
+	static D3D12RHI* s_singleD3DRHI;
+
+
 
 public:
 

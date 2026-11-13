@@ -58,8 +58,12 @@ bool InitDXC()
 	return true;
 }
 
+D3D12RHI* D3D12RHI::s_singleD3DRHI = nullptr;
+
 void D3D12RHI::Initialize(ST_RHIInitInfo initInfo)
 {
+	s_singleD3DRHI = this;
+
 	m_pGLFWwindow = initInfo.m_pWindowSystem->GetWindow();	// 获取窗口
 	std::array<int, 2> windowSize = initInfo.m_pWindowSystem->GetWindowSize(); // 获取窗口大小
 	m_viewport = { 0.0f, 0.0f, static_cast<float>(windowSize[0]), static_cast<float>(windowSize[1]), 0.0f, 1.0f }; // 设置视口大小
@@ -655,6 +659,11 @@ ST_RHIBufferInitializer D3D12RHI::RHICreateBufferInitializer(const RHIBufferCrea
 ST_RHITextureInitializer D3D12RHI::RHICreateTextureInitializer(const ST_RHITextureCreateDesc& CreateDesc)
 {
 	return ST_RHITextureInitializer();
+}
+
+D3D12CommandContext* D3D12RHI::CreateCommandContext(D3D12Device* inParentDevice, ED3D12QueueType inQueueType, bool inIsDefaultContext)
+{
+	return new D3D12CommandContext(inParentDevice, inQueueType, inIsDefaultContext);
 }
 
 D3D12Texture* D3D12RHI::Init2DRTImage(

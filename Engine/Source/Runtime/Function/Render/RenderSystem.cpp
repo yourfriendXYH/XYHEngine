@@ -14,9 +14,13 @@
 
 NAMESPACE_XYH_BEGIN
 
+RHI* globalRHI = nullptr;
+
 RenderSystem::~RenderSystem()
 {
 	Clear();
+	delete globalRHI;
+	globalRHI = nullptr;
 }
 
 void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
@@ -29,6 +33,8 @@ void RenderSystem::Initialize(ST_RenderSystemInitInfo initInfo)
 #ifdef USE_D3D12	// 使用Direct3D12
 	m_pRHI = std::make_shared<D3D12RHI>();
 	m_pRHI->Initialize(rhiInitInfo);
+	//globalRHI = new D3D12RHI();
+	//globalRHI->Initialize(rhiInitInfo);
 #endif // USE_DX12
 #ifdef USE_VULKAN	// 使用Vulkan
 	m_pRHI = std::make_shared<VulkanRHI>();

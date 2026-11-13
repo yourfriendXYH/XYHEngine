@@ -16,6 +16,11 @@ public:
 	ID3D12Device* GetD3DDevice() const { return m_rootDevice; }
 
 protected:
+	UINT m_dxgiFactoryFlag = 0u;
+	IDXGIFactory4* m_dxgiFactory = nullptr;	// DXGI
+
+	IDXGIAdapter1* m_pAdapter = nullptr;	// от©╗╫с©з
+
 	ID3D12Device* m_rootDevice = nullptr;
 	
 	std::array<D3D12Device*, 1> m_devices;

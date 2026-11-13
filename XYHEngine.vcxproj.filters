@@ -279,6 +279,9 @@
     <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Device.cpp">
       <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12CommandContext.cpp">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Runtime\Engine.h">
@@ -567,6 +570,12 @@
       <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12RHICommon.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12Queue.h">
+      <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Runtime\Function\Render\Interface\DX12\D3D12CommandContext.h">
       <Filter>Engine\Source\Runtime\Function\Render\Interface\DX12</Filter>
     </ClInclude>
   </ItemGroup>
